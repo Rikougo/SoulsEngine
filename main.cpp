@@ -19,6 +19,8 @@ const int height = static_cast<int>(width / aspect_ratio);
 using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
+    std::cout << "Please read README.md for any information." << std::endl;
+
     auto app = make_shared<Core::Application>();
     auto winManager = Core::WindowManager(app, "Elys");
 
