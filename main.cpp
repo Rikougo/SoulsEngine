@@ -27,13 +27,16 @@ int main(int argc, char *argv[]) {
     auto shader = Core::Rendering::Shader{"./shaders/vertex_shader.glsl",
                          "./shaders/fragment_shader.glsl"};
     auto cube = Core::Rendering::Mesh::Sphere();
+    auto currentType = 1;
 
-    app->AddEventListener(Core::Events::Game::SWITCH_MESH, [&cube](Core::Event &event) {
+    app->AddEventListener(Core::Events::Game::SWITCH_MESH, [&cube, &currentType](Core::Event &event) {
         int type = event.GetParam<int>(Core::EventsParams::MESH_TYPE);
 
-        if (type) {
+        if (type && type != currentType) {
+            currentType = type;
             cube = Core::Rendering::Mesh::Sphere();
-        } else {
+        } else if (type != currentType){
+            currentType = type;
             cube = Core::Rendering::Mesh::Cube();
         }
     });
