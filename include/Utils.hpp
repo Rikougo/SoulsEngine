@@ -11,6 +11,8 @@
 #include <any>
 #include <unordered_map>
 
+#include <glm/glm.hpp>
+
 
 namespace Core {
 
@@ -48,21 +50,29 @@ class Event {
     [[nodiscard]] EventId GetType() const { return mType; }
 };
 
+class Time {
+  public:
+    static float DeltaTime;
+};
+
 namespace Events {
 namespace Game {
-constexpr EventId SWITCH_MESH = "Events::Window::RESIZE"_hash;
+constexpr EventId SWITCH_MESH = "Events::Game::SWITCH_MESH"_hash;
+constexpr EventId CAMERA_MOVE = "Events::Game::CAMERA_MOVE"_hash;
 }
 
 namespace Window {
 constexpr EventId QUIT = "Events::Window::QUIT"_hash;
 constexpr EventId RESIZE = "Events::Window::RESIZE"_hash;
+constexpr EventId UPDATE = "Events::Window::UPDATE"_hash;
 } // namespace Window
 } // namespace Events
 
 namespace EventsParams {
 constexpr ParamId RESIZE_WIDTH = "Events::Window::RESIZE_WIDTH"_hash;
 constexpr ParamId RESIZE_HEIGHT = "Events::Window::RESIZE_HEIGHT"_hash;
-constexpr ParamId MESH_TYPE = "Events::Window::MESH_TYPE"_hash;
+constexpr ParamId MESH_TYPE = "Events::Game::MESH_TYPE"_hash;
+constexpr ParamId CAMERA_MOVE_DIRECTION = "Events::Game::CAMERA_MOVE_DIRECTION"_hash;
 } // namespace EventsParams
 } // namespace Core
 

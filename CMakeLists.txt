@@ -18,6 +18,7 @@ set(
     src/Managers/EventManager.cpp
     src/Rendering/Shader.cpp
     src/Rendering/Mesh.cpp
+    src/Rendering/Camera.cpp
     src/Application.cpp
 )
 

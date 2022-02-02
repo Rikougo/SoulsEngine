@@ -78,15 +78,15 @@ void Mesh::draw(Shader const &shader) {
 Mesh Mesh::Cube() {
     vector<Vertex> vertices = {
         // FRONT
-        {{-0.5, 0.5, 0.5}, {-0.5, 0.5, 0.5}, {0, 0}},
-        {{0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {1, 0}},
-        {{0.5, -0.5, 0.5}, {0.5, -0.5, 0.5}, {1, 1}},
-        {{-0.5, -0.5, 0.5}, {-0.5, -0.5, 0.5}, {0, 1}},
+        {{-1.0f, 1.0f,  1.0f}, normalize(vec3{-1.0f,  1.0f,  1.0f}), {0, 0}},
+        {{ 1.0f, 1.0f,  1.0f}, normalize(vec3{ 1.0f,  1.0f,  1.0f}), {1, 0}},
+        {{ 1.0f,-1.0f,  1.0f}, normalize(vec3{ 1.0f, -1.0f,  1.0f}), {1, 1}},
+        {{-1.0f,-1.0f,  1.0f}, normalize(vec3{-1.0f, -1.0f,  1.0f}), {0, 1}},
         // BACK
-        {{-0.5, 0.5, -0.5}, {-0.5, 0.5, -0.5}, {0, 0}},
-        {{0.5, 0.5, -0.5}, {0.5, 0.5, -0.5}, {1, 0}},
-        {{0.5, -0.5, -0.5}, {0.5, -0.5, -0.5}, {1, 1}},
-        {{-0.5, -0.5, -0.5}, {-0.5, -0.5, -0.5}, {0, 1}},
+        {{-1.0f,  1.0f, -1.0f}, normalize(vec3{-1.0f,  1.0f, -1.0f}), {0, 0}},
+        {{ 1.0f,  1.0f, -1.0f}, normalize(vec3{ 1.0f,  1.0f, -1.0f}), {1, 0}},
+        {{ 1.0f, -1.0f, -1.0f}, normalize(vec3{ 1.0f, -1.0f, -1.0f}), {1, 1}},
+        {{-1.0f, -1.0f, -1.0f}, normalize(vec3{-1.0f, -1.0f, -1.0f}), {0, 1}},
     };
     vector<Triangle> triangles = {
         // FRONT
@@ -136,8 +136,8 @@ Mesh Mesh::Sphere(uint8_t slice, uint8_t stack) {
     }
 
     vector<Triangle> triangles;
-    for (unsigned int stackIt = 0; stackIt < stack; ++stackIt) {
-        for (unsigned int sliceIt = 0; sliceIt < slice; ++sliceIt) {
+    for (unsigned int stackIt = 0; stackIt < stack - 1; ++stackIt) {
+        for (unsigned int sliceIt = 0; sliceIt < slice - 1; ++sliceIt) {
             unsigned int vertexuv = stackIt + sliceIt * stack;
             unsigned int vertexUv = stackIt + 1 + sliceIt * stack;
             unsigned int vertexuV = stackIt + (sliceIt + 1) * stack;
@@ -149,4 +149,41 @@ Mesh Mesh::Sphere(uint8_t slice, uint8_t stack) {
 
     return Mesh{vertices, triangles, {}};
 }
-Mesh Mesh::Plane() { return Mesh(); }
+
+Mesh Mesh::Plane(uint16_t width, uint16_t height) {
+    vector<Vertex> vertices(width * height);
+    vector<Triangle> triangles;
+    uint32_t index = 0;
+
+    for(uint16_t y = 0; y < height; y++) {
+        for(uint16_t x = 0; x < width; x++) {
+            vec3 position = {(float)x / (float)width - 0.5f, 0, (float)y / (float)height - 0.5f};
+            vec3 normal = {0.0f, 1.0f, 0.0f};
+            vec2 textCoord = {(float)x / (float)width, (float)y / (float)height};
+
+            vertices[index++] = {
+                position,
+                normal,
+                textCoord
+            };
+
+            if (x > 0 && y > 0) {
+                triangles.push_back({
+                    (y) * width + x,
+                    (y-1) * width + (x - 1),
+                    (y) * width + (x - 1)
+                });
+
+                triangles.push_back({
+                    (y) * width + x,
+                    (y-1) * width + (x - 1),
+                    (y-1) * width + x
+                });
+            }
+        }
+    }
+
+
+
+    return Mesh{vertices, triangles, {}};
+}

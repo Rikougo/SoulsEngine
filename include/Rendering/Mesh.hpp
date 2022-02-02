@@ -11,12 +11,15 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/glm/geometric.hpp>
 
 #include "Rendering/Shader.hpp"
 
 using glm::ivec3;
 using glm::vec2;
 using glm::vec3;
+using glm::normalize;
+
 using std::array;
 using std::vector;
 
@@ -54,7 +57,7 @@ class Mesh {
 
     static Mesh Cube();
     static Mesh Sphere(uint8_t slice = 64, uint8_t stack = 64);
-    static Mesh Plane();
+    static Mesh Plane(uint16_t width = 32, uint16_t height = 32);
 
   private:
     void setupMesh();

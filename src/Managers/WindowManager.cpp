@@ -67,7 +67,7 @@ Core::WindowManager::WindowManager(shared_ptr<Application> &app,
 }
 void Core::WindowManager::Update() { glfwSwapBuffers(mWindow); }
 
-void Core::WindowManager::ProcessEvents() { 
+void Core::WindowManager::ProcessEvents() {
     glfwPollEvents(); 
 
     if (glfwGetKey(mWindow, GLFW_KEY_F) == GLFW_PRESS) {
@@ -77,17 +77,41 @@ void Core::WindowManager::ProcessEvents() {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
 
-    if (glfwGetKey(mWindow, GLFW_KEY_C) == GLFW_PRESS) {
+    if (glfwGetKey(mWindow, GLFW_KEY_KP_0) == GLFW_PRESS) {
         Event event{Core::Events::Game::SWITCH_MESH};
         event.SetParam(Core::EventsParams::MESH_TYPE, 0);
         mApplication->DispatchEvent(event);
     }
-    if (glfwGetKey(mWindow, GLFW_KEY_S) == GLFW_PRESS) {
+    if (glfwGetKey(mWindow, GLFW_KEY_KP_1) == GLFW_PRESS) {
         Event event{Core::Events::Game::SWITCH_MESH};
         event.SetParam(Core::EventsParams::MESH_TYPE, 1);
         mApplication->DispatchEvent(event);
     }
+    if (glfwGetKey(mWindow, GLFW_KEY_KP_2) == GLFW_PRESS) {
+        Event event{Core::Events::Game::SWITCH_MESH};
+        event.SetParam(Core::EventsParams::MESH_TYPE, 2);
+        mApplication->DispatchEvent(event);
+    }
+
+    glm::vec2 cameraDirection{0.0f, 0.0f};
+    if (glfwGetKey(mWindow, GLFW_KEY_W) == GLFW_PRESS)
+        cameraDirection.y += 1;
+    if (glfwGetKey(mWindow, GLFW_KEY_S) == GLFW_PRESS)
+        cameraDirection.y -= 1;
+    if (glfwGetKey(mWindow, GLFW_KEY_A) == GLFW_PRESS)
+        cameraDirection.x += 1;
+    if (glfwGetKey(mWindow, GLFW_KEY_D) == GLFW_PRESS)
+        cameraDirection.x -= 1;
+
+    if (glm::length(cameraDirection) > 0) {
+        cameraDirection = glm::normalize(cameraDirection);
+
+        Event event{Core::Events::Game::CAMERA_MOVE};
+        event.SetParam(Core::EventsParams::CAMERA_MOVE_DIRECTION, cameraDirection);
+        mApplication->DispatchEvent(event);
+    }
 }
+
 void Core::WindowManager::Shutdown() {
     glfwDestroyWindow(mWindow);
     glfwTerminate();
