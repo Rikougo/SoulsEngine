@@ -35,12 +35,13 @@ struct Vertex {
 struct Texture {
     unsigned int id;
     std::string type;
+    std::string path;
 };
 
 class Mesh {
   private:
     vector<Vertex> mVertices;
-    vector<Triangle> mTriangles;
+    vector<uint32_t> mIndices;
     vector<Texture> mTextures;
 
     unsigned int VAO, VBO, EBO;
@@ -48,12 +49,11 @@ class Mesh {
 
   public:
     Mesh();
-    Mesh(vector<Vertex> const &vertices, vector<Triangle> const &triangles,
+    Mesh(vector<Vertex> const &vertices, vector<uint32_t> const &indices,
          vector<Texture> const &textures);
-    Mesh(std::string objPath);
     ~Mesh();
 
-    void draw(Shader const &shader);
+    void draw(Shader const &shader) const;
 
     static Mesh Cube();
     static Mesh Sphere(uint8_t slice = 64, uint8_t stack = 64);

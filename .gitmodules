@@ -9,3 +9,6 @@
 [submodule "imgui"]
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "libs/assimp"]
+	path = libs/assimp
+	url = https://github.com/assimp/assimp

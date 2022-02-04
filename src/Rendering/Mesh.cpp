@@ -10,23 +10,22 @@
 using namespace Core::Rendering;
 
 Mesh::Mesh() {}
-Mesh::Mesh(std::string objPath) {}
 
 Mesh::~Mesh() {
     mInitialized = false;
 
     mVertices.clear();
-    mTriangles.clear();
+    mIndices.clear();
     mTextures.clear();
 
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 }
 
-Mesh::Mesh(vector<Vertex> const &vertices, vector<Triangle> const &triangles,
+Mesh::Mesh(vector<Vertex> const &vertices, vector<uint32_t> const &indices,
            vector<Texture> const &textures) {
     this->mVertices = vertices;
-    this->mTriangles = triangles;
+    this->mIndices = indices;
     this->mTextures = textures;
 
     setupMesh();
@@ -44,8 +43,8 @@ void Mesh::setupMesh() {
                  &mVertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mTriangles.size() * sizeof(Triangle),
-                 &mTriangles[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(uint32_t),
+                 &mIndices[0], GL_STATIC_DRAW);
 
     // vertex positions
     glEnableVertexAttribArray(0);
@@ -64,14 +63,34 @@ void Mesh::setupMesh() {
     mInitialized = true;
 }
 
-void Mesh::draw(Shader const &shader) {
-    if (!mInitialized)
+void Mesh::draw(Shader const &shader) const {
+    if (!mInitialized) {
+        std::cerr << "RENDERING::MESH::DRAW_UNINITIALIZED_ERROR" << std::endl;
         throw std::runtime_error("RENDERING::MESH::DRAW_UNINITIALIZED_ERROR");
+    }
 
     shader.use();
+
+    unsigned int diffuseNr = 1;
+    unsigned int specularNr = 1;
+    for(unsigned int i = 0; i < mTextures.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
+        // retrieve texture number (the N in diffuse_textureN)
+        std::string number;
+        std::string name = mTextures[i].type;
+        if(name == "texture_diffuse")
+            number = std::to_string(diffuseNr++);
+        else if(name == "texture_specular")
+            number = std::to_string(specularNr++);
+
+        shader.setInt("material." + name + number, i);
+        glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
+    }
+
     // draw mesh
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, mTriangles.size() * 3, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -88,25 +107,25 @@ Mesh Mesh::Cube() {
         {{ 1.0f, -1.0f, -1.0f}, normalize(vec3{ 1.0f, -1.0f, -1.0f}), {1, 1}},
         {{-1.0f, -1.0f, -1.0f}, normalize(vec3{-1.0f, -1.0f, -1.0f}), {0, 1}},
     };
-    vector<Triangle> triangles = {
+    vector<uint32_t> triangles = {
         // FRONT
-        {0, 1, 2},
-        {0, 2, 3},
+        0, 1, 2,
+        0, 2, 3,
         // BACK
-        {5, 4, 7},
-        {5, 7, 6},
+        5, 4, 7,
+        5, 7, 6,
         // LEFT
-        {1, 5, 6},
-        {1, 6, 2},
+        1, 5, 6,
+        1, 6, 2,
         // RIGHT
-        {4, 0, 3},
-        {4, 3, 7},
+        4, 0, 3,
+        4, 3, 7,
         // TOP
-        {4, 5, 1},
-        {4, 1, 0},
+        4, 5, 1,
+        4, 1, 0,
         // BOTTOM
-        {3, 2, 6},
-        {3, 6, 7},
+        3, 2, 6,
+        3, 6, 7,
     };
     vector<Texture> textures(0);
 
@@ -135,15 +154,15 @@ Mesh Mesh::Sphere(uint8_t slice, uint8_t stack) {
         }
     }
 
-    vector<Triangle> triangles;
+    vector<uint32_t> triangles;
     for (unsigned int stackIt = 0; stackIt < stack - 1; ++stackIt) {
         for (unsigned int sliceIt = 0; sliceIt < slice - 1; ++sliceIt) {
             unsigned int vertexuv = stackIt + sliceIt * stack;
             unsigned int vertexUv = stackIt + 1 + sliceIt * stack;
             unsigned int vertexuV = stackIt + (sliceIt + 1) * stack;
             unsigned int vertexUV = stackIt + 1 + (sliceIt + 1) * stack;
-            triangles.push_back(Triangle{vertexuv, vertexUv, vertexUV});
-            triangles.push_back(Triangle{vertexuv, vertexUV, vertexuV});
+            triangles.insert(triangles.end(), { vertexuv, vertexUv, vertexUV });
+            triangles.insert(triangles.end(), { vertexuv, vertexUV, vertexuV });
         }
     }
 
@@ -152,12 +171,12 @@ Mesh Mesh::Sphere(uint8_t slice, uint8_t stack) {
 
 Mesh Mesh::Plane(uint16_t width, uint16_t height) {
     vector<Vertex> vertices(width * height);
-    vector<Triangle> triangles;
+    vector<uint32_t> triangles;
     uint32_t index = 0;
 
     for(uint16_t y = 0; y < height; y++) {
         for(uint16_t x = 0; x < width; x++) {
-            vec3 position = {(float)x / (float)width - 0.5f, 0, (float)y / (float)height - 0.5f};
+            vec3 position = {2.0f * x / (float)width - 1.0f, 0, 2.0f * y / (float)height - 1.0f};
             vec3 normal = {0.0f, 1.0f, 0.0f};
             vec2 textCoord = {(float)x / (float)width, (float)y / (float)height};
 
@@ -168,16 +187,16 @@ Mesh Mesh::Plane(uint16_t width, uint16_t height) {
             };
 
             if (x > 0 && y > 0) {
-                triangles.push_back({
-                    (y) * width + x,
-                    (y-1) * width + (x - 1),
-                    (y) * width + (x - 1)
+                triangles.insert(triangles.end(), {
+                    (uint32_t) (y) * width + x,
+                    (uint32_t) (y-1) * width + (x - 1),
+                    (uint32_t) (y) * width + (x - 1)
                 });
 
-                triangles.push_back({
-                    (y) * width + x,
-                    (y-1) * width + (x - 1),
-                    (y-1) * width + x
+                triangles.insert(triangles.end(), {
+                    (uint32_t) (y) * width + x,
+                    (uint32_t) (y-1) * width + (x - 1),
+                    (uint32_t) (y-1) * width + x
                 });
             }
         }

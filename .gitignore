@@ -394,4 +394,4 @@ FodyWeavers.xsd
 /bin
 /.vscode
 
-/cmake-build-debug
+/cmake-build-*

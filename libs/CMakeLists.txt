@@ -1,5 +1,8 @@
 set(GLFW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw)
-add_subdirectory(${GLFW_DIR} build)
+add_subdirectory(${GLFW_DIR})
+
+set(ASSIMP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp)
+add_subdirectory(${ASSIMP_DIR})
 
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 add_library(IMGUI STATIC)

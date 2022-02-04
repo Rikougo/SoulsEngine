@@ -43,6 +43,7 @@ class Event {
         mData[id] = value;
     }
 
+    // TODO handle any cast error
     template <typename T> T GetParam(ParamId id) {
         return std::any_cast<T>(mData[id]);
     }
