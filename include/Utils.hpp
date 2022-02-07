@@ -10,11 +10,22 @@
 
 #include <any>
 #include <unordered_map>
+#include <stdexcept>
+#include <iostream>
+#include <bitset>
 
 #include <glm/glm.hpp>
 
-
 namespace Core {
+
+// ECS
+using Entity = std::uint32_t;
+constexpr Entity MAX_ENTITIES = 5000;
+
+using ComponentType = std::uint8_t;
+constexpr ComponentType  MAX_COMPONENTS = 32;
+
+using Signature = std::bitset<MAX_COMPONENTS>;
 
 // Source: https://gist.github.com/Lee-R/3839813
 constexpr std::uint32_t fnv1a_32(char const *s, std::size_t count) {
@@ -45,7 +56,14 @@ class Event {
 
     // TODO handle any cast error
     template <typename T> T GetParam(ParamId id) {
-        return std::any_cast<T>(mData[id]);
+        try {
+            return std::any_cast<T>(mData[id]);
+        } catch (std::bad_any_cast &e) {
+            std::cerr << "Core::Event::GetParam<T> : Wrong event param type specified." << std::endl;
+            std::cerr << e.what() << std::endl;
+
+            return T{};
+        }
     }
 
     [[nodiscard]] EventId GetType() const { return mType; }

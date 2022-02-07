@@ -17,7 +17,7 @@ using glm::mat4;
 namespace Core::Rendering {
 class Camera {
   public:
-    vec3 mPosition{0.0f, 0.0f, -2.0f};
+    vec3 mPosition{0.0f, 0.0f, -5.0f};
     vec3 mTarget{0.0f, 0.0f, 0.0f};
     vec3 mUp{0.0f, 1.0f, 0.0f};
 

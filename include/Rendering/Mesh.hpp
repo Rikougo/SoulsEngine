@@ -48,9 +48,10 @@ class Mesh {
     bool mInitialized = false;
 
   public:
-    Mesh();
+    Mesh() = default;
     Mesh(vector<Vertex> const &vertices, vector<uint32_t> const &indices,
          vector<Texture> const &textures);
+    Mesh(const Mesh &copied);
     ~Mesh();
 
     void draw(Shader const &shader) const;

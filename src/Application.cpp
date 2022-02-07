@@ -4,18 +4,26 @@
 
 #include "Application.hpp"
 
-Core::Application::Application() {
+using namespace Core;
+
+Application::Application() {
     mEventManager = make_unique<EventManager>();
+    mComponentManager = make_unique<ComponentManager>();
+    mEntityManager = make_unique<EntityManager>();
+    mSystemManager = make_unique<SystemManager>();
 }
 
-void Core::Application::AddEventListener(Core::EventId eventId, function<void(Event &)> const &listener) {
+// --- EVENTS ---
+
+void Application::AddEventListener(
+    EventId eventId, function<void(Event &)> const &listener) {
     mEventManager->AddListener(eventId, listener);
 }
 
-void Core::Application::DispatchEvent(Core::EventId eventId) {
+void Application::DispatchEvent(EventId eventId) {
     mEventManager->Dispatch(eventId);
 }
 
-void Core::Application::DispatchEvent(Core::Event &event) {
+void Application::DispatchEvent(Event &event) {
     mEventManager->Dispatch(event);
 }

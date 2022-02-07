@@ -9,19 +9,6 @@
 
 using namespace Core::Rendering;
 
-Mesh::Mesh() {}
-
-Mesh::~Mesh() {
-    mInitialized = false;
-
-    mVertices.clear();
-    mIndices.clear();
-    mTextures.clear();
-
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-}
-
 Mesh::Mesh(vector<Vertex> const &vertices, vector<uint32_t> const &indices,
            vector<Texture> const &textures) {
     this->mVertices = vertices;
@@ -29,6 +16,30 @@ Mesh::Mesh(vector<Vertex> const &vertices, vector<uint32_t> const &indices,
     this->mTextures = textures;
 
     setupMesh();
+}
+
+Mesh::Mesh(const Mesh &copied) {
+    mIndices = copied.mIndices;
+    mTextures = copied.mTextures;
+    mVertices = copied.mVertices;
+    mInitialized = copied.mInitialized;
+
+    VBO = copied.VBO;
+    VAO = copied.VAO;
+    EBO = copied.EBO;
+}
+
+Mesh::~Mesh() {
+    if (mInitialized) {
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+    }
+
+    mInitialized = false;
+
+    mVertices.clear();
+    mIndices.clear();
+    mTextures.clear();
 }
 
 void Mesh::setupMesh() {
@@ -131,6 +142,7 @@ Mesh Mesh::Cube() {
 
     return Mesh{vertices, triangles, textures};
 }
+
 // TODO Improve Sphere generation code
 Mesh Mesh::Sphere(uint8_t slice, uint8_t stack) {
     vector<Vertex> vertices(slice * stack);

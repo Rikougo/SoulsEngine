@@ -4,15 +4,17 @@
 #include <memory>
 #include <utility>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <Application.hpp>
+#include <Managers/WindowManager.hpp>
 
-#include "Application.hpp"
-#include "Managers/WindowManager.hpp"
-#include "Rendering/Mesh.hpp"
-#include "Rendering/Shader.hpp"
-#include "Rendering/Camera.hpp"
-#include "Rendering/Model.hpp"
+#include <Physics/RigidBody.hpp>
+#include <Physics/Transform.hpp>
+
+#include <Rendering/Mesh.hpp>
+#include <Rendering/Shader.hpp>
+
+#include <Systems/RenderingSystem.hpp>
+#include <Systems/PhysicSystem.hpp>
 
 #define DEBUG_ true
 
@@ -21,52 +23,83 @@ const int width = 800;
 const int height = static_cast<int>(width / aspect_ratio);
 
 using namespace std::chrono;
+using namespace Core;
 
-float Core::Time::DeltaTime = 0.0f;
+float Time::DeltaTime = 0.0f;
 
 int main(int argc, char *argv[]) {
-    std::cout << "[Running on C++ : " << __cplusplus << "]" << std::endl;
-    std::cout << "Please read README.md for any information." << std::endl;
+    try {
+        std::cout << "[Running on C++ : " << __cplusplus << "]" << std::endl;
+        std::cout << "Please read README.md for any information." << std::endl;
 
-    auto app = make_shared<Core::Application>();
-    auto winManager = Core::WindowManager(app, "Elys");
+        auto app = make_shared<Core::Application>();
 
-    auto shader = Core::Rendering::Shader{
-        "./shaders/model_vertex.glsl",
-        "./shaders/model_fragment.glsl"
-    };
-    auto cube = Core::Rendering::Mesh::Cube();
-    float rotation = 0.0f;
-    auto currentType = 0;
+        auto winManager = WindowManager(app, "Elys");
 
-    auto model = Core::Rendering::Model("./assets/model/icosphere.obj");
+        auto shader = Rendering::Shader{"./shaders/model_vertex.glsl",
+                                        "./shaders/model_fragment.glsl"};
 
-    auto camera = Core::Rendering::Camera();
+        app->RegisterComponent<Rendering::Mesh>();
+        app->RegisterComponent<Physics::Transform>();
+        app->RegisterComponent<Physics::RigidBody>();
 
-    // camera movement
-    app->AddEventListener(Core::Events::Game::CAMERA_MOVE, [&camera](Core::Event &event) {
-        auto direction = event.GetParam<glm::vec2>(Core::EventsParams::CAMERA_MOVE_DIRECTION);
+        // ==========================
+        // RENDERING SYSTEM
+        // ==========================
+        auto renderingSystem =
+            app->RegisterSystem<Rendering::RenderingSystem>();
+        Signature renderSignature;
+        renderSignature.set(app->GetComponentType<Physics::Transform>());
+        renderSignature.set(app->GetComponentType<Rendering::Mesh>());
+        app->SetSystemSignature<Rendering::RenderingSystem>(renderSignature);
+        renderingSystem->SetShader(shader);
 
-        camera.move(direction, 3.0f * Core::Time::DeltaTime);
-    });
+        // ==========================
+        // PHYSIC SYSTEM
+        // ==========================
+        auto physicSystem =
+            app->RegisterSystem<Physics::PhysicSystem>();
+        Signature physicSignature;
+        physicSignature.set(app->GetComponentType<Physics::Transform>());
+        physicSignature.set(app->GetComponentType<Physics::RigidBody>());
+        app->SetSystemSignature<Physics::PhysicSystem>(physicSignature);
 
-    auto now = high_resolution_clock::now();
-    auto then = now;
+        auto cubeEntity = app->CreateEntity();
+        auto cubeMesh = Rendering::Mesh::Cube();
+        app->AddComponent(cubeEntity, cubeMesh);
+        app->AddComponent(cubeEntity, Physics::Transform{{1.0f, 0.0f, 0.0f},
+                                                         {0.0f, 0.0f, 0.0f},
+                                                         {0.5f, 0.5f, 0.5f}});
 
-    while (!winManager.ShouldClose()) {
-        then = now;
-        now = high_resolution_clock::now();
+        auto sphereEntity = app->CreateEntity();
+        auto sphereMesh = Rendering::Mesh::Sphere();
+        app->AddComponent(sphereEntity, sphereMesh);
+        app->AddComponent(sphereEntity, Physics::Transform{{-1.0f, 0.0f, 0.0f},
+                                                           {0.0f, 0.0f, 0.0f},
+                                                           {0.5f, 0.5f, 0.5f}});
+        app->AddComponent(sphereEntity, Physics::RigidBody{{0.0f, 0.0f, 0.5f}});
 
-        Core::Time::DeltaTime = duration_cast<duration<float>>(now - then).count();
+        auto now = high_resolution_clock::now();
+        auto then = now;
 
-        glClearColor(0.7, 0.5, 0.6, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        while (!winManager.ShouldClose()) {
+            then = now;
+            now = high_resolution_clock::now();
 
-        winManager.ProcessEvents();
-        winManager.Update();
+            Time::DeltaTime =
+                duration_cast<duration<float>>(now - then).count();
+
+            physicSystem->Update(app);
+            renderingSystem->Update(app);
+
+            winManager.ProcessEvents();
+            winManager.Update();
+        }
+
+        winManager.Shutdown();
+        return EXIT_SUCCESS;
+    } catch (std::runtime_error const &e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
-
-    winManager.Shutdown();
-
-    return EXIT_SUCCESS;
 }

@@ -14,14 +14,21 @@ find_package(OpenGL REQUIRED)
 
 set(
     sources
-    main.cpp
+    src/ECS/System.cpp
+    src/ECS/ComponentArray.cpp
+    src/Managers/SystemManager.cpp
+    src/Managers/ComponentManager.cpp
+    src/Managers/EntityManager.cpp
     src/Managers/WindowManager.cpp
     src/Managers/EventManager.cpp
     src/Rendering/Shader.cpp
     src/Rendering/Mesh.cpp
     src/Rendering/Camera.cpp
     src/Rendering/Model.cpp
+    src/Systems/RenderingSystem.cpp
+    src/Systems/PhysicSystem.cpp
     src/Application.cpp
+    main.cpp
 )
 
 # Copy GLSL files into build directory

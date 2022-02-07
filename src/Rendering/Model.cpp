@@ -7,10 +7,12 @@
 #include <stb_image.h>
 
 using namespace Core::Rendering;
+
 void Model::draw(Shader const &shader) {
     for (auto const &mesh : mMeshes)
         mesh.draw(shader);
 }
+
 void Model::loadModel(string path) {
     Assimp::Importer importer;
     const aiScene *scene =
@@ -39,6 +41,7 @@ void Model::processNode(aiNode *node, const aiScene *scene) {
         processNode(node->mChildren[i], scene);
     }
 }
+
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     vector<Vertex> vertices;
     vector<Triangle> triangles;
@@ -95,6 +98,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
 
     return Mesh{vertices, indices, textures};
 }
+
 vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
                                             string typeName) {
     vector<Texture> textures;
