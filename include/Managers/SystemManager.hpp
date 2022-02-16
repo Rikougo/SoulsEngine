@@ -5,6 +5,8 @@
 #ifndef ELYS_SYSTEMMANAGER_HPP
 #define ELYS_SYSTEMMANAGER_HPP
 
+#include <memory>
+
 #include <ECS/System.hpp>
 #include <Utils.hpp>
 
@@ -36,7 +38,7 @@ class SystemManager {
         mSignatures.insert({typeName, signature});
     }
 
-    void EntityDestroyed(Entity entity) {
+    void EntityDestroyed(EntityID entity) {
         // Erase a destroyed entity from all system lists
         // mEntities is a set so no check needed
         for (auto const &pair : mSystems) {
@@ -46,7 +48,7 @@ class SystemManager {
         }
     }
 
-    void EntitySignatureChanged(Entity entity, Signature entitySignature) {
+    void EntitySignatureChanged(EntityID entity, Signature entitySignature) {
         // Notify each system that an entity's signature changed
         for (auto const &pair : mSystems) {
             auto const &type = pair.first;

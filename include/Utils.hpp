@@ -9,90 +9,96 @@
 #include <cstdlib>
 
 #include <any>
-#include <unordered_map>
-#include <stdexcept>
-#include <iostream>
 #include <bitset>
+#include <iostream>
+#include <stdexcept>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 
 namespace Core {
+    struct KeyInfo {
+        int key;
+        int scancode;
+        int action;
+        int mods;
+    };
 
-// ECS
-using Entity = std::uint32_t;
-constexpr Entity MAX_ENTITIES = 5000;
+    // ECS
+    using EntityID = std::uint32_t;
+    constexpr EntityID MAX_ENTITIES = 5000;
 
-using ComponentType = std::uint8_t;
-constexpr ComponentType  MAX_COMPONENTS = 32;
+    using ComponentType = std::uint8_t;
+    constexpr ComponentType MAX_COMPONENTS = 32;
 
-using Signature = std::bitset<MAX_COMPONENTS>;
+    using Signature = std::bitset<MAX_COMPONENTS>;
 
-// Source: https://gist.github.com/Lee-R/3839813
-constexpr std::uint32_t fnv1a_32(char const *s, std::size_t count) {
-    return ((count ? fnv1a_32(s, count - 1) : 2166136261u) ^ s[count]) *
-           16777619u; // NOLINT (hicpp-signed-bitwise)
-}
-
-constexpr std::uint32_t operator"" _hash(char const *s, std::size_t count) {
-    return fnv1a_32(s, count);
-}
-
-using EventId = std::uint32_t;
-using ParamId = std::uint32_t;
-
-class Event {
-  private:
-    EventId mType{};
-    std::unordered_map<EventId, std::any> mData{};
-
-  public:
-    Event() = delete;
-
-    explicit Event(EventId type) : mType{type} {}
-
-    template <typename T> void SetParam(ParamId id, T value) {
-        mData[id] = value;
+    // Source: https://gist.github.com/Lee-R/3839813
+    constexpr std::uint32_t fnv1a_32(char const *s, std::size_t count) {
+        return ((count ? fnv1a_32(s, count - 1) : 2166136261u) ^ s[count]) *
+               16777619u; // NOLINT (hicpp-signed-bitwise)
     }
 
-    // TODO handle any cast error
-    template <typename T> T GetParam(ParamId id) {
-        try {
-            return std::any_cast<T>(mData[id]);
-        } catch (std::bad_any_cast &e) {
-            std::cerr << "Core::Event::GetParam<T> : Wrong event param type specified." << std::endl;
-            std::cerr << e.what() << std::endl;
+    constexpr std::uint32_t operator"" _hash(char const *s, std::size_t count) {
+        return fnv1a_32(s, count);
+    }
 
-            return T{};
+    using EventId = std::uint32_t;
+    using ParamId = std::uint32_t;
+
+    class Event {
+      private:
+        EventId mType{};
+        std::unordered_map<EventId, std::any> mData{};
+
+      public:
+        Event() = delete;
+
+        explicit Event(EventId type) : mType{type} {}
+
+        template <typename T> void SetParam(ParamId id, T value) {
+            mData[id] = value;
         }
-    }
 
-    [[nodiscard]] EventId GetType() const { return mType; }
-};
+        // TODO handle any cast error
+        template <typename T> T GetParam(ParamId id) {
+            try {
+                return std::any_cast<T>(mData[id]);
+            } catch (std::bad_any_cast &e) {
+                std::cerr << "Core::Event::GetParam<T> : Wrong event param "
+                             "type specified."
+                          << " In " << mType << std::endl;
+                std::cerr << e.what() << std::endl;
 
-class Time {
-  public:
-    static float DeltaTime;
-};
+                return T{};
+            }
+        }
 
-namespace Events {
-namespace Game {
-constexpr EventId SWITCH_MESH = "Events::Game::SWITCH_MESH"_hash;
-constexpr EventId CAMERA_MOVE = "Events::Game::CAMERA_MOVE"_hash;
-}
+        [[nodiscard]] EventId GetType() const { return mType; }
+    };
 
-namespace Window {
-constexpr EventId QUIT = "Events::Window::QUIT"_hash;
-constexpr EventId RESIZE = "Events::Window::RESIZE"_hash;
-constexpr EventId UPDATE = "Events::Window::UPDATE"_hash;
-} // namespace Window
-} // namespace Events
+    class Time {
+      public:
+        static float DeltaTime;
+    };
 
-namespace EventsParams {
-constexpr ParamId RESIZE_WIDTH = "Events::Window::RESIZE_WIDTH"_hash;
-constexpr ParamId RESIZE_HEIGHT = "Events::Window::RESIZE_HEIGHT"_hash;
-constexpr ParamId MESH_TYPE = "Events::Game::MESH_TYPE"_hash;
-constexpr ParamId CAMERA_MOVE_DIRECTION = "Events::Game::CAMERA_MOVE_DIRECTION"_hash;
-} // namespace EventsParams
+    namespace Events {
+        namespace Game { } // namespace Game
+
+        namespace Window {
+            constexpr EventId QUIT = "Events::Window::QUIT"_hash;
+            constexpr EventId RESIZE = "Events::Window::RESIZE"_hash;
+            constexpr EventId UPDATE = "Events::Window::UPDATE"_hash;
+            constexpr EventId KEY_PRESSED = "Events::Window::KEY_PRESSED"_hash;
+            constexpr EventId MOUSE_MOVE = "Events::Window::MOUSE_MOVE"_hash;
+
+            namespace Params {
+                constexpr ParamId NEW_SIZE = "Events::Window::Params::NEW_SIZE"_hash;
+                constexpr ParamId KEY_INFO = "Events::Window::Params::KEY_CODE"_hash;
+                constexpr ParamId MOUSE_POS = "Events::Window::Params::MOUSE_POS"_hash;
+            } // namespace Params
+        } // namespace Window
+    } // namespace Events
 } // namespace Core
 
 #endif // ELYS_UTILS_HPP

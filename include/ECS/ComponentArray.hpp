@@ -11,14 +11,14 @@ namespace Core {
 class IComponentArray {
   public:
     virtual ~IComponentArray() = default;
-    virtual void EntityDestroyed(Entity entity) = 0;
+    virtual void EntityDestroyed(EntityID entity) = 0;
 };
 
 template <typename T> class ComponentArray : public IComponentArray {
   public:
     ComponentArray() : mSize{0} {}
 
-    void InsertData(Entity entity, T component) {
+    void InsertData(EntityID entity, T& component) {
         if (mEntityToIndexMap.find(entity) != mEntityToIndexMap.end())
             throw std::runtime_error("Core::ComponentArray<T>::InsertData : "
                                      "Entity already has data attached.");
@@ -40,7 +40,7 @@ template <typename T> class ComponentArray : public IComponentArray {
      *      - If we remove the C component the array will look like : [A, B, E,
      * D]
      */
-    void RemoveData(Entity entity) {
+    void RemoveData(EntityID entity) {
         if (mEntityToIndexMap.find(entity) != mEntityToIndexMap.end())
             throw std::runtime_error("Core::ComponentArray<T>::RemoveData : "
                                      "Entity not in ComponentArray data.");
@@ -49,7 +49,7 @@ template <typename T> class ComponentArray : public IComponentArray {
         size_t lastIndex = mSize - 1;
         mComponentArray[removedIndex] = mComponentArray[lastIndex];
 
-        Entity lastIndexEntity = mIndexToEntityMap[lastIndex];
+        EntityID lastIndexEntity = mIndexToEntityMap[lastIndex];
         mEntityToIndexMap[lastIndexEntity] = removedIndex;
         mIndexToEntityMap[removedIndex] = lastIndexEntity;
 
@@ -59,7 +59,7 @@ template <typename T> class ComponentArray : public IComponentArray {
         --mSize;
     }
 
-    T &GetData(Entity entity) {
+    T &GetData(EntityID entity) {
         if (mEntityToIndexMap.find(entity) == mEntityToIndexMap.end())
             throw std::runtime_error("Core::ComponentArray<T>::GetData : "
                                      "Entity not in ComponentArray data.");
@@ -67,7 +67,7 @@ template <typename T> class ComponentArray : public IComponentArray {
         return mComponentArray[mEntityToIndexMap[entity]];
     }
 
-    void EntityDestroyed(Entity entity) override {
+    void EntityDestroyed(EntityID entity) override {
         if (mEntityToIndexMap.find(entity) != mEntityToIndexMap.end()) {
             // Remove the entity's component if it existed
             RemoveData(entity);
@@ -76,8 +76,8 @@ template <typename T> class ComponentArray : public IComponentArray {
 
   private:
     std::array<T, MAX_ENTITIES> mComponentArray;
-    std::unordered_map<Entity, size_t> mEntityToIndexMap;
-    std::unordered_map<size_t, Entity> mIndexToEntityMap;
+    std::unordered_map<EntityID, size_t> mEntityToIndexMap;
+    std::unordered_map<size_t, EntityID> mIndexToEntityMap;
 
     size_t mSize;
 };

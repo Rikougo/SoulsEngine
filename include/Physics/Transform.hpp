@@ -17,9 +17,9 @@ constexpr vec3 WORLD_Y_AXIS{0.0f, 1.0f, 0.0f};
 constexpr vec3 WORLD_Z_AXIS{0.0f, 0.0f, 1.0f};
 
 struct Transform {
-    vec3 position;
-    vec3 rotation;
-    vec3 scale;
+    vec3 position{0.0f, 0.0f, 0.0f};
+    vec3 rotation{0.0f, 0.0f, 0.0f};
+    vec3 scale{1.0f, 1.0f, 1.0f};
 
     mat4 ModelMatrix() const {
         mat4 model{1.0f};

@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.18)
+﻿cmake_minimum_required(VERSION 3.16)
 
 project(Elys VERSION 0.1
     DESCRIPTION "Basic OpenGl app built with GLFW and Dear imgui to provide basic 3D representation and a raytracing conversion."
@@ -14,6 +14,7 @@ find_package(OpenGL REQUIRED)
 
 set(
     sources
+    src/Benchmark/ECSBenchmark.cpp
     src/ECS/System.cpp
     src/ECS/ComponentArray.cpp
     src/Managers/SystemManager.cpp
@@ -38,10 +39,12 @@ set(
 add_executable(${CMAKE_PROJECT_NAME} ${sources})
 
 if (MSVC)
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus)
+    target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC /std:c++latest PRIVATE /Zc:__cplusplus)
+else()
+    target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -std:c++latest)
 endif()
 
-target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_20)
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw OpenGL::GL IMGUI Glad assimp)
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC include/ libs/ libs/glfw/include/ libs/glad/include/ libs/glm/ libs/include/)
 

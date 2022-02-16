@@ -17,8 +17,6 @@
 using std::vector;
 using std::string;
 
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
-
 namespace Core::Rendering {
 class Model {
   public:

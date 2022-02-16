@@ -7,14 +7,14 @@
 
 #include <Application.hpp>
 
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <iostream>
 
-#include <stb_image.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -23,22 +23,24 @@
 using namespace std;
 
 namespace Core {
-class WindowManager {
-  private:
-    GLFWwindow *mWindow;
-    shared_ptr<Application> mApplication;
-    bool mInitialized = false;
+    class WindowManager {
+      private:
+        GLFWwindow *mWindow;
+        shared_ptr<Application> mApplication;
+        bool mInitialized = false;
 
-  public:
-    explicit WindowManager(shared_ptr<Application> &app,
-                           string const &title = "Window", string const &icon = "assets/icons/Icon.png", int width = 1280,
-                           int height = 720);
-    void Update();
-    void ProcessEvents();
-    void Shutdown();
+      public:
+        explicit WindowManager(shared_ptr<Application> &app, string const &title = "Window",
+                               string const &icon = "assets/icons/Icon.png", int width = 1280,
+                               int height = 720);
+        void Update();
+        void ProcessEvents();
+        void Shutdown();
 
-    bool ShouldClose();
-};
+        bool ShouldClose();
+
+        GLFWwindow* getWindow() { return mWindow; }
+    };
 } // namespace Core
 
 #endif // ELYS_WINDOW_MANAGER_HPP

@@ -13,7 +13,7 @@
 namespace Core {
 class System {
   public:
-    std::set<Entity> mEntities;
+    std::set<EntityID> mEntities;
 };
 }
 

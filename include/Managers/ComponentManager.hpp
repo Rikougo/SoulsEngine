@@ -5,6 +5,8 @@
 #ifndef ELYS_COMPONENT_MANAGER_HPP
 #define ELYS_COMPONENT_MANAGER_HPP
 
+#include <memory>
+
 #include <ECS/ComponentArray.hpp>
 #include <Utils.hpp>
 
@@ -38,19 +40,19 @@ class ComponentManager {
         return mComponentTypes[typeName];
     }
 
-    template <typename T> void AddComponent(Entity entity, T component) {
+    template <typename T> void AddComponent(EntityID entity, T& component) {
         GetComponentArray<T>()->InsertData(entity, component);
     }
 
-    template <typename T> void RemoveComponent(Entity entity) {
+    template <typename T> void RemoveComponent(EntityID entity) {
         GetComponentArray<T>()->RemoveData(entity);
     }
 
-    template <typename T> T &GetComponent(Entity entity) {
+    template <typename T> T &GetComponent(EntityID entity) {
         return GetComponentArray<T>()->GetData(entity);
     }
 
-    void EntityDestroyed(Entity entity) {
+    void EntityDestroyed(EntityID entity) {
         for (auto const &pair : mComponentArrays) {
             auto const &component = pair.second;
 

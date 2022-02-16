@@ -16,7 +16,7 @@
 
 namespace Core::Rendering {
 class RenderingSystem : public System {
-  private:
+  public:
     Shader mShader;
     Camera mCamera;
 

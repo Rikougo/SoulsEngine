@@ -8,6 +8,7 @@
 #include <array>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -22,8 +23,12 @@ using glm::normalize;
 
 using std::array;
 using std::vector;
+using std::optional;
+
+unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
 
 namespace Core::Rendering {
+
 typedef glm::vec<3, uint32_t> Triangle;
 
 struct Vertex {
@@ -40,11 +45,13 @@ struct Texture {
 
 class Mesh {
   private:
-    vector<Vertex> mVertices;
-    vector<uint32_t> mIndices;
-    vector<Texture> mTextures;
+    vector<Vertex> mVertices{};
+    vector<uint32_t> mIndices{};
+    vector<Texture> mTextures{};
 
-    unsigned int VAO, VBO, EBO;
+    optional<Texture> mHeightMap{};
+
+    unsigned int VAO = 0, VBO = 0, EBO = 0;
     bool mInitialized = false;
 
   public:
@@ -54,14 +61,24 @@ class Mesh {
     Mesh(const Mesh &copied);
     ~Mesh();
 
+    void setupMesh();
+    void updateMesh(vector<Vertex> const &vertices, vector<uint32_t> const &indices);
+    void updateMesh(Mesh const &mesh);
+
     void draw(Shader const &shader) const;
+    void setTexture(const char* path);
+    void setTexture(Texture const &texture);
+
+    void ConfigureHeightMap(const char* path);
+    void ConfigureHeightMap(Texture const &texture);
+    void RemoveHeightMap();
 
     static Mesh Cube();
     static Mesh Sphere(uint8_t slice = 64, uint8_t stack = 64);
     static Mesh Plane(uint16_t width = 32, uint16_t height = 32);
 
   private:
-    void setupMesh();
+    void resetMesh();
 };
 } // namespace Core::Rendering
 

@@ -7,24 +7,24 @@
 using namespace Core;
 
 EntityManager::EntityManager() : mLivingEntity{0} {
-    for (Entity entity = 0; entity < MAX_ENTITIES; ++entity) {
+    for (EntityID entity = 0; entity < MAX_ENTITIES; ++entity) {
         mAvailableEntities.push(entity);
     }
 }
 
-Entity EntityManager::CreateEntity() {
+EntityID EntityManager::CreateEntity() {
     if (mLivingEntity >= MAX_ENTITIES)
         throw std::runtime_error("Core::EntityManager::CreateEntity : Amount "
                                  "of living entities reached the max.");
 
-    Entity id = mAvailableEntities.front();
+    EntityID id = mAvailableEntities.front();
     mAvailableEntities.pop();
     ++mLivingEntity;
 
     return id;
 }
 
-void EntityManager::DestroyEntity(Entity entity) {
+void EntityManager::DestroyEntity(EntityID entity) {
     if (entity >= MAX_ENTITIES)
         throw std::runtime_error(
             "Core::EntityManager::DestroyEntity : Trying to destroy Entity "
@@ -36,7 +36,7 @@ void EntityManager::DestroyEntity(Entity entity) {
     --mLivingEntity;
 }
 
-void EntityManager::SetSignature(Entity entity, Signature signature) {
+void EntityManager::SetSignature(EntityID entity, Signature signature) {
     if (entity >= MAX_ENTITIES)
         throw std::runtime_error("Core::EntityManager::DestroyEntity : Trying "
                                  "to edit signature of an Entity "
@@ -45,7 +45,7 @@ void EntityManager::SetSignature(Entity entity, Signature signature) {
     mSignatures[entity] = signature;
 }
 
-Signature EntityManager::GetSignature(Entity entity) const {
+Signature EntityManager::GetSignature(EntityID entity) const {
     if (entity >= MAX_ENTITIES)
         throw std::runtime_error("Core::EntityManager::DestroyEntity : Trying "
                                  "to get signature of an Entity "

@@ -14,18 +14,18 @@ namespace Core {
 
 class EntityManager {
   private:
-    std::queue<Entity> mAvailableEntities{};
+    std::queue<EntityID> mAvailableEntities{};
     std::array<Signature, MAX_ENTITIES> mSignatures{};
     uint32_t mLivingEntity;
   public:
     EntityManager();
 
-    Entity CreateEntity();
+    EntityID CreateEntity();
 
-    void DestroyEntity(Entity entity);
+    void DestroyEntity(EntityID entity);
 
-    void SetSignature(Entity entity, Signature signature);
-    [[nodiscard]] Signature GetSignature(Entity entity) const;
+    void SetSignature(EntityID entity, Signature signature);
+    [[nodiscard]] Signature GetSignature(EntityID entity) const;
 };
 }
 

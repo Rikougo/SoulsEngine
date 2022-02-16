@@ -42,9 +42,10 @@ Core::WindowManager::WindowManager(shared_ptr<Application> &app,
             if (wm) {
                 shared_ptr<Application> app = wm->mApplication;
 
+                glm::ivec2 size = {width, height};
+
                 Event event{Events::Window::RESIZE};
-                event.SetParam(EventsParams::RESIZE_WIDTH, width);
-                event.SetParam(EventsParams::RESIZE_HEIGHT, height);
+                event.SetParam(Events::Window::Params::NEW_SIZE, size);
                 app->DispatchEvent(event);
 
                 glViewport(0, 0, width, height);
@@ -54,6 +55,43 @@ Core::WindowManager::WindowManager(shared_ptr<Application> &app,
                     "window manager from callback.");
             }
         });
+
+    glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        auto *wm = static_cast<WindowManager *>(glfwGetWindowUserPointer(window));
+
+        if (wm) {
+            auto app = wm->mApplication;
+
+            auto keyInfo = Core::KeyInfo{
+                .key = key,
+                .scancode = scancode,
+                .action = action,
+                .mods = mods
+            };
+
+            Event event{Events::Window::KEY_PRESSED};
+            event.SetParam(Events::Window::Params::KEY_INFO, keyInfo);
+            app->DispatchEvent(event);
+        } else {
+            throw std::runtime_error("Core::WindowManager::KeyCallback -> Can't resolve window manager from callback.");
+        }
+    });
+
+    glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xPos, double yPos) {
+        auto *wm = static_cast<WindowManager *>(glfwGetWindowUserPointer(window));
+
+        if (wm) {
+            auto app = wm->mApplication;
+
+            auto mousePos = glm::vec2{xPos, yPos};
+
+            Event event{Events::Window::MOUSE_MOVE};
+            event.SetParam(Events::Window::Params::MOUSE_POS, mousePos);
+            app->DispatchEvent(event);
+        } else {
+            throw std::runtime_error("Core::WindowManager::CursorPosCallback -> Can't resolve window manager from callback.");
+        }
+    });
 
     // TODO Add anti-aliasing
     /*glfwWindowHint(GLFW_SAMPLES, 4);
@@ -67,50 +105,7 @@ Core::WindowManager::WindowManager(shared_ptr<Application> &app,
 }
 void Core::WindowManager::Update() { glfwSwapBuffers(mWindow); }
 
-void Core::WindowManager::ProcessEvents() {
-    glfwPollEvents(); 
-
-    if (glfwGetKey(mWindow, GLFW_KEY_F) == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-    if (glfwGetKey(mWindow, GLFW_KEY_Z) == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
-
-    if (glfwGetKey(mWindow, GLFW_KEY_KP_0) == GLFW_PRESS) {
-        Event event{Core::Events::Game::SWITCH_MESH};
-        event.SetParam(Core::EventsParams::MESH_TYPE, 0);
-        mApplication->DispatchEvent(event);
-    }
-    if (glfwGetKey(mWindow, GLFW_KEY_KP_1) == GLFW_PRESS) {
-        Event event{Core::Events::Game::SWITCH_MESH};
-        event.SetParam(Core::EventsParams::MESH_TYPE, 1);
-        mApplication->DispatchEvent(event);
-    }
-    if (glfwGetKey(mWindow, GLFW_KEY_KP_2) == GLFW_PRESS) {
-        Event event{Core::Events::Game::SWITCH_MESH};
-        event.SetParam(Core::EventsParams::MESH_TYPE, 2);
-        mApplication->DispatchEvent(event);
-    }
-
-    glm::vec2 cameraDirection{0.0f, 0.0f};
-    if (glfwGetKey(mWindow, GLFW_KEY_W) == GLFW_PRESS)
-        cameraDirection.y += 1;
-    if (glfwGetKey(mWindow, GLFW_KEY_S) == GLFW_PRESS)
-        cameraDirection.y -= 1;
-    if (glfwGetKey(mWindow, GLFW_KEY_A) == GLFW_PRESS)
-        cameraDirection.x += 1;
-    if (glfwGetKey(mWindow, GLFW_KEY_D) == GLFW_PRESS)
-        cameraDirection.x -= 1;
-
-    if (glm::length(cameraDirection) > 0) {
-        cameraDirection = glm::normalize(cameraDirection);
-
-        Event event{Core::Events::Game::CAMERA_MOVE};
-        event.SetParam(Core::EventsParams::CAMERA_MOVE_DIRECTION, cameraDirection);
-        mApplication->DispatchEvent(event);
-    }
-}
+void Core::WindowManager::ProcessEvents() { glfwPollEvents(); }
 
 void Core::WindowManager::Shutdown() {
     glfwDestroyWindow(mWindow);

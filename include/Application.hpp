@@ -32,9 +32,9 @@ class Application {
     void DispatchEvent(Event &event);
 
     // Entity methods
-    Entity CreateEntity() { return mEntityManager->CreateEntity(); }
+    EntityID CreateEntity() { return mEntityManager->CreateEntity(); }
 
-    void DestroyEntity(Entity entity) {
+    void DestroyEntity(EntityID entity) {
         mEntityManager->DestroyEntity(entity);
 
         mComponentManager->EntityDestroyed(entity);
@@ -47,7 +47,7 @@ class Application {
         mComponentManager->RegisterComponent<T>();
     }
 
-    template <typename T> void AddComponent(Entity entity, T component) {
+    template <typename T> void AddComponent(EntityID entity, T& component) {
         mComponentManager->AddComponent<T>(entity, component);
 
         auto signature = mEntityManager->GetSignature(entity);
@@ -57,7 +57,7 @@ class Application {
         mSystemManager->EntitySignatureChanged(entity, signature);
     }
 
-    template <typename T> void RemoveComponent(Entity entity) {
+    template <typename T> void RemoveComponent(EntityID entity) {
         mComponentManager->RemoveComponent<T>(entity);
 
         auto signature = mEntityManager->GetSignature(entity);
@@ -67,7 +67,7 @@ class Application {
         mSystemManager->EntitySignatureChanged(entity, signature);
     }
 
-    template <typename T> T &GetComponent(Entity entity) {
+    template <typename T> T &GetComponent(EntityID entity) {
         return mComponentManager->GetComponent<T>(entity);
     }
 
