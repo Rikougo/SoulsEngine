@@ -20,12 +20,6 @@
 #include <Systems/PhysicSystem.hpp>
 #include <Systems/RenderingSystem.hpp>
 
-#define DEBUG_ true
-
-constexpr auto aspect_ratio = 16.0f / 9.0f;
-constexpr int width = 800;
-constexpr int height = static_cast<int>(width / aspect_ratio);
-
 using namespace std::chrono;
 using namespace Core;
 
@@ -102,7 +96,7 @@ int main(int argc, char *argv[]) {
             if (glm::length(cameraDirection) > 0) {
                 cameraDirection = glm::normalize(cameraDirection);
 
-                renderingSystem->mCamera.move(cameraDirection, centered ? 5.0f : 2.5f);
+                renderingSystem->mCamera.Move(cameraDirection, centered ? 5.0f : 2.5f);
             }
 
             if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
@@ -159,7 +153,6 @@ int main(int argc, char *argv[]) {
 
             winManager.ProcessEvents();
             winManager.Update();
-
         }
 
         winManager.Shutdown();

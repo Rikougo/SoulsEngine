@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_RENDERING_SYSTEM_HPP
-#define ELYS_RENDERING_SYSTEM_HPP
+#ifndef ELYS_SYSTEMS_RENDERING_SYSTEM_HPP
+#define ELYS_SYSTEMS_RENDERING_SYSTEM_HPP
 
 #include <memory>
 
@@ -28,4 +28,4 @@ class RenderingSystem : public System {
 };
 }
 
-#endif // ELYS_RENDERING_SYSTEM_HPP
+#endif // ELYS_SYSTEMS_RENDERING_SYSTEM_HPP

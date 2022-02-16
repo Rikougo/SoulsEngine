@@ -20,18 +20,18 @@ using std::string;
 namespace Core::Rendering {
 class Model {
   public:
-    explicit Model(const char* path) { loadModel(path); }
-    void draw(Shader const &shader);
+    explicit Model(const char* path) { LoadModel(path); }
+    void Draw(Shader const &shader);
 
   private:
     vector<Mesh> mMeshes;
     string mDirectory;
 
-    void loadModel(string path);
-    void processNode(aiNode *node, const aiScene *scene);
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+    void LoadModel(string path);
+    void ProcessNode(aiNode *node, const aiScene *scene);
+    Mesh ProcessMesh(aiMesh *mesh, const aiScene *scene);
 
-    vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
+    vector<Texture> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
 };
 }
 

@@ -53,12 +53,12 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath,
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vShaderCode, NULL);
     glCompileShader(vertex);
-    checkCompileErrors(vertex, "VERTEX");
+    CheckCompileErrors(vertex, "VERTEX");
     // fragment Shader
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fShaderCode, NULL);
     glCompileShader(fragment);
-    checkCompileErrors(fragment, "FRAGMENT");
+    CheckCompileErrors(fragment, "FRAGMENT");
     // if geometry shader is given, compile geometry shader
     unsigned int geometry;
     if (geometryPath != nullptr) {
@@ -66,16 +66,16 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath,
         geometry = glCreateShader(GL_GEOMETRY_SHADER);
         glShaderSource(geometry, 1, &gShaderCode, NULL);
         glCompileShader(geometry);
-        checkCompileErrors(geometry, "GEOMETRY");
+        CheckCompileErrors(geometry, "GEOMETRY");
     }
     // shader Program
-    ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    glAttachShader(ID, fragment);
+    mID = glCreateProgram();
+    glAttachShader(mID, vertex);
+    glAttachShader(mID, fragment);
     if (geometryPath != nullptr)
-        glAttachShader(ID, geometry);
-    glLinkProgram(ID);
-    checkCompileErrors(ID, "PROGRAM");
+        glAttachShader(mID, geometry);
+    glLinkProgram(mID);
+    CheckCompileErrors(mID, "PROGRAM");
     // delete the shaders as they're linked into our program now and no longer
     // necessery
     glDeleteShader(vertex);
@@ -83,7 +83,7 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath,
     if (geometryPath != nullptr)
         glDeleteShader(geometry);
 }
-void Shader::checkCompileErrors(GLuint shader, std::string type) {
+void Shader::CheckCompileErrors(GLuint shader, std::string type) {
     GLint success;
     GLchar infoLog[1024];
     if (type != "PROGRAM") {

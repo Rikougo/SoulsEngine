@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_TRANSFORM_HPP
-#define ELYS_TRANSFORM_HPP
+#ifndef ELYS_PHYSICS_TRANSFORM_HPP
+#define ELYS_PHYSICS_TRANSFORM_HPP
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -37,4 +37,4 @@ struct Transform {
 };
 } // namespace Core::Physics
 
-#endif // ELYS_TRANSFORM_HPP
+#endif // ELYS_PHYSICS_TRANSFORM_HPP

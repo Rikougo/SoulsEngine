@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 out vec4 FragColor;
 
 in vec4 worldSpaceCoord;
@@ -31,13 +31,5 @@ void main()
             vec4 sMix = mix(texture(texture_diffuse3, tCoord), texture(texture_diffuse2, tCoord), (heightValue * lowCoef) * (heightValue * lowCoef) );
             FragColor = sMix;
         }
-/*        float heightValue = texture(heightmap, TexCoords).r;
-        if (heightValue > 0.8) {
-            FragColor = texture(texture_diffuse1, TexCoords);
-        } else if (heightValue > 0.5) {
-            FragColor = texture(texture_diffuse2, TexCoords);
-        } else {
-            FragColor = texture(texture_diffuse3, TexCoords);
-        }*/
     }
 }

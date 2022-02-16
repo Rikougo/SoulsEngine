@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_PHYSIC_SYSTEM_HPP
-#define ELYS_PHYSIC_SYSTEM_HPP
+#ifndef ELYS_SYSTEMS_PHYSIC_SYSTEM_HPP
+#define ELYS_SYSTEMS_PHYSIC_SYSTEM_HPP
 
 #include <ECS/System.hpp>
 #include <Physics/Transform.hpp>
@@ -18,4 +18,4 @@ class PhysicSystem : public System {
 };
 }
 
-#endif // ELYS_PHYSIC_SYSTEM_HPP
+#endif // ELYS_SYSTEMS_PHYSIC_SYSTEM_HPP

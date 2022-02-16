@@ -30,8 +30,8 @@ void Core::Benchmark::MaxCubeBenchmark(std::shared_ptr<Core::Application> &app) 
                                                .path = texturesPath[i]};
 
         meshes[i] = Core::Rendering::Mesh::Cube();
-        meshes[i].setupMesh();
-        meshes[i].setTexture(textures[i]);
+        meshes[i].SetupMesh();
+        meshes[i].SetTexture(textures[i]);
     }
 
     for (uint32_t i = 0; i < Core::MAX_ENTITIES; i++) {
@@ -61,16 +61,16 @@ void Core::Benchmark::HeightMapBenchmark(std::shared_ptr<Core::Application> &app
     int resolution = 2;
 
     auto mesh = Core::Rendering::Mesh::Plane(resolution, resolution);
-    mesh.setupMesh();
+    mesh.SetupMesh();
     auto transform = Core::Physics::Transform{.position = {0.0f, 0.0f, 0.0f},
                                               .rotation = {0.0f, 0.0f, 0.0f},
                                               .scale = {100.0f, 100.0f, 100.0f}};
 
     mesh.ConfigureHeightMap("assets/textures/Heightmap_Rocky.png");
 
-    mesh.setTexture("assets/textures/snowrocks.png");
-    mesh.setTexture("assets/textures/rock.png");
-    mesh.setTexture("assets/textures/grass.png");
+    mesh.SetTexture("assets/textures/snowrocks.png");
+    mesh.SetTexture("assets/textures/rock.png");
+    mesh.SetTexture("assets/textures/grass.png");
 
     app->AddComponent(planeEntity, mesh);
     app->AddComponent(planeEntity, transform);
@@ -110,7 +110,7 @@ void Core::Benchmark::HeightMapBenchmark(std::shared_ptr<Core::Application> &app
 
         if (changed) {
             auto &mesh = app->GetComponent<Core::Rendering::Mesh>(planeEntity);
-            mesh.updateMesh(Core::Rendering::Mesh::Plane(resolution, resolution));
+            mesh.UpdateMesh(Core::Rendering::Mesh::Plane(resolution, resolution));
         }
     });
 }

@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_SYSTEM_HPP
-#define ELYS_SYSTEM_HPP
+#ifndef ELYS_ECS_SYSTEM_HPP
+#define ELYS_ECS_SYSTEM_HPP
 
 #include <set>
 
@@ -17,4 +17,4 @@ class System {
 };
 }
 
-#endif // ELYS_SYSTEM_HPP
+#endif // ELYS_ECS_SYSTEM_HPP

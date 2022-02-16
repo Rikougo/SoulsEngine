@@ -2,8 +2,8 @@
 // Created by Sam on 1/30/2022.
 //
 
-#ifndef ELYS_CAMERA_HPP
-#define ELYS_CAMERA_HPP
+#ifndef ELYS_RENDERING_CAMERA_HPP
+#define ELYS_RENDERING_CAMERA_HPP
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -31,14 +31,14 @@ class Camera {
 
     Camera() = default;
 
-    void apply(Shader &shader) const;
+    void Apply(Shader &shader) const;
 
-    void move(vec2 direction, float speed);
+    void Move(vec2 direction, float speed);
 
-    void SetAspect(float ratio_aspect) { mRatioAspect = ratio_aspect; }
-    void SetFree(bool isFree) { mFree = isFree; }
-    void SetFront(vec3 front) { mFront = front; }
+    inline void SetAspect(float ratio_aspect) { mRatioAspect = ratio_aspect; }
+    inline void SetFree(bool isFree) { mFree = isFree; }
+    inline void SetFront(vec3 front) { mFront = front; }
 };
 }
 
-#endif // ELYS_CAMERA_HPP
+#endif // ELYS_RENDERING_CAMERA_HPP

@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_COMPONENT_ARRAY_HPP
-#define ELYS_COMPONENT_ARRAY_HPP
+#ifndef ELYS_ECS_COMPONENT_ARRAY_HPP
+#define ELYS_ECS_COMPONENT_ARRAY_HPP
 
 #include <Utils.hpp>
 
@@ -37,8 +37,7 @@ template <typename T> class ComponentArray : public IComponentArray {
      *
      * Examples :
      *      - A component array like this : [A, B, C, D, E]
-     *      - If we remove the C component the array will look like : [A, B, E,
-     * D]
+     *      - If we remove the C component the array will look like : [A, B, E, D]
      */
     void RemoveData(EntityID entity) {
         if (mEntityToIndexMap.find(entity) != mEntityToIndexMap.end())
@@ -83,4 +82,4 @@ template <typename T> class ComponentArray : public IComponentArray {
 };
 } // namespace Core
 
-#endif // ELYS_COMPONENT_ARRAY_HPP
+#endif // ELYS_ECS_COMPONENT_ARRAY_HPP

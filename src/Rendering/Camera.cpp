@@ -6,15 +6,15 @@
 
 using namespace Core::Rendering;
 
-void Camera::apply(Shader &shader) const {
+void Camera::Apply(Shader &shader) const {
     auto projection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
     auto view = mFree ? glm::lookAt(mPosition, mPosition + mFront, mUp) : glm::lookAt(mPosition, mTarget, mUp);
 
-    shader.setMat4("projection", projection);
-    shader.setMat4("view", view);
+    shader.SetMat4("projection", projection);
+    shader.SetMat4("view", view);
 }
 
-void Camera::move(vec2 direction, float speed) {
+void Camera::Move(vec2 direction, float speed) {
     if (!mFree) {
         auto cameraDirection = glm::normalize(mTarget - mPosition); // used for zoom
         auto moveRight = glm::cross(mUp, cameraDirection);          // used for side moves

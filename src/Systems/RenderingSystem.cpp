@@ -19,10 +19,10 @@ void RenderingSystem::Update(std::shared_ptr<Application> &app) {
             auto const &mesh = app->GetComponent<Mesh>(entity);
             auto const &transform = app->GetComponent<Physics::Transform>(entity);
 
-            mCamera.apply(mShader);
-            mShader.setMat4("model", transform.ModelMatrix());
+            mCamera.Apply(mShader);
+            mShader.SetMat4("model", transform.ModelMatrix());
 
-            mesh.draw(mShader);
+            mesh.Draw(mShader);
         } catch (std::runtime_error const &e) {
             std::cerr << "Core::Rendering::RenderingSystem::Update : "
                       << e.what() << std::endl;

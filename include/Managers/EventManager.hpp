@@ -2,8 +2,8 @@
 // Created by Sam on 12/10/2021.
 //
 
-#ifndef ELYS_EVENT_MANAGER_HPP
-#define ELYS_EVENT_MANAGER_HPP
+#ifndef ELYS_MANAGERS_EVENT_MANAGER_HPP
+#define ELYS_MANAGERS_EVENT_MANAGER_HPP
 
 #include "Utils.hpp"
 
@@ -26,4 +26,4 @@ class EventManager {
 };
 } // namespace Core
 
-#endif // ELYS_EVENT_MANAGER_HPP
+#endif // ELYS_MANAGERS_EVENT_MANAGER_HPP

@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_SYSTEMMANAGER_HPP
-#define ELYS_SYSTEMMANAGER_HPP
+#ifndef ELYS_MANAGERS_SYSTEM_MANAGER_HPP
+#define ELYS_MANAGERS_SYSTEM_MANAGER_HPP
 
 #include <memory>
 
@@ -72,4 +72,4 @@ class SystemManager {
 };
 } // namespace Core
 
-#endif // ELYS_SYSTEMMANAGER_HPP
+#endif // ELYS_MANAGERS_SYSTEM_MANAGER_HPP

@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_COMPONENT_MANAGER_HPP
-#define ELYS_COMPONENT_MANAGER_HPP
+#ifndef ELYS_MANAGERS_COMPONENT_MANAGER_HPP
+#define ELYS_MANAGERS_COMPONENT_MANAGER_HPP
 
 #include <memory>
 
@@ -82,4 +82,4 @@ class ComponentManager {
 };
 } // namespace Core
 
-#endif // ELYS_COMPONENT_MANAGER_HPP
+#endif // ELYS_MANAGERS_COMPONENT_MANAGER_HPP

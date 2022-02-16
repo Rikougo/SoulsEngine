@@ -2,8 +2,8 @@
 // Created by Sam on 2/14/2022.
 //
 
-#ifndef ELYS_ECS_BENCHMARK_HPP
-#define ELYS_ECS_BENCHMARK_HPP
+#ifndef ELYS_BENCHMARK_ECS_BENCHMARK_HPP
+#define ELYS_BENCHMARK_ECS_BENCHMARK_HPP
 
 #include <memory>
 #include <random>
@@ -29,4 +29,4 @@ namespace Core::Benchmark {
     void HeightMapBenchmark(std::shared_ptr<Application> &app, Core::WindowManager winManager);
 }
 
-#endif // ELYS_ECS_BENCHMARK_HPP
+#endif // ELYS_BENCHMARK_ECS_BENCHMARK_HPP

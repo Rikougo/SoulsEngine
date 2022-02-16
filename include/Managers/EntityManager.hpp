@@ -2,8 +2,8 @@
 // Created by Sam on 2/6/2022.
 //
 
-#ifndef ELYS_ENTITY_MANAGER_HPP
-#define ELYS_ENTITY_MANAGER_HPP
+#ifndef ELYS_MANAGERS_ENTITY_MANAGER_HPP
+#define ELYS_MANAGERS_ENTITY_MANAGER_HPP
 
 #include <array>
 #include <queue>
@@ -29,4 +29,4 @@ class EntityManager {
 };
 }
 
-#endif // ELYS_ENTITY_MANAGER_HPP
+#endif // ELYS_MANAGERS_ENTITY_MANAGER_HPP

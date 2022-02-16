@@ -6,12 +6,12 @@
 
 using namespace Core::Rendering;
 
-void Model::draw(Shader const &shader) {
+void Model::Draw(Shader const &shader) {
     for (auto const &mesh : mMeshes)
-        mesh.draw(shader);
+        mesh.Draw(shader);
 }
 
-void Model::loadModel(string path) {
+void Model::LoadModel(string path) {
     Assimp::Importer importer;
     const aiScene *scene =
         importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -23,24 +23,24 @@ void Model::loadModel(string path) {
     }
     mDirectory = path.substr(0, path.find_last_of('/'));
 
-    processNode(scene->mRootNode, scene);
+    ProcessNode(scene->mRootNode, scene);
 }
 
-void Model::processNode(aiNode *node, const aiScene *scene) {
+void Model::ProcessNode(aiNode *node, const aiScene *scene) {
     // process all the node's meshes (if any)
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-        mMeshes.push_back(processMesh(mesh, scene));
+        mMeshes.push_back(ProcessMesh(mesh, scene));
     }
     // then do the same for each of its children
     for(unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene);
+        ProcessNode(node->mChildren[i], scene);
     }
 }
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
+Mesh Model::ProcessMesh(aiMesh *mesh, const aiScene *scene) {
     vector<Vertex> vertices;
     vector<Triangle> triangles;
     vector<Texture> textures;
@@ -88,16 +88,18 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     if(mesh->mMaterialIndex >= 0)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-        vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        vector<Texture> diffuseMaps =
+            LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-        vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        vector<Texture> specularMaps =
+            LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
 
     return Mesh{vertices, indices, textures};
 }
 
-vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
+vector<Texture> Model::LoadMaterialTextures(aiMaterial *mat, aiTextureType type,
                                             string typeName) {
     vector<Texture> textures;
     for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)

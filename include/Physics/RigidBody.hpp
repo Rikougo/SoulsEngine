@@ -2,8 +2,8 @@
 // Created by Sam on 2/7/2022.
 //
 
-#ifndef ELYS_RIGID_BODY_HPP
-#define ELYS_RIGID_BODY_HPP
+#ifndef ELYS_PHYSICS_RIGID_BODY_HPP
+#define ELYS_PHYSICS_RIGID_BODY_HPP
 
 #include <glm/glm.hpp>
 
@@ -15,4 +15,4 @@ struct RigidBody {
 };
 }
 
-#endif // ELYS_RIGID_BODY_HPP
+#endif // ELYS_PHYSICS_RIGID_BODY_HPP

@@ -2,8 +2,8 @@
 // Created by Sam on 12/10/2021.
 //
 
-#ifndef ELYS_WINDOW_MANAGER_HPP
-#define ELYS_WINDOW_MANAGER_HPP
+#ifndef ELYS_MANAGERS_WINDOW_MANAGER_HPP
+#define ELYS_MANAGERS_WINDOW_MANAGER_HPP
 
 #include <Application.hpp>
 
@@ -43,4 +43,4 @@ namespace Core {
     };
 } // namespace Core
 
-#endif // ELYS_WINDOW_MANAGER_HPP
+#endif // ELYS_MANAGERS_WINDOW_MANAGER_HPP

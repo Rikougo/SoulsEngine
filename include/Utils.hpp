@@ -56,9 +56,7 @@ namespace Core {
 
         explicit Event(EventId type) : mType{type} {}
 
-        template <typename T> void SetParam(ParamId id, T value) {
-            mData[id] = value;
-        }
+        template <typename T> void SetParam(ParamId id, T value) { mData[id] = value; }
 
         // TODO handle any cast error
         template <typename T> T GetParam(ParamId id) {
@@ -83,7 +81,7 @@ namespace Core {
     };
 
     namespace Events {
-        namespace Game { } // namespace Game
+        namespace Game {} // namespace Game
 
         namespace Window {
             constexpr EventId QUIT = "Events::Window::QUIT"_hash;
@@ -97,8 +95,8 @@ namespace Core {
                 constexpr ParamId KEY_INFO = "Events::Window::Params::KEY_CODE"_hash;
                 constexpr ParamId MOUSE_POS = "Events::Window::Params::MOUSE_POS"_hash;
             } // namespace Params
-        } // namespace Window
-    } // namespace Events
+        }     // namespace Window
+    }         // namespace Events
 } // namespace Core
 
 #endif // ELYS_UTILS_HPP

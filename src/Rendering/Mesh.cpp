@@ -23,27 +23,27 @@ Mesh::Mesh(const Mesh &copied) {
     mVertices = copied.mVertices;
     mHeightMap = copied.mHeightMap;
 
-    setupMesh();
+    SetupMesh();
 }
 
 Mesh::~Mesh() {
-    resetMesh();
+    ResetMesh();
 
     mTextures.clear();
 }
 
-void Mesh::setupMesh() {
+void Mesh::SetupMesh() {
     std::cout << "Init mesh" << std::endl;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &mVAO);
+    glGenBuffers(1, &mVBO);
+    glGenBuffers(1, &mEBO);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindVertexArray(mVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
 
     glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(uint32_t), &mIndices[0],
                  GL_STATIC_DRAW);
 
@@ -64,10 +64,10 @@ void Mesh::setupMesh() {
     mInitialized = true;
 }
 
-void Mesh::resetMesh() {
+void Mesh::ResetMesh() {
     if (mInitialized) {
-        glDeleteBuffers(1, &VBO);
-        glDeleteBuffers(1, &EBO);
+        glDeleteBuffers(1, &mVBO);
+        glDeleteBuffers(1, &mEBO);
     }
 
     mInitialized = false;
@@ -76,45 +76,43 @@ void Mesh::resetMesh() {
     mIndices.clear();
 }
 
-void Mesh::updateMesh(const vector<Vertex> &vertices, const vector<uint32_t> &indices) {
+void Mesh::UpdateMesh(const vector<Vertex> &vertices, const vector<uint32_t> &indices) {
     mVertices = vertices;
     mIndices = indices;
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    if (mInitialized) {
+        glBindVertexArray(mVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
 
-    glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(uint32_t), &mIndices[0],
-                 GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(uint32_t), &mIndices[0],
+                     GL_STATIC_DRAW);
 
-    // vertex positions
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
-    // vertex normals
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, normal));
-    // vertex texture coords
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, texCoord));
+        // vertex positions
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+        // vertex normals
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              (void *)offsetof(Vertex, normal));
+        // vertex texture coords
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              (void *)offsetof(Vertex, texCoord));
 
-    glBindVertexArray(0);
+        glBindVertexArray(0);
+    }
 }
 
-void Mesh::updateMesh(const Mesh &mesh) {
-    updateMesh(mesh.mVertices, mesh.mIndices);
-}
-
-void Mesh::draw(Shader const &shader) const {
+void Mesh::Draw(Shader const &shader) const {
     if (!mInitialized) {
         std::cerr << "RENDERING::MESH::DRAW_UNINITIALIZED_ERROR" << std::endl;
         throw std::runtime_error("RENDERING::MESH::DRAW_UNINITIALIZED_ERROR");
     }
 
-    shader.use();
+    shader.Use();
 
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -128,24 +126,24 @@ void Mesh::draw(Shader const &shader) const {
         else if (name == "texture_specular")
             number = std::to_string(specularNr++);
 
-        shader.setInt(name + number, i);
+        shader.SetInt(name + number, i);
         glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
     }
 
-    shader.setBool("useHeightmap", mHeightMap.has_value());
+    shader.SetBool("useHeightmap", mHeightMap.has_value());
     if (mHeightMap.has_value()) {
         glActiveTexture(GL_TEXTURE0 + mTextures.size());
-        shader.setInt("heightmap", mTextures.size());
+        shader.SetInt("heightmap", mTextures.size());
         glBindTexture(GL_TEXTURE_2D, mHeightMap->id);
     }
 
     // draw mesh
-    glBindVertexArray(VAO);
+    glBindVertexArray(mVAO);
     glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
-void Mesh::setTexture(const char *path) {
+void Mesh::SetTexture(const char *path) {
     Texture texture;
     texture.id = TextureFromFile(path, "./");
     texture.type = "texture_diffuse";
@@ -154,7 +152,7 @@ void Mesh::setTexture(const char *path) {
     mTextures.push_back(texture);
 }
 
-void Mesh::setTexture(Texture const &texture) { mTextures.push_back(texture); }
+void Mesh::SetTexture(Texture const &texture) { mTextures.push_back(texture); }
 
 void Mesh::ConfigureHeightMap(const char *path) {
     Texture texture;
@@ -281,13 +279,6 @@ Mesh Mesh::Sphere(uint8_t slice, uint8_t stack) {
     return Mesh{vertices, triangles, {}};
 }
 
-/**
- * Generate unit plane with a definition of width * height (which are uint16_t so the maximum amount
- * of vertices is 2^32)
- * @param width how many vertices on the x axis
- * @param height how many vertices on the z axis
- * @return Corresponding Mesh
- */
 Mesh Mesh::Plane(uint16_t width, uint16_t height) {
     vector<Vertex> vertices((width+1) * (height+1));
     vector<uint32_t> triangles;
