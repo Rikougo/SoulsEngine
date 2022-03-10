@@ -4,26 +4,46 @@
 
 #include "Application.hpp"
 
-using namespace Core;
+using namespace Elys;
 
-Application::Application() {
-    mEventManager = make_unique<EventManager>();
-    mComponentManager = make_unique<ComponentManager>();
-    mEntityManager = make_unique<EntityManager>();
-    mSystemManager = make_unique<SystemManager>();
+Application::Application(const std::string &name) {
+    mWindow = Window::Create();
+    mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 }
 
-// --- EVENTS ---
+Application::~Application() { }
 
-void Application::AddEventListener(
-    EventId eventId, function<void(Event &)> const &listener) {
-    mEventManager->AddListener(eventId, listener);
+void Application::Run() {
+    while(mRunning) {
+        float time = (float)glfwGetTime();
+        float deltaTime = time - mLastFrameTime;
+        mLastFrameTime = time;
+
+        if (!mMinimized) {
+            // serious shit here
+        }
+        mWindow->OnUpdate();
+    }
 }
 
-void Application::DispatchEvent(EventId eventId) {
-    mEventManager->Dispatch(eventId);
-}
+void Application::OnEvent(Event& event) {
+    ELYS_CORE_INFO("{0}", event.ToString());
 
-void Application::DispatchEvent(Event &event) {
-    mEventManager->Dispatch(event);
+    EventDispatcher dispatcher(event);
+    dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+    dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+}
+bool Application::OnWindowClose(WindowCloseEvent &e) {
+    mRunning = false;
+    return true;
+}
+bool Application::OnWindowResize(WindowResizeEvent &e) {
+    if (e.GetWidth() == 0 || e.GetHeight() == 0) {
+        mMinimized = true;
+        return false;
+    }
+
+   mMinimized = false;
+
+    return false;
 }

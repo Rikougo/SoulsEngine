@@ -8,81 +8,31 @@
 #include <functional>
 #include <memory>
 
-#include <Managers/ComponentManager.hpp>
-#include <Managers/EntityManager.hpp>
-#include <Managers/EventManager.hpp>
-#include <Managers/SystemManager.hpp>
+#include <Core/Window.hpp>
+#include <Core/Base.hpp>
+
+#include <Events/Event.hpp>
+#include <Events/ApplicationEvent.hpp>
 
 using namespace std;
 
-namespace Core {
+namespace Elys {
 class Application {
   private:
-    unique_ptr<ComponentManager> mComponentManager;
-    unique_ptr<EntityManager> mEntityManager;
-    unique_ptr<SystemManager> mSystemManager;
-    unique_ptr<EventManager> mEventManager;
-
+    unique_ptr<Window> mWindow;
+    bool mRunning = true;
+    bool mMinimized = false;
+    float mLastFrameTime = 0.0f;
   public:
-    Application();
+    Application(const std::string &name="Elys App");
+    ~Application();
 
-    void AddEventListener(EventId eventId,
-                          std::function<void(Event &)> const &listener);
-    void DispatchEvent(EventId eventId);
-    void DispatchEvent(Event &event);
+    bool OnWindowClose(WindowCloseEvent &e);
+    bool OnWindowResize(WindowResizeEvent &e);
 
-    // Entity methods
-    EntityID CreateEntity() { return mEntityManager->CreateEntity(); }
+    void Run();
 
-    void DestroyEntity(EntityID entity) {
-        mEntityManager->DestroyEntity(entity);
-
-        mComponentManager->EntityDestroyed(entity);
-
-        mSystemManager->EntityDestroyed(entity);
-    }
-
-    // Component methods
-    template <typename T> void RegisterComponent() {
-        mComponentManager->RegisterComponent<T>();
-    }
-
-    template <typename T> void AddComponent(EntityID entity, T& component) {
-        mComponentManager->AddComponent<T>(entity, component);
-
-        auto signature = mEntityManager->GetSignature(entity);
-        signature.set(mComponentManager->GetComponentType<T>(), true);
-        mEntityManager->SetSignature(entity, signature);
-
-        mSystemManager->EntitySignatureChanged(entity, signature);
-    }
-
-    template <typename T> void RemoveComponent(EntityID entity) {
-        mComponentManager->RemoveComponent<T>(entity);
-
-        auto signature = mEntityManager->GetSignature(entity);
-        signature.set(mComponentManager->GetComponentType<T>(), false);
-        mEntityManager->SetSignature(entity, signature);
-
-        mSystemManager->EntitySignatureChanged(entity, signature);
-    }
-
-    template <typename T> T &GetComponent(EntityID entity) {
-        return mComponentManager->GetComponent<T>(entity);
-    }
-
-    template <typename T> ComponentType GetComponentType() {
-        return mComponentManager->GetComponentType<T>();
-    }
-
-    // System methods
-    template <typename T> std::shared_ptr<T> RegisterSystem() {
-        return mSystemManager->RegisterSystem<T>();
-    }
-
-    template <typename T> void SetSystemSignature(Signature signature) {
-        mSystemManager->SetSignature<T>(signature);
-    }
+    void OnEvent(Event &event);
 };
 } // namespace Core
 
