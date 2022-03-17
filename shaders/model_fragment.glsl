@@ -1,35 +1,28 @@
 #version 330 core
-out vec4 FragColor;
+out vec4 glFragColor;
 
+in vec3 fragNormal;
 in vec4 worldSpaceCoord;
 in vec2 TexCoords;
 
-uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_diffuse2;
-uniform sampler2D texture_diffuse3;
 
-uniform bool useHeightmap;
-uniform sampler2D heightmap;
+const float offset = 1.0 / 2.0;
+uniform vec3 lightPosition;
+uniform vec3 uAmbient;
+uniform bool hasTexture;
+uniform vec3 color;
+uniform sampler2D texture0;
 
 void main()
 {
-    if (!useHeightmap) {
-        FragColor = texture(texture_diffuse1, TexCoords);
-    } else {
-        float heightValue = texture(heightmap, TexCoords).r;
+    vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
+    vec3 lightDir = normalize(lightPosition - worldSpaceCoord.xyz);
+    float diff = max(dot(fragNormal, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
 
-        float thresold = 0.7;
-        float highCoef = 1.0 / (1.0 - thresold);
-        float lowCoef = 1.0 / thresold;
+    vec3 ambient = uAmbient * lightColor;
 
-        vec2 tCoord = vec2(worldSpaceCoord.x / 100.f, worldSpaceCoord.z / 100.f);
-
-        if (heightValue > thresold) {
-            vec4 fMix = mix(texture(texture_diffuse2, tCoord), texture(texture_diffuse1, tCoord), (heightValue - thresold) * highCoef);
-            FragColor = fMix;
-        } else {
-            vec4 sMix = mix(texture(texture_diffuse3, tCoord), texture(texture_diffuse2, tCoord), (heightValue * lowCoef) * (heightValue * lowCoef) );
-            FragColor = sMix;
-        }
-    }
+    vec4 color;
+    if(hasTexture) color = texture2D(texture0, TexCoords); else color = vec4(color.xyz, 1.0f);
+    glFragColor = vec4((diffuse + ambient) * color.rgb, 1.0);
 }

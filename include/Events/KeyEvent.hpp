@@ -5,6 +5,8 @@
 #ifndef ELYS_KEY_EVENT_HPP
 #define ELYS_KEY_EVENT_HPP
 
+#include <sstream>
+
 #include <Events/Event.hpp>
 
 namespace Elys {

@@ -14,7 +14,10 @@ namespace Elys {
         mData.Height = data.Height;
         mData.Title  = data.Title;
 
-        glfwInit();
+        if(glfwInit() == GLFW_FALSE) {
+            ELYS_CORE_FATAL("Failed to initialize GLFW.");
+            exit(-1);
+        }
 
         mWindow = glfwCreateWindow(mData.Width, mData.Height, mData.Title.c_str(), nullptr, nullptr);
 
@@ -30,17 +33,23 @@ namespace Elys {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+        // creating context
         glfwMakeContextCurrent(mWindow);
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            ELYS_CORE_FATAL("Failed to initialize GLAD");
+            ELYS_CORE_FATAL("Failed to initialize GLAD.");
             exit(-1);
         }
-        glfwSwapInterval(2);
+        glfwSwapInterval(1);
 
-        glfwSetWindowUserPointer(mWindow, &mData);
+        ELYS_CORE_INFO("OpenGL specs :");
+        ELYS_CORE_INFO("  - Vendor : {0}", glGetString(GL_VENDOR));
+        ELYS_CORE_INFO("  - Renderer : {0}", glGetString(GL_RENDERER));
+        ELYS_CORE_INFO("  - Version : {0}", glGetString(GL_VERSION));
 
         glEnable(GL_DEPTH_TEST);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        glfwSetWindowUserPointer(mWindow, &mData);
 
         glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height){
             WindowData &wData = *(WindowData*) glfwGetWindowUserPointer(window);

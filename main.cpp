@@ -12,12 +12,9 @@ int main(int argc, char *argv[]) {
     try {
         Elys::Log::Init();
 
-        ELYS_CORE_INFO("[Running on C++ : {0}]", __cplusplus);
-        ELYS_CORE_INFO("Please pay attention to README.md for any information.");
+        Application* app = CreateApplication();
 
-        Application app{};
-
-        app.Run();
+        app->Run();
 
         return EXIT_SUCCESS;
     } catch (std::runtime_error const &e) {

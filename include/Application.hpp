@@ -10,11 +10,18 @@
 
 #include <Core/Window.hpp>
 #include <Core/Base.hpp>
+#include <Core/LayerStack.hpp>
 
 #include <Events/Event.hpp>
 #include <Events/ApplicationEvent.hpp>
 
+#include <Layers/ImGuiLayer.hpp>
+#include <Layers/DebugLayer.hpp>
+#include <Layers/ECSLayer.hpp>
+
 using namespace std;
+
+int main(int argc, char* argv[]);
 
 namespace Elys {
 class Application {
@@ -23,17 +30,26 @@ class Application {
     bool mRunning = true;
     bool mMinimized = false;
     float mLastFrameTime = 0.0f;
+    ImGuiLayer* mImGUILayer;
+    LayerStack mLayerStack;
   public:
     Application(const std::string &name="Elys App");
     ~Application();
 
-    bool OnWindowClose(WindowCloseEvent &e);
-    bool OnWindowResize(WindowResizeEvent &e);
-
-    void Run();
+    static Application& Get() { return *sInstance; }
+    Window& GetWindow() { return *mWindow; }
 
     void OnEvent(Event &event);
+  private:
+    void Run();
+    bool OnWindowClose(WindowCloseEvent &e);
+    bool OnWindowResize(WindowResizeEvent &e);
+  private:
+    static Application* sInstance;
+    friend int ::main(int argc, char* argv[]);
 };
+
+Application* CreateApplication();
 } // namespace Core
 
 #endif // ELYS_APPLICATION_HPP

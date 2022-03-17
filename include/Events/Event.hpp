@@ -6,6 +6,7 @@
 #define ELYS_UTILS_EVENT_HPP
 
 #include <functional>
+#include <iostream>
 
 #include <Core/Base.hpp>
 
@@ -38,6 +39,8 @@ namespace Elys {
     class Event {
         friend class EventDispatcher;
       public:
+        bool Handled = false;
+
         virtual EventType GetEventType() const = 0;
         virtual const char* GetName() const = 0;
         virtual int GetCategoryFlags() const = 0;
@@ -46,8 +49,6 @@ namespace Elys {
         inline bool IsInCategory(EventCategory category) {
              return GetCategoryFlags() & category;
         }
-      protected:
-        bool mHandled = false;
     };
 
     class EventDispatcher {
@@ -59,7 +60,7 @@ namespace Elys {
         template<typename T>
         bool Dispatch(EventFn<T> func) {
             if (mEvent.GetEventType() == T::GetStaticType()) {
-                mEvent.mHandled = func(*(T*)&mEvent);
+                mEvent.Handled |= func(*(T*)&mEvent);
                 return true;
             }
 

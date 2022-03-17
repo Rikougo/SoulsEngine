@@ -45,6 +45,8 @@ namespace Elys {
         uint32_t GetWidth() const;
         uint32_t GetHeight() const;
 
+        GLFWwindow* GetGLFWWindow() { return mWindow; }
+
         void SetEventCallback(const EventCallbackFn &callback);
 
         static std::unique_ptr<Window> Create(const WindowData &data = WindowData());

@@ -16,9 +16,14 @@ set(
     SOURCES
     src/Core/Window.cpp
     src/Core/Logger.cpp
+    src/Core/LayerStack.cpp
+        src/ECS/EntityManager.cpp
+    src/Layers/ImGuiLayer.cpp
+    src/Layers/ECSLayer.cpp
+    src/Layers/DebugLayer.cpp
     src/Application.cpp
     main.cpp
-)
+        src/ECS/Scene.cpp src/Render/Shader.cpp src/Render/Camera.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)
