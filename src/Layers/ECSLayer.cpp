@@ -141,7 +141,7 @@ namespace Elys {
             if (mForward)  direction.y += 1.0f;
             if (mBackward) direction.y -= 1.0f;
             if (mRight)    direction.x += 1.0f;
-            if (mLeft)     direction.x += 1.0f;
+            if (mLeft)     direction.x -= 1.0f;
 
             direction = glm::normalize(direction);
 
