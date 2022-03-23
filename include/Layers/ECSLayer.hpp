@@ -20,18 +20,11 @@
 #include <Events/ApplicationEvent.hpp>
 
 #include <Render/Shader.hpp>
-#include <Render/Camera.hpp>
-
-using glm::vec3;
-using glm::vec2;
+#include <Render/TrackBallCamera.hpp>
+#include <Render/TextureLoader.hpp>
+#include <Render/MeshLoader.hpp>
 
 namespace Elys {
-    struct Vertex {
-        vec3 position;
-        vec3 normal;
-        vec2 texCoord;
-    };
-
     class ECSLayer : public Layer {
       public:
         ECSLayer() = default;
@@ -46,11 +39,14 @@ namespace Elys {
         void Render();
         void PhysicUpdate(float deltaTime);
 
-        void ImGuiDrawEntityTreeSelector(Entity const &entity);
         void DrawEntity(const Entity &entity, glm::mat4 parent = glm::mat4{1.0f});
 
         bool OnKeyPressed(KeyPressedEvent &event);
+        bool OnKeyReleased(KeyReleasedEvent &event);
         bool OnMouseButtonPressed(MouseButtonPressedEvent& event);
+        bool OnMouseButtonReleased(MouseButtonReleasedEvent& event);
+        bool OnMouseMove(MouseMovedEvent& event);
+        bool OnMouseScroll(MouseScrolledEvent& event);
         bool OnWindowResize(WindowResizeEvent &event);
 
         void CreateScene();
@@ -58,18 +54,17 @@ namespace Elys {
         void SaveScene(const std::filesystem::path& path);
       private:
         Shader* mShader;
-        Camera mCamera;
 
-        // TEMP FOR MESH RENDERING
-        std::vector<uint32_t> mTriangles;
-        unsigned int mVAO, mVBO, mEBO;
+        TrackBallCamera mCamera;
 
+        float mRightPanelWidth = 0.33f;
         Scene mCurrentScene;
         bool mWireframeMode = false;
 
-        Entity mSun;
-        Entity mEarth;
-        Entity mMoon;
+        Entity mWalking;
+        bool mForward = false, mBackward = false, mLeft = false, mRight = false;
+        float mTerrainOffset = 0.5f;
+        Entity mTerrain;
         Entity mSelected;
     };
 }

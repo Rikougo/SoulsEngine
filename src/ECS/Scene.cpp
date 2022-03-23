@@ -11,6 +11,7 @@ namespace Elys {
         mComponentManager.RegisterComponent<RigidBody>();
         mComponentManager.RegisterComponent<Texture>();
         mComponentManager.RegisterComponent<Material>();
+        mComponentManager.RegisterComponent<Mesh>();
     }
 
     Entity Scene::CreateEntity(std::string name) {
@@ -41,18 +42,5 @@ namespace Elys {
 
     Entity::~Entity() {
         mScene.reset();
-    }
-
-    Entity Entity::CreateChild(std::string name) {
-        if (!IsValid())
-            ELYS_CORE_FATAL("Scene attached to Entity is null.");
-
-        auto newID = mScene->mEntityManager.CreateEntity();
-        auto entity = Entity(mScene, newID);
-        entity.AddComponent(Tag{std::move(name)});
-        entity.AddComponent(Transform{});
-
-        mScene->mChildren[mID].push_back(entity);
-        return entity;
     }
 }

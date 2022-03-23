@@ -17,11 +17,14 @@ namespace Elys {
     void ImGuiLayer::OnAttach() {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+        ImGui::StyleColorsDark();
 
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+        ImGuiIO& io = ImGui::GetIO();
+        io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+        io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
+        Application& app = Application::Get();
+        io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 
         ImGui_ImplGlfw_InitForOpenGL(Application::Get().GetWindow().GetGLFWWindow(), true);
         ImGui_ImplOpenGL3_Init("#version 330");
@@ -39,13 +42,13 @@ namespace Elys {
     }
 
     void ImGuiLayer::End() {
-        ImGuiIO& io = ImGui::GetIO();
-        Application& app = Application::Get();
-        io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
-
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    };
+    }
 
-    void ImGuiLayer::OnEvent(Event &event) {  }
+    void ImGuiLayer::OnImGuiRender() { }
+
+    void ImGuiLayer::OnEvent(Event &event) {
+        event.Handled = event.IsInCategory(EventCategoryInput) && mBlockingEvents;
+    }
 }

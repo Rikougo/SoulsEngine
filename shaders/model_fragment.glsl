@@ -10,7 +10,7 @@ const float offset = 1.0 / 2.0;
 uniform vec3 lightPosition;
 uniform vec3 uAmbient;
 uniform bool hasTexture;
-uniform vec3 color;
+uniform vec3 uColor;
 uniform sampler2D texture0;
 
 void main()
@@ -23,6 +23,6 @@ void main()
     vec3 ambient = uAmbient * lightColor;
 
     vec4 color;
-    if(hasTexture) color = texture2D(texture0, TexCoords); else color = vec4(color.xyz, 1.0f);
+    if(hasTexture) color = texture2D(texture0, TexCoords); else color = vec4(uColor.xyz, 1.0f);
     glFragColor = vec4((diffuse + ambient) * color.rgb, 1.0);
 }

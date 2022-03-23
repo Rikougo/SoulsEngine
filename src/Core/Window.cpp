@@ -54,6 +54,9 @@ namespace Elys {
         glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height){
             WindowData &wData = *(WindowData*) glfwGetWindowUserPointer(window);
 
+            wData.Width = width;
+            wData.Height = height;
+
             WindowResizeEvent event(width, height);
             wData.EventCallback(event);
         });

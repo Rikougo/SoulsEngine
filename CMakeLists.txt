@@ -13,17 +13,20 @@ add_subdirectory(libs/)
 find_package(OpenGL REQUIRED)
 
 set(
-    SOURCES
-    src/Core/Window.cpp
-    src/Core/Logger.cpp
-    src/Core/LayerStack.cpp
+        SOURCES
+        src/Core/Window.cpp
+        src/Core/Logger.cpp
+        src/Core/LayerStack.cpp
         src/ECS/EntityManager.cpp
-    src/Layers/ImGuiLayer.cpp
-    src/Layers/ECSLayer.cpp
-    src/Layers/DebugLayer.cpp
-    src/Application.cpp
-    main.cpp
-        src/ECS/Scene.cpp src/Render/Shader.cpp src/Render/Camera.cpp)
+        src/Layers/ImGuiLayer.cpp
+        src/Layers/ECSLayer.cpp
+        src/Application.cpp
+        main.cpp
+        src/ECS/Scene.cpp
+        src/Render/Shader.cpp
+        src/Render/TrackBallCamera.cpp
+        src/Render/TextureLoader.cpp
+        src/Render/MeshLoader.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)

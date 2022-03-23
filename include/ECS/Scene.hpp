@@ -9,12 +9,15 @@
 #include <string>
 #include <set>
 #include <cmath>
+#include <utility>
+#include <xutility>
 
 #include <ECS/Components.hpp>
 #include <ECS/ComponentManager.hpp>
 #include <ECS/EntityManager.hpp>
-#include <utility>
-#include <xutility>
+
+#include <Render/TextureLoader.hpp>
+#include <Render/MeshLoader.hpp>
 
 using std::set;
 
@@ -39,7 +42,6 @@ namespace Elys {
         [[nodiscard]] std::_Vector_const_iterator<std::_Vector_val<std::_Simple_types<Entity>>> end() const { return mEntities.end(); }
       private:
         std::vector<Entity> mEntities;
-        std::unordered_map<EntityID, std::vector<Entity>> mChildren;
 
         ComponentManager mComponentManager;
         EntityManager mEntityManager;
@@ -74,17 +76,9 @@ namespace Elys {
             return mScene->mComponentManager.HasComponent<T>(mID);
         }
 
-        Entity CreateChild(std::string name = "Entity");
-
         [[nodiscard]] EntityID ID() const { return mID; }
 
         [[nodiscard]] bool IsValid() const { return mScene != nullptr; }
-
-        [[nodiscard]] std::vector<Entity> Children() const {
-            if (!IsValid())
-                ELYS_CORE_FATAL("Scene attached to Entity is null.");
-            return mScene->mChildren[mID];
-        }
 
         bool operator==(const Entity &other) const {
             return mID == other.mID && mScene == other.mScene;

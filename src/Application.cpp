@@ -20,13 +20,9 @@ namespace Elys {
         mWindow = Window::Create();
         mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-        ImGuiLayer *tLayer = new ImGuiLayer();
-        DebugLayer *debugLayer = new DebugLayer();
-        ECSLayer *ecsLayer = new ECSLayer();
-
-        mLayerStack.PushOverlay(tLayer);
-        mLayerStack.PushOverlay(debugLayer);
-        mLayerStack.PushLayer(ecsLayer);
+        mImGUILayer = new ImGuiLayer();
+        mLayerStack.PushOverlay(mImGUILayer);
+        mLayerStack.PushLayer(new ECSLayer());
     }
 
     Application::~Application() {}

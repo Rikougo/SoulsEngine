@@ -16,7 +16,6 @@
 #include <Events/ApplicationEvent.hpp>
 
 #include <Layers/ImGuiLayer.hpp>
-#include <Layers/DebugLayer.hpp>
 #include <Layers/ECSLayer.hpp>
 
 using namespace std;
@@ -38,6 +37,7 @@ class Application {
 
     static Application& Get() { return *sInstance; }
     Window& GetWindow() { return *mWindow; }
+    ImGuiLayer& GetImGUILayer() { return *mImGUILayer; }
 
     void OnEvent(Event &event);
   private:

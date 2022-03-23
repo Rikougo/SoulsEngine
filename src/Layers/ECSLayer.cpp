@@ -4,53 +4,17 @@
 
 #include "Layers/ECSLayer.hpp"
 
+#include <filesystem>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <imgui.h>
 #include <stb_image.h>
 
-// TODO Move those functions in better place
-unsigned int TextureFromFile(const char *path, const std::string &directory) {
-    stbi_set_flip_vertically_on_load(true);
+#include <Application.hpp>
 
-    std::string filename = std::string(path);
-    filename = directory + '/' + filename;
-
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data) {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    } else {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
-    }
-
-    return textureID;
-}
-
-struct InputTextCallback_UserData
-{
+struct InputTextCallback_UserData {
     std::string*            Str;
     ImGuiInputTextCallback  ChainCallback;
     void*                   ChainCallbackUserData;
@@ -58,7 +22,7 @@ struct InputTextCallback_UserData
 
 static int InputTextCallback(ImGuiInputTextCallbackData* data)
 {
-    InputTextCallback_UserData* user_data = (InputTextCallback_UserData*)data->UserData;
+    auto user_data = (InputTextCallback_UserData *)data->UserData;
     if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
     {
         // Resize string callback
@@ -77,121 +41,55 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
     return 0;
 }
 
-bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr)
-{
+bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr) {
     IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
     flags |= ImGuiInputTextFlags_CallbackResize;
 
-    InputTextCallback_UserData cb_user_data;
+    InputTextCallback_UserData cb_user_data{};
     cb_user_data.Str = str;
     cb_user_data.ChainCallback = callback;
     cb_user_data.ChainCallbackUserData = user_data;
-    return ImGui::InputText(label, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
+    return ImGui::InputText(label, (char *)str->c_str(), str->capacity() + 1, flags,
+                            InputTextCallback, &cb_user_data);
 }
-// TODO
+
+float sign(vec2 first, vec2 sec, vec2 third) {
+    return (first.x - third.x) * (sec.y - third.y) - (sec.x - third.x) * (first.y - third.y);
+}
+
+bool InTriangle(vec3 point, vec3 t1, vec3 t2, vec3 t3) {
+    vec2 point2 = {point.x, point.z};
+    float d1 = sign(point2, vec2{t1.x, t1.z}, vec2{t2.x, t2.z});
+    float d2 = sign(point2, vec2{t2.x, t2.z}, vec2{t3.x, t3.z});
+    float d3 = sign(point2, vec2{t3.x, t3.z}, vec2{t1.x, t1.z});
+
+    bool neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    bool pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    return !(neg && pos);
+}
 
 namespace Elys {
     void ECSLayer::OnAttach() {
-        {
-            float M_PI = 3.14;
-            float M_PI_2 = M_PI / 2;
-            uint8_t slice = 40, stack = 40;
-            std::vector<Vertex> vertices(slice * stack);
-
-            for (unsigned int stackIt = 0; stackIt < stack; ++stackIt) {
-                float u = (float)(stackIt) / (float)(stack - 1);
-                float theta = u * 2 * M_PI;
-                for (unsigned int sliceIt = 0; sliceIt < slice; ++sliceIt) {
-                    unsigned int vertexIndex = stackIt + sliceIt * stack;
-                    float v = (float)(sliceIt) / (float)(slice - 1);
-                    float phi = -M_PI_2 + v * M_PI;
-                    vec3 xyz = {cos(theta) * cos(phi), sin(theta) * cos(phi), sin(phi)};
-                    vertices[vertexIndex] = {xyz, glm::normalize(xyz), {u, v}};
-                }
-            }
-
-            for (unsigned int stackIt = 0; stackIt < stack - 1; ++stackIt) {
-                for (unsigned int sliceIt = 0; sliceIt < slice - 1; ++sliceIt) {
-                    unsigned int vertexuv = stackIt + sliceIt * stack;
-                    unsigned int vertexUv = stackIt + 1 + sliceIt * stack;
-                    unsigned int vertexuV = stackIt + (sliceIt + 1) * stack;
-                    unsigned int vertexUV = stackIt + 1 + (sliceIt + 1) * stack;
-                    mTriangles.insert(mTriangles.end(), {vertexuv, vertexUv, vertexUV});
-                    mTriangles.insert(mTriangles.end(), {vertexuv, vertexUV, vertexuV});
-                }
-            }
-
-            glGenVertexArrays(1, &mVAO);
-            glGenBuffers(1, &mVBO);
-            glGenBuffers(1, &mEBO);
-
-            glBindVertexArray(mVAO);
-            glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-
-            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mTriangles.size() * sizeof(uint32_t), mTriangles.data(),
-                         GL_STATIC_DRAW);
-
-            // vertex positions
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
-            // vertex normals
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                                  (void *)offsetof(Vertex, normal));
-            // vertex texture coords
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                                  (void *)offsetof(Vertex, texCoord));
-
-            glBindVertexArray(0);
-        }
-
         mShader = new Shader("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
 
-        Texture sunTexture = Texture {
-            .id = TextureFromFile("sun.jpg", "./assets/textures"),
-            .path = "./assets/textures/sun.jpg"
-        };
+        Texture sunTexture = GenerateTexture("sun.jpg", "./assets/textures");
 
-        Texture earthTexture = Texture {
-            .id = TextureFromFile("earth.jpg", "./assets/textures"),
-            .path = "./assets/textures/earth.jpg"
-        };
+        auto playerModelPath = std::filesystem::path("./assets/model/elephant_n.off");
 
-        Texture moonTexture = Texture {
-            .id = TextureFromFile("moon.jpg", "./assets/textures"),
-            .path = "./assets/textures/moon.jpg"
-        };
+        mWalking = mCurrentScene.CreateEntity("Player");
+        mWalking.AddComponent(Mesh::LoadOFF(playerModelPath, true));
+        ELYS_CORE_INFO("Created player.");
 
-        Texture starTexture = Texture {
-            .id = TextureFromFile("stars_milky_way.jpg", "./assets/textures"),
-            .path = "./assets/textures/stars_milky_way.jpg"
-        };
+        mTerrain = mCurrentScene.CreateEntity("Terrain");
+        mTerrain.AddComponent<Texture>(GenerateTexture("grass.png", "./assets/textures"));
+        mTerrain.AddComponent(Mesh::Plane(512, 512));
+        mTerrain.GetComponent<Transform>().scale = {100.0f, 1.0f, 100.0f};
+        ELYS_CORE_INFO("Created terrain.");
 
-        mSun = mCurrentScene.CreateEntity("Sun");
-        ELYS_CORE_INFO("Created sun.");
-        mEarth = mSun.CreateChild("Earth");
-        ELYS_CORE_INFO("Created earth.");
-        mMoon = mEarth.CreateChild("Moon");
-        ELYS_CORE_INFO("Created moon.");
-        auto mGlobal = mCurrentScene.CreateEntity("Global");
-        ELYS_CORE_INFO("Created global.");
-
-        mSun.AddComponent(sunTexture);
-        mSun.AddComponent(Material{.ambient={1.0f, 1.0f, 1.0f}});
-        mEarth.AddComponent(earthTexture);
-        mMoon.AddComponent(moonTexture);
-        mGlobal.AddComponent(starTexture);
-        mGlobal.AddComponent(Material{.ambient={1.0f, 1.0f, 1.0f}});
-        ELYS_CORE_INFO("Added textures.");
+        mSelected = mWalking;
     }
-    void ECSLayer::OnDetach() {
-        glDeleteBuffers(1, &mVBO);
-        glDeleteBuffers(1, &mEBO);
-    }
+    void ECSLayer::OnDetach() {}
 
     void ECSLayer::OnUpdate(float deltaTime) {
         Render();
@@ -199,29 +97,64 @@ namespace Elys {
     }
 
     void ECSLayer::Render() {
-        glClearColor(0.05, 0.05, 0.05, 1.0);
+        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glPolygonMode( GL_FRONT_AND_BACK, mWireframeMode ? GL_LINE : GL_FILL );
+        glPolygonMode(GL_FRONT_AND_BACK, mWireframeMode ? GL_LINE : GL_FILL);
 
         mShader->Use();
         mCamera.Apply((*mShader));
 
-        mShader->SetVec3("lightPosition", mSun.GetComponent<Transform>().position);
+        mShader->SetVec3("lightPosition", mCamera.GetPosition());
 
-        for(auto &entity : mCurrentScene) {
+        for (auto &entity : mCurrentScene) {
             DrawEntity(entity);
         }
     }
 
     void ECSLayer::PhysicUpdate(float deltaTime) {
-        auto &earthTransform = mEarth.GetComponent<Transform>().rotation.y += 10 * deltaTime;
+        auto &playerTransform = mWalking.GetComponent<Transform>();
+        auto const &terrainTransform = mTerrain.GetComponent<Transform>();
+        auto const &terrainMesh = mTerrain.GetComponent<Mesh>();
+        auto terrainVertices = terrainMesh.Vertices();
+        auto terrainIndices = terrainMesh.Indices();
+
+        for(size_t i = 0; i < terrainIndices.size(); i+=3) {
+            auto i1 = terrainIndices[i];
+            auto i2 = terrainIndices[i+1];
+            auto i3 = terrainIndices[i+2];
+
+            auto t1 = terrainVertices[i1].position * terrainTransform.scale;
+            auto t2 = terrainVertices[i2].position * terrainTransform.scale;
+            auto t3 = terrainVertices[i3].position * terrainTransform.scale;
+
+            if (InTriangle(playerTransform.position, t1, t2, t3)) {
+                auto height = t1.y + t2.y + t3.y;
+                playerTransform.position.y = height / 3.0f + mTerrainOffset;
+                break;
+            }
+        }
+
+        if (mForward || mBackward || mRight || mLeft) {
+            vec2 direction{0.0f, 0.0f};
+
+            if (mForward)  direction.y += 1.0f;
+            if (mBackward) direction.y -= 1.0f;
+            if (mRight)    direction.x += 1.0f;
+            if (mLeft)     direction.x += 1.0f;
+
+            direction = glm::normalize(direction);
+
+            playerTransform.position.x += direction.x * deltaTime;
+            playerTransform.position.z += direction.y * deltaTime;
+        }
     }
 
     void ECSLayer::OnImGuiRender() {
         static int corner = 1;
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDecoration;
+        ImGuiIO &io = ImGui::GetIO();
+        ImGuiWindowFlags window_flags =
+            ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoCollapse;
         if (corner != -1)
         {
             const float PAD = 0.0f;
@@ -236,12 +169,16 @@ namespace Elys {
             ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
             window_flags |= ImGuiWindowFlags_NoMove;
         }
+        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x * mRightPanelWidth, io.DisplaySize.y));
         if(ImGui::Begin("Entities", nullptr, window_flags)) {
-            if (ImGui::BeginMenuBar())
-            {
-                if (ImGui::BeginMenu("Entity"))
-                {
-                    if (ImGui::MenuItem("New")) mCurrentScene.CreateEntity();
+            Application::Get().GetImGUILayer().Blocking(
+                ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows));
+
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("Entity")) {
+                    if (ImGui::MenuItem("New"))
+                        ELYS_CORE_INFO(
+                            "Create entity (not implemented yet."); // mCurrentScene.CreateEntity();
                     ImGui::EndMenu();
                 }
                 ImGui::EndMenuBar();
@@ -250,9 +187,6 @@ namespace Elys {
             // left
             {
                 if(ImGui::BeginChild("selector", ImVec2(150, 0), true)) {
-                    for(auto const &entity : mCurrentScene) {
-                        ImGuiDrawEntityTreeSelector(entity);
-                    }
                     ImGui::EndChild();
                 }
             }
@@ -268,12 +202,24 @@ namespace Elys {
                     InputText("##NAME#Selected", &name, 0, nullptr, nullptr);
                     ImGui::Separator();
 
-                    ImGui::Text("Position : "); ImGui::SameLine();
-                    ImGui::DragFloat3("##POSITION#Selected", &mSelected.GetComponent<Transform>().position[0], 0.1f, -10.f, 10.f, "%0.2f");
-                    ImGui::Text("Rotation : "); ImGui::SameLine();
-                    ImGui::DragFloat3("##ROTATION#Selected", &mSelected.GetComponent<Transform>().rotation[0], 1.0f, 0.0f, 360.0f, "%0.2f");
-                    ImGui::Text("Echelle : "); ImGui::SameLine();
-                    ImGui::DragFloat3("##SCALE#Selected", &mSelected.GetComponent<Transform>().scale[0], 0.1f, 0.1f, 10.f, "%0.2f");
+                    auto &transform = mSelected.GetComponent<Transform>();
+
+                    ImGui::Text("Position : ");
+                    ImGui::SameLine();
+                    ImGui::DragFloat3("##POSITION#Selected", &transform.position[0], 0.1f, -10.f,
+                                      10.f, "%0.2f");
+                    ImGui::Text("Rotation : ");
+                    ImGui::SameLine();
+                    ImGui::DragFloat3("##ROTATION#Selected", &transform.rotation[0], 1.0f, 0.0f,
+                                      360.0f, "%0.2f");
+                    ImGui::Text("Echelle : ");
+                    ImGui::SameLine();
+                    ImGui::DragFloat3("##SCALE#Selected", &transform.scale[0], 0.1f, 0.1f, 10.f,
+                                      "%0.2f");
+
+                    ImGui::Text("Offset : ");
+                    ImGui::SameLine();
+                    ImGui::DragFloat("##OFFSET#Selected", &mTerrainOffset, 0.1f, 0.1f, 10.0f);
 
                     ImGui::EndChild();
                 }
@@ -288,7 +234,11 @@ namespace Elys {
         EventDispatcher dispatcher(event);
 
         dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(ECSLayer::OnMouseButtonPressed));
+        dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_EVENT_FN(ECSLayer::OnMouseButtonReleased));
+        dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(ECSLayer::OnMouseMove));
+        dispatcher.Dispatch<MouseScrolledEvent>(BIND_EVENT_FN(ECSLayer::OnMouseScroll));
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(ECSLayer::OnKeyPressed));
+        dispatcher.Dispatch<KeyReleasedEvent>(BIND_EVENT_FN(ECSLayer::OnKeyReleased));
         dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(ECSLayer::OnWindowResize));
     }
 
@@ -297,61 +247,64 @@ namespace Elys {
             mWireframeMode = !mWireframeMode;
         }
 
+        if (event.GetKeyCode() == GLFW_KEY_W) mForward = true;
+        if (event.GetKeyCode() == GLFW_KEY_S) mBackward = true;
+        if (event.GetKeyCode() == GLFW_KEY_D) mRight = true;
+        if (event.GetKeyCode() == GLFW_KEY_A) mLeft = true;
+
         return false;
     }
-    bool ECSLayer::OnMouseButtonPressed(MouseButtonPressedEvent &event) { return false; }
+
+    bool ECSLayer::OnKeyReleased(KeyReleasedEvent &event) {
+        if (event.GetKeyCode() == GLFW_KEY_W) mForward = false;
+        if (event.GetKeyCode() == GLFW_KEY_S) mBackward = false;
+        if (event.GetKeyCode() == GLFW_KEY_D) mRight = false;
+        if (event.GetKeyCode() == GLFW_KEY_A) mLeft = false;
+
+        return false;
+    }
+
+    bool ECSLayer::OnMouseButtonPressed(MouseButtonPressedEvent &event) {
+        mCamera.StartCapture(event.GetMouseButton());
+        return false;
+    }
+
+    bool ECSLayer::OnMouseButtonReleased(MouseButtonReleasedEvent &event) {
+        mCamera.EndCapture();
+        return false;
+    }
+
+    bool ECSLayer::OnMouseMove(MouseMovedEvent &event) {
+        mCamera.MouseInput(event.GetX(), event.GetY());
+        return false;
+    }
+
+    bool ECSLayer::OnMouseScroll(MouseScrolledEvent &event) {
+        mCamera.Zoom(event.GetYOffset());
+        return false;
+    }
 
     bool ECSLayer::OnWindowResize(WindowResizeEvent &event) {
-        glViewport(0, 0, event.GetWidth(), event.GetHeight());
-        mCamera.mFOV = (float) event.GetWidth() / (float) event.GetWidth();
+        glViewport(0, 0, (GLsizei)((float)event.GetWidth() * (1 - mRightPanelWidth)),
+                   (GLsizei)(event.GetHeight()));
+        mCamera.SetViewSize((float)event.GetWidth() * (1 - mRightPanelWidth),
+                            (float)event.GetHeight());
 
         return false;
     }
 
-    void ECSLayer::CreateScene() {
-        mCurrentScene = Scene();
-    }
+    void ECSLayer::CreateScene() { mCurrentScene = Scene(); }
+
     void ECSLayer::LoadScene(const std::filesystem::path &path) {}
     void ECSLayer::SaveScene(const std::filesystem::path &path) {}
 
-    void ECSLayer::ImGuiDrawEntityTreeSelector(Entity const &entity) {
-        auto const &tag = entity.GetComponent<Tag>();
-        auto &position = entity.GetComponent<Transform>().position;
-
-        std::stringstream treeID, label;
-        treeID << "##" << tag.name.c_str() << "#" << entity.ID();
-        label << tag.name.c_str() << "#" << entity.ID();
-
-        if (ImGui::Selectable(label.str().c_str(), mSelected == entity, 0, ImVec2(75, 0)))
-            mSelected = entity;
-        ImGui::SameLine();
-        if (ImGui::TreeNode(treeID.str().c_str())) {
-
-            for(auto const &child : entity.Children()) {
-                ImGuiDrawEntityTreeSelector(child);
-            }
-            ImGui::TreePop();
-        }
-    }
-
     void ECSLayer::DrawEntity(Entity const &entity, glm::mat4 parent) {
-        auto transform = entity.GetComponent<Transform>();
+        if (!entity.HasComponent<Mesh>())
+            return;
 
-        auto model = glm::mat4{1.0f};
+        auto &transform = entity.GetComponent<Transform>();
 
-        model = glm::translate(model, transform.position);
-
-        for(uint8_t i = 0; i < 3; i++) {
-            vec3 axis{0.0f};
-            axis[i] = 1.0f;
-            model = glm::rotate(model, glm::radians(transform.rotation[i]), axis);
-        }
-
-        model = parent * glm::scale(model, transform.scale);
-
-
-        for (auto const &child : entity.Children())
-            DrawEntity(child, model);
+        auto model = transform.ModelMatrix();
 
         bool hasTexture = entity.HasComponent<Texture>();
         mShader->SetBool("hasTexture", hasTexture);
@@ -361,15 +314,29 @@ namespace Elys {
             mShader->SetInt("texture", 0);
             glBindTexture(GL_TEXTURE_2D, texture.id);
         } else {
-            mShader->SetVec3("color", {0.7, 0.5, 1.0});
+            mShader->SetVec3("uColor", {0.7, 0.5, 1.0});
         }
 
-        mShader->SetVec3("uAmbient", entity.HasComponent<Material>() ? entity.GetComponent<Material>().ambient : vec3{0.1f, 0.1f, 0.1f});
+        mShader->SetVec3("uAmbient", entity.HasComponent<Material>()
+                                         ? entity.GetComponent<Material>().ambient
+                                         : vec3{0.1f, 0.1f, 0.1f});
 
         mShader->SetMat4("model", model);
 
-        glBindVertexArray(mVAO);
-        glDrawElements(GL_TRIANGLES, mTriangles.size(), GL_UNSIGNED_INT, 0);
+        auto cameraDist = glm::length(transform.position - mCamera.GetPosition());
+        LODLevel detail = NORMAL;
+
+        if (cameraDist > 5.0f) {
+            detail = LOW;
+        } else if (cameraDist > 3.0f) {
+            detail = MEDIUM;
+        } else if (cameraDist > 1.5f) {
+            detail = HIGH;
+        }
+
+        auto const &mesh = entity.GetComponent<Mesh>();
+        glBindVertexArray(mesh.VAO(detail));
+        glDrawElements(GL_TRIANGLES, (GLsizei)mesh.IndicesSize(detail), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
 }
