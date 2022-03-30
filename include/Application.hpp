@@ -11,12 +11,13 @@
 #include <Core/Window.hpp>
 #include <Core/Base.hpp>
 #include <Core/LayerStack.hpp>
+#include <Core/Profiling.hpp>
 
 #include <Events/Event.hpp>
 #include <Events/ApplicationEvent.hpp>
 
 #include <Layers/ImGuiLayer.hpp>
-#include <Layers/ECSLayer.hpp>
+#include <Layers/EditorLayer.hpp>
 
 using namespace std;
 

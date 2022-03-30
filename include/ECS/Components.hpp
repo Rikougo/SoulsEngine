@@ -22,7 +22,7 @@ namespace Elys {
         string name;
     };
 
-    class Transform {
+    /*class Transform {
       public:
         Transform() = default;
         Transform(vec3 pos, vec3 rot, vec3 sca) : position(pos), rotation(rot), scale(sca) {};
@@ -58,7 +58,7 @@ namespace Elys {
 
             return mModelMatrix;
         }
-    };
+    };*/
 
     struct RigidBody {
         vec3 velocity;

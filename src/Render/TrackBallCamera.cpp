@@ -5,14 +5,18 @@
 #include <Render/TrackBallCamera.hpp>
 
 namespace Elys {
-    void TrackBallCamera::Apply(Shader &shader) const {
-        auto position = mTarget + ToCartesian(mPhi, mTheta, mDistance);
+    mat4 TrackBallCamera::GetProjection() const {
+        if (mDirty) UpdateCameraData();
+        return mProjection;
+    }
+    mat4 TrackBallCamera::GetView() const {
+        if (mDirty) UpdateCameraData();
+        return mView;
+    }
+    Frustum TrackBallCamera::GetFrustum() const {
+        if (mDirty) UpdateCameraData();
 
-        auto projection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
-        auto view = glm::lookAt(position, mTarget, {0.0f, mUp, 0.0f});
-
-        shader.SetMat4("projection", projection);
-        shader.SetMat4("view", view);
+        return mFrustum;
     }
 
     void TrackBallCamera::Rotate(float deltaT, float deltaP) {
@@ -38,24 +42,28 @@ namespace Elys {
         } else {
             mUp = -1.0f;
         }
-    }
 
+        mDirty = true;
+    }
     void TrackBallCamera::Pan(float deltaX, float deltaY) {
-        vec3 look = normalize(-ToCartesian(mPhi, mTheta, mDistance));
+        vec3 look = normalize(-Geometry::ToCartesian(mPhi, mTheta, mDistance));
         vec3 worldUp = {0.0f, mUp, 0.0f};
 
         vec3 right = normalize(glm::cross(look, worldUp));
         vec3 up = normalize(glm::cross(look, right));
 
         mTarget += (right * deltaX + up * deltaY);
-    }
 
+        mDirty = true;
+    }
     void TrackBallCamera::Zoom(float delta) {
-        mDistance -= delta;
+        mDistance -= delta * mZoomSpeed;
 
         if (mDistance < 1.0f) {
             mDistance = 1.0f;
         }
+
+        mDirty = true;
     }
 
     void TrackBallCamera::MouseInput(float x, float y) {
@@ -75,10 +83,44 @@ namespace Elys {
         mLastMouseX = (x / mViewWidth);
         mLastMouseY = (y / mViewHeight);
 
+        // DEAD ZONE
+        dx = (abs(dx) < 0.001f) ? 0.0f : dx;
+        dy = (abs(dy) < 0.001f) ? 0.0f : dy;
+
+        if (dx == 0.0f && dy == 0.0f) return;
+
         if (mButtonType == 0) {
-            Rotate(-dx * M_2_PI, dy * M_2_PI);
+            Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
         } else if (mButtonType == 1) {
             Pan(dx * 10.0f, dy * 10.0f);
+        }
+    }
+
+    void TrackBallCamera::UpdateCameraData() const {
+         {
+            // FRUSTUM
+            auto position = GetPosition();
+            auto front = glm::normalize(mTarget - position);
+            auto right = glm::normalize(glm::cross(front, {0.0f, 1.0f, 0.0f})); // cross(front, worldup)
+            vec3 up = glm::normalize(glm::cross(right, front));
+
+            const float halfVSide = mFar * tanf(mFOV * .5f);
+            const float halfHSide = halfVSide * mRatioAspect;
+            const glm::vec3 frontMultFar = mFar * front;
+
+            mFrustum.nearFace   = Geometry::Plan(position + (mNear * front), front);
+            mFrustum.farFace    = Geometry::Plan(position + frontMultFar, -front);
+            mFrustum.rightFace  = Geometry::Plan(position, glm::cross(up, frontMultFar + right * halfHSide));
+            mFrustum.leftFace   = Geometry::Plan(position, glm::cross(frontMultFar - right * halfHSide, up));
+            mFrustum.topFace    = Geometry::Plan(position, glm::cross(right, frontMultFar - up * halfVSide));
+            mFrustum.bottomFace = Geometry::Plan(position, glm::cross(frontMultFar + up * halfVSide, right));
+
+            // MATRIX
+            mProjection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
+            mView = glm::lookAt(position, mTarget, {0.0f, mUp, 0.0f});;
+
+
+            mDirty = false;
         }
     }
 } // namespace Elys

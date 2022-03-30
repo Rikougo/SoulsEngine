@@ -7,16 +7,22 @@ out vec2 TexCoords;
 out vec3 fragNormal;
 out vec4 worldSpaceCoord;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform bool uUseNormalMap;
+uniform sampler2D uNormalMap;
+
+uniform mat4 uModel;
+uniform mat4 uView;
+uniform mat4 uProjection;
 
 void main()
 {
     TexCoords = aTexCoords;
 
-    fragNormal = normalize(mat3(transpose(inverse(model))) * aNormal);
-    worldSpaceCoord = model * vec4(aPos, 1.0);
+    if (uUseNormalMap)
+        fragNormal = normalize(mat3(transpose(inverse(uModel))) * texture2D(uNormalMap, aTexCoords).rgb);
+    else
+        fragNormal = normalize(mat3(transpose(inverse(uModel))) * aNormal);
 
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    worldSpaceCoord = uModel * vec4(aPos, 1.0);
+    gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
 }

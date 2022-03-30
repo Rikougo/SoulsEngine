@@ -30,10 +30,4 @@ namespace Elys {
 #define ELYS_CORE_ERROR(...)    ::Elys::Log::GetCoreLogger()->error(__VA_ARGS__)
 #define ELYS_CORE_FATAL(...)    ::Elys::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
-#define ELYS_CLIENT_TRACE(...)  SPDLOG_LOGGER_TRACE(::Elys::Log::GetClientLogger(), __VA_ARGS__)
-#define ELYS_CLIENT_INFO(...)   SPDLOG_LOGGER_INFO(::Elys::Log::GetClientLogger(), __VA_ARGS__)
-#define ELYS_CLIENT_WARN(...)   ::Elys::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define ELYS_CLIENT_ERROR(...)  ::Elys::Log::GetClientLogger()->error(__VA_ARGS__)
-#define ELYS_CLIENT_FATAL(...)  ::Elys::Log::GetClientLogger()->critical(__VA_ARGS__)
-
 #endif // ELYS_LOGGER_HPP

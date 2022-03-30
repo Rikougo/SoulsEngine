@@ -13,12 +13,26 @@
         return this->fn(std::forward<decltype(args)>(args)...);                                    \
     }
 
-using EntityID = std::uint32_t;
-constexpr EntityID MAX_ENTITIES = 5000;
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
 
-using ComponentType = std::uint8_t;
-constexpr ComponentType MAX_COMPONENTS = 32;
+#ifndef M_PI_2
+    #define M_PI_2 M_PI / 2
+#endif
 
-using Signature = std::bitset<MAX_COMPONENTS>;
+#ifndef M_2_PI
+    #define M_2_PI M_PI * 2
+#endif
+
+namespace Elys {
+    using EntityID = std::uint32_t;
+    constexpr EntityID MAX_ENTITIES = 10'000;
+
+    using ComponentType = std::uint8_t;
+    constexpr ComponentType MAX_COMPONENTS = 32;
+
+    using Signature = std::bitset<MAX_COMPONENTS>;
+}
 
 #endif // ELYS_BASE_HPP

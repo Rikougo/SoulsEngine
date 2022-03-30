@@ -22,35 +22,44 @@ namespace Elys {
 
         mImGUILayer = new ImGuiLayer();
         mLayerStack.PushOverlay(mImGUILayer);
-        mLayerStack.PushLayer(new ECSLayer());
+        mLayerStack.PushLayer(new EditorLayer());
     }
 
-    Application::~Application() {}
+    Application::~Application() {
+        delete mImGUILayer;
+    }
 
     void Application::Run() {
         while (mRunning) {
-            float time = (float)glfwGetTime();
+            auto time = (float)glfwGetTime();
             float deltaTime = time - mLastFrameTime;
+
+            Profile::Framerate = 1.0f / deltaTime;
+            Profile::AverageFramerate = (Profile::AverageFramerate == 0) ? Profile::Framerate : (Profile::Framerate + Profile::AverageFramerate) * 0.5f;
+            Profile::DeltaTime = deltaTime;
+
             mLastFrameTime = time;
 
             if (!mMinimized) {
+                time = (float)glfwGetTime();
                 for (Layer *layer : mLayerStack) {
                     layer->OnUpdate(deltaTime);
                 }
+                Profile::DrawingTime = (float)glfwGetTime() - time;
 
+                time = (float)glfwGetTime();
                 mImGUILayer->Begin();
                 for (Layer *layer : mLayerStack) {
                     layer->OnImGuiRender();
                 }
                 mImGUILayer->End();
+                Profile::GUITime = (float)glfwGetTime() - time;
             }
             mWindow->OnUpdate();
         }
     }
 
     void Application::OnEvent(Event &event) {
-        // ELYS_CORE_INFO("{0}", event.ToString());
-
         EventDispatcher dispatcher(event);
         dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
         dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));

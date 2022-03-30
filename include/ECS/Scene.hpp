@@ -12,12 +12,14 @@
 #include <utility>
 #include <xutility>
 
+#include <ECS/Node.hpp>
 #include <ECS/Components.hpp>
 #include <ECS/ComponentManager.hpp>
 #include <ECS/EntityManager.hpp>
+#include <ECS/SystemManager.hpp>
 
 #include <Render/TextureLoader.hpp>
-#include <Render/MeshLoader.hpp>
+#include <Render/Mesh.hpp>
 
 using std::set;
 
@@ -31,20 +33,20 @@ namespace Elys {
         void OnUpdate(float deltaTime);
         void OnRuntimeUpdate(float deltaTime);
 
-        [[nodiscard]] Entity CreateEntity(std::string name = "Entity");
+        Entity CreateEntity(std::string name = "Entity");
         void DestroyEntity(Entity const &entity);
+        Entity EntityFromNode(Node const &component);
 
-        template <typename T> void RegisterComponent() {
-            mComponentManager.RegisterComponent<T>();
-        }
-
-        [[nodiscard]] std::_Vector_const_iterator<std::_Vector_val<std::_Simple_types<Entity>>> begin() const {return mEntities.begin();}
-        [[nodiscard]] std::_Vector_const_iterator<std::_Vector_val<std::_Simple_types<Entity>>> end() const { return mEntities.end(); }
+        std::set<Entity>::iterator begin() { return mEntities.begin(); }
+        std::set<Entity>::iterator end() { return mEntities.end(); }
+        [[nodiscard]] std::set<Entity>::const_iterator begin() const {return mEntities.begin();}
+        [[nodiscard]] std::set<Entity>::const_iterator end() const { return mEntities.end(); }
       private:
-        std::vector<Entity> mEntities;
+        std::set<Entity> mEntities;
 
         ComponentManager mComponentManager;
         EntityManager mEntityManager;
+        SystemManager mSystemManager;
 
         friend class Entity;
       public:
@@ -55,10 +57,10 @@ namespace Elys {
       public:
         Entity() = default;
         Entity(Scene* scene, EntityID id) : mScene(scene), mID(id) {};
-        Entity(std::shared_ptr<Scene> &scene, EntityID id) : mScene(scene), mID(id) {};
+        // Entity(std::shared_ptr<Scene> &scene, EntityID id) : mScene(scene), mID(id) {};
         Entity(const Entity& other) = default;
 
-        ~Entity();
+        ~Entity() = default;
 
         template<typename T> T& AddComponent(T value) const {
             return mScene->mComponentManager.AddComponent(mID, value);
@@ -76,11 +78,29 @@ namespace Elys {
             return mScene->mComponentManager.HasComponent<T>(mID);
         }
 
+        Entity Parent() const {
+            auto const &node = GetComponent<Node>();
+
+            return mScene->EntityFromNode(*node.Parent());
+        }
+
+        vector<Entity> Children() const {
+            auto const &node = GetComponent<Node>();
+            vector<Entity> children;
+
+            for (auto childNode : node.Children()) {
+                children.push_back(mScene->EntityFromNode(*childNode));
+            }
+
+            return children;
+        }
+
         [[nodiscard]] EntityID ID() const { return mID; }
 
-        [[nodiscard]] bool IsValid() const { return mScene != nullptr; }
+        [[nodiscard]] bool IsValid() const { return mScene != nullptr && mID < MAX_ENTITIES; }
 
         bool operator==(const Entity &other) const {
+
             return mID == other.mID && mScene == other.mScene;
         }
 
@@ -93,8 +113,8 @@ namespace Elys {
         }
 
       private:
-        EntityID mID;
-        std::shared_ptr<Scene> mScene = nullptr;
+        EntityID mID{MAX_ENTITIES};
+        Scene* mScene = nullptr;
     };
 }
 

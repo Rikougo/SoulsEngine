@@ -60,7 +60,11 @@ class ComponentManager {
         return GetComponentArray<T>()->GetData(entity);
     }
 
-    template <typename T> bool HasComponent(EntityID entity) {
+    template <typename T> EntityID GetEntity(T const &component) {
+        return GetComponentArray<T>()->GetEntity(component);
+    }
+
+    template <typename T> [[nodiscard]] bool HasComponent(EntityID entity) noexcept {
         return GetComponentArray<T>()->HasData(entity);
     }
 

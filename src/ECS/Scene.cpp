@@ -6,11 +6,10 @@
 
 namespace Elys {
     Scene::Scene() {
+        mComponentManager.RegisterComponent<Node>();
         mComponentManager.RegisterComponent<Tag>();
-        mComponentManager.RegisterComponent<Transform>();
         mComponentManager.RegisterComponent<RigidBody>();
         mComponentManager.RegisterComponent<Texture>();
-        mComponentManager.RegisterComponent<Material>();
         mComponentManager.RegisterComponent<Mesh>();
     }
 
@@ -18,14 +17,24 @@ namespace Elys {
         auto newID = mEntityManager.CreateEntity();
         auto entity = Entity(this, newID);
         entity.AddComponent(Tag{std::move(name)});
-        entity.AddComponent(Transform{});
+        entity.AddComponent(Node{});
 
-        mEntities.push_back(entity);
+        mEntities.insert(entity);
+
+        ELYS_CORE_INFO("Created entity {0}", newID);
         return entity;
     }
 
     void Scene::DestroyEntity(Entity const &entity) {
-        throw std::runtime_error("Scene::DestroyEntity : Not implemented yet.");
+        if (!entity.IsValid()) return;
+
+        entity.GetComponent<Node>().OnDelete();
+        mEntities.erase(entity);
+    }
+
+    Entity Scene::EntityFromNode(const Node &component) {
+        auto id = mComponentManager.GetEntity<Node>(component);
+        return Entity(this, id);
     }
 
     void Scene::OnUpdate(float deltaTime) {
@@ -38,9 +47,5 @@ namespace Elys {
 
     Scene Scene::FromFile(std::filesystem::path &path) {
         throw std::runtime_error("Scene::OnRuntimeUpdate : Not implemented yet.");
-    }
-
-    Entity::~Entity() {
-        mScene.reset();
     }
 }

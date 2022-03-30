@@ -16,24 +16,14 @@ namespace Elys {
       public:
         void Begin();
         void End();
-        void Blocking(bool blocking) { mBlockingEvents = blocking; }
+        void SetBlocking(bool blocking) { mBlockingEvents = blocking; }
 
         void OnAttach() override;
         void OnDetach() override;
         void OnImGuiRender() override;
         void OnEvent(Event &event) override;
       private:
-        bool OnMouseButtonPressed(MouseButtonPressedEvent &event) const;
-        bool OnMouseButtonReleased(MouseButtonReleasedEvent &event) const;
-        bool OnMouseMoved(MouseMovedEvent &event) const;
-        bool OnMouseScrolled(MouseScrolledEvent &event) const;
-        bool OnKeyPressedEvent(KeyPressedEvent &event) const;
-        bool OnKeyReleasedEvent(KeyReleasedEvent &event) const;
-        bool OnKeyTypedEvent(KeyTypedEvent &event) const;
-        bool OnWindowResize(WindowResizeEvent &event) const;
-      private:
         bool mBlockingEvents = false;
-        float mTime = 0.0f;
     };
 }
 

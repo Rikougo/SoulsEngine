@@ -19,14 +19,15 @@ set(
         src/Core/LayerStack.cpp
         src/ECS/EntityManager.cpp
         src/Layers/ImGuiLayer.cpp
-        src/Layers/ECSLayer.cpp
+        src/Layers/EditorLayer.cpp
         src/Application.cpp
         main.cpp
         src/ECS/Scene.cpp
+        src/ECS/Node.cpp
         src/Render/Shader.cpp
         src/Render/TrackBallCamera.cpp
         src/Render/TextureLoader.cpp
-        src/Render/MeshLoader.cpp)
+        src/Render/Mesh.cpp src/Render/AABB.cpp include/GUI/TextInput.hpp src/Core/Profiling.cpp src/Core/Geometry.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)

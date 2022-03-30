@@ -11,10 +11,13 @@
 #include <Core/Base.hpp>
 
 namespace Elys {
+    /// \Brief
+    ///     Abstract class of component array used in ComponentManager to store template ComponentArray and still have access to virtual
+    ///     method EntityDestroy(EntityID) to handle Entity deletion.
     class IComponentArray {
       public:
         virtual ~IComponentArray() = default;
-        virtual void EntityDestroyed(EntityID entity) = 0;
+        virtual void EntityDestroyed(EntityID entity) noexcept = 0;
     };
 
     template <typename T> class ComponentArray : public IComponentArray {
@@ -33,19 +36,16 @@ namespace Elys {
             ++mSize;
         }
 
-        /*
-         * Removing data is not as trivial as it seems, in fact to preserve
-         * contiguous data we move the last element of the Array to the place of the
-         * deleted data. So it costs more than inserting data.
-         *
-         * Examples :
-         *      - A component array like this : [A, B, C, D, E]
-         *      - If we remove the C component the array will look like : [A, B, E, D]
-         */
+        /// \Brief
+        ///     Removing data is not as trivial as it seems, in fact to preserve
+        ///     contiguous data we move the last element of the Array to the place of the
+        ///     deleted data. So it costs more than inserting data.
+        ///
+        /// \Examples
+        ///      Component array like this : [A, B, C, D, E]. Removing C component will give : [A, B, E, D]
         void RemoveData(EntityID entity) {
-            if (mEntityToIndexMap.find(entity) == mEntityToIndexMap.end()) {
+            if (!HasData(entity))
                 throw std::runtime_error("RemoveData : Entity not in ComponentArray data.");
-            }
 
             size_t removedIndex = mEntityToIndexMap[entity];
             size_t lastIndex = mSize - 1;
@@ -61,22 +61,34 @@ namespace Elys {
             --mSize;
         }
 
+        /// \Brief
+        ///     Get T Component reference of an Entity.
+        ///     Throws exception if entity doesn't have T Component attached.
         T &GetData(EntityID entity) {
-            if (mEntityToIndexMap.find(entity) == mEntityToIndexMap.end())
+            if (!HasData(entity))
                 throw std::runtime_error("GetData : Entity not in ComponentArray data.");
 
             return mComponentArray[mEntityToIndexMap[entity]];
         }
 
-        bool HasData(EntityID entity) {
+        [[nodiscard]] bool HasData(EntityID entity) noexcept {
             return mEntityToIndexMap.find(entity) != mEntityToIndexMap.end();
         }
 
-        void EntityDestroyed(EntityID entity) override {
+        void EntityDestroyed(EntityID entity) noexcept override {
             if (mEntityToIndexMap.find(entity) != mEntityToIndexMap.end()) {
-                // Remove the entity's component if it existed
                 RemoveData(entity);
             }
+        }
+
+        EntityID GetEntity(T const &component) {
+            auto it = std::find(mComponentArray.begin(), mComponentArray.end(), component);
+
+            if (it != mComponentArray.end()) {
+                return mIndexToEntityMap[std::distance(mComponentArray.begin(), it)];
+            }
+
+            throw std::runtime_error("No entity found for this component.");
         }
 
       private:

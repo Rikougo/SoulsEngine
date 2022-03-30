@@ -19,6 +19,7 @@
 #include <Events/MouseEvent.hpp>
 
 #include <Core/Logger.hpp>
+#include <utility>
 
 namespace Elys {
     class Window {
@@ -32,9 +33,9 @@ namespace Elys {
 
             EventCallbackFn EventCallback;
 
-            WindowData(const std::string &title = "Elys Engine", uint32_t width = 1280,
+            explicit WindowData(std::string title = "Elys Engine", uint32_t width = 1280,
                        uint32_t height = 720)
-                : Title(title), Width(width), Height(height) {}
+                : Title(std::move(title)), Width(width), Height(height) {}
         };
 
         explicit Window(const WindowData &data);
@@ -42,8 +43,8 @@ namespace Elys {
 
         void OnUpdate();
 
-        uint32_t GetWidth() const;
-        uint32_t GetHeight() const;
+        [[nodiscard]] uint32_t GetWidth() const;
+        [[nodiscard]] uint32_t GetHeight() const;
 
         GLFWwindow* GetGLFWWindow() { return mWindow; }
 
