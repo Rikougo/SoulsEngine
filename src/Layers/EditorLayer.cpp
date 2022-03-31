@@ -19,110 +19,26 @@
 
 namespace Elys {
     void EditorLayer::OnAttach() {
-        /*auto w = Application::Get().GetWindow();
-        glViewport(0, 0, (GLsizei)w.GetWidth() * (1 - mRightPanelWidth), (GLsizei)w.GetHeight());
-        mCamera.SetViewSize((float)w.GetWidth() * (1 - mRightPanelWidth), (float)w.GetHeight());*/
+        std::filesystem::path texturePath("./assets/textures/");
+        auto mesh = Mesh::Sphere();
+        auto material = Material::FromTexture(std::filesystem::path("./assets/textures/earth.jpg"));
 
-        mShader = new Shader("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
+        material.normalMap = Texture::PtrFromPath(std::filesystem::path("./assets/textures/normal_map/8k_earth_normal_map.png"));
 
-        std::string texturePath = "./assets/textures";
-        Texture earthTexture = GenerateTexture("8k_earth_daymap.jpg", texturePath);
-        Texture earthCloudTexture = GenerateTexture("8k_earth_clouds.jpg", texturePath);
-        Texture sunTexture = GenerateTexture("8k_sun.jpg", texturePath);
+        auto meshRenderer = MeshRenderer{
+            .Mesh = mesh,
+            .Material = material
+        };
 
-        sphereMesh = Mesh::Sphere();
-        auto sunEntity = mCurrentScene.CreateEntity("Sun");
-        sunEntity.AddComponent(sphereMesh);
-        sunEntity.AddComponent(sunTexture);
-
-        auto earthEntity = mCurrentScene.CreateEntity("Earth");
-        earthEntity.AddComponent(sphereMesh);
-        earthEntity.AddComponent(earthTexture);
-        earthEntity.GetComponent<Node>().SetPosition(1.5, 0.0, 0.0);
-
-        sunEntity.GetComponent<Node>().AddChild(&earthEntity.GetComponent<Node>());
+        auto earth = mCurrentScene.CreateEntity("Earth");
+        earth.AddComponent<MeshRenderer>(meshRenderer);
     }
+
     void EditorLayer::OnDetach() {}
 
     void EditorLayer::OnUpdate(float deltaTime) {
-        Render();
-        PhysicUpdate(deltaTime);
+        mCurrentScene.OnUpdate(deltaTime);
     }
-
-    void EditorLayer::Render() {
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        mShader->Use();
-        mShader->SetMat4("uProjection", mCamera.GetProjection());
-        mShader->SetMat4("uView", mCamera.GetView());
-
-        mShader->SetVec3("uLightPosition", mCamera.GetPosition());
-
-        Profile::DrawnMesh = 0;
-        Profile::ComputingBoundingBoxes = 0.0f;
-        Profile::DrawingMeshes = 0.0f;
-
-        auto frustum = mCamera.GetFrustum();
-
-        for (auto &entity : mCurrentScene) {
-            DrawEntity(entity, frustum);
-        }
-    }
-
-    void EditorLayer::DrawEntity(Entity const &entity, Frustum const &frustum) {
-        if (!entity.HasComponent<Mesh>())
-            return;
-
-        auto then = (float)glfwGetTime();
-        auto const &node = entity.GetComponent<Node>();
-        auto model = node.InheritedTransform();
-        auto const &mesh = entity.GetComponent<Mesh>();
-        Profile::DrawingMeshes += (float)glfwGetTime() - then;
-
-        then = (float)glfwGetTime();
-        auto const &boundingBox = mesh.GetAABB();
-
-        if (mUseFrustumCulling && !boundingBox.IsInFrustum(frustum, model)) {
-            Profile::ComputingBoundingBoxes += (float)glfwGetTime() - then;
-            return;
-        }
-        Profile::ComputingBoundingBoxes += (float)glfwGetTime() - then;
-
-        if (mDrawBoundingBoxes) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            mShader->SetVec3("uColor", {0.0, 0.5, 0.0});
-            mShader->SetBool("uShadingOn", false);
-            // TODO DRAW DEBUG INFORMATION SUCH AS BOUNDING BOXES
-        }
-
-        then = (float)glfwGetTime();
-        bool hasTexture = entity.HasComponent<Texture>();
-        mShader->SetBool("uHasTexture", hasTexture);
-        if (hasTexture) {
-            auto const &texture = entity.GetComponent<Texture>();
-            glActiveTexture(GL_TEXTURE0);
-            mShader->SetInt("uTexture", 0);
-            glBindTexture(GL_TEXTURE_2D, texture.id);
-        } else {
-            mShader->SetVec3("uColor", {0.7, 0.5, 1.0});
-        }
-
-        mShader->SetVec3("uAmbient", vec3{0.1f, 0.1f, 0.1f});
-
-        mShader->SetMat4("uModel", model);
-        mShader->SetBool("uShadingOn", true);
-
-        // glPolygonMode(GL_FRONT_AND_BACK, mWireframeMode ? GL_LINE : GL_FILL);
-        glBindVertexArray(mesh.VAO());
-        glDrawElements(GL_TRIANGLES, (GLsizei)mesh.IndicesSize(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-        Profile::DrawingMeshes += (float)glfwGetTime() - then;
-
-        Profile::DrawnMesh++;
-    }
-
-    void EditorLayer::PhysicUpdate(float deltaTime) { }
 
     void EditorLayer::OnImGuiRender() {
         GUI::ProfileDisplay(GUI::TOP_LEFT);
@@ -149,17 +65,6 @@ namespace Elys {
         if(ImGui::Begin("Entities", nullptr, window_flags)) {
             Application::Get().GetImGUILayer().SetBlocking(
                 ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows));
-
-            if (ImGui::BeginChild("Camera", ImVec2(0, 75))) {
-                auto p = mCamera.GetPosition();
-                auto t = mCamera.GetTarget();
-                auto r = mCamera.GetRotation();
-
-                ImGui::Text("Position : Vector3f(%0.1f, %0.1f, %0.1f)", p.x, p.y, p.z);
-                ImGui::Text("Rotation: [PHI=%0.1f,THETA=%0.1f]", r.x, r.y);
-                ImGui::Text("Target: Vector3f(%0.1f, %0.1f, %0.1f)", t.x, t.y, t.z);
-                ImGui::EndChild();
-            }
 
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu("Entity")) {
@@ -288,42 +193,17 @@ namespace Elys {
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
         dispatcher.Dispatch<KeyReleasedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyReleased));
         dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(EditorLayer::OnWindowResize));
+
+        mCurrentScene.OnEvent(event);
     }
 
-    bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
-        if (event.GetKeyCode() == GLFW_KEY_Z) mWireframeMode = !mWireframeMode;
-        if (event.GetKeyCode() == GLFW_KEY_F) mUseFrustumCulling = !mUseFrustumCulling;
-        return false;
-    }
-
+    bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) { return false; }
     bool EditorLayer::OnKeyReleased(KeyReleasedEvent &event) { return false; }
-
-    bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &event) {
-        mCamera.StartCapture(event.GetMouseButton());
-        return false;
-    }
-
-    bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent &event) {
-        mCamera.EndCapture();
-        return false;
-    }
-
-    bool EditorLayer::OnMouseMove(MouseMovedEvent &event) {
-        mCamera.MouseInput(event.GetX(), event.GetY());
-        return false;
-    }
-
-    bool EditorLayer::OnMouseScroll(MouseScrolledEvent &event) {
-        mCamera.Zoom(event.GetYOffset());
-        return false;
-    }
-
-    bool EditorLayer::OnWindowResize(WindowResizeEvent &event) {
-        glViewport(0, 0, (GLsizei)event.GetWidth() * (1 - mRightPanelWidth), (GLsizei)event.GetHeight());
-        mCamera.SetViewSize((float)event.GetWidth() * (1 - mRightPanelWidth), (float)event.GetHeight());
-
-        return false;
-    }
+    bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &event) { return false; }
+    bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent &event) { return false; }
+    bool EditorLayer::OnMouseMove(MouseMovedEvent &event) { return false; }
+    bool EditorLayer::OnMouseScroll(MouseScrolledEvent &event) { return false; }
+    bool EditorLayer::OnWindowResize(WindowResizeEvent &event) { return false; }
 
     void EditorLayer::CreateScene() { mCurrentScene = Scene(); }
 

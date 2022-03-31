@@ -6,7 +6,6 @@
 
 namespace Elys {
     float Profile::Framerate;
-    float Profile::AverageFramerate;
     float Profile::DeltaTime;
     unsigned int Profile::TotalMesh;
     unsigned int Profile::DrawnMesh;
@@ -17,7 +16,6 @@ namespace Elys {
 
     void Profile::Init() {
         Framerate = 0.0f;
-        AverageFramerate = 0.0f;
         TotalMesh = 0;
         DrawnMesh = 0;
         DeltaTime = 0.0f;

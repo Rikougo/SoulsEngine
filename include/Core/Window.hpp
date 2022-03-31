@@ -33,8 +33,10 @@ namespace Elys {
 
             EventCallbackFn EventCallback;
 
-            explicit WindowData(std::string title = "Elys Engine", uint32_t width = 1280,
-                       uint32_t height = 720)
+            explicit WindowData(
+                std::string title = "Elys Engine",
+                uint32_t width = 1280,
+                uint32_t height = 720)
                 : Title(std::move(title)), Width(width), Height(height) {}
         };
 

@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <Core/Base.hpp>
+#include <Core/Logger.hpp>
 #include <Core/Geometry.hpp>
 
 #include <Render/Camera.hpp>
@@ -35,17 +36,17 @@ namespace Elys {
             mButtonType = button;
         }
 
-        void EndCapture() { mCapture = false; }
+        void EndCapture() { mCapture = false; mNewCapture = true; }
 
         void Rotate(float deltaT, float deltaP);
         void Zoom(float delta);
         void Pan(float deltaX, float deltaY);
-        void MouseInput(float x, float y);
+        void MouseInput(float x, float y, MouseCode button) override;
 
+        [[nodiscard]] vec3 GetPosition() const override { return mTarget + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
         [[nodiscard]] vec2 GetRotation() const { return {mPhi, mTheta}; }
         [[nodiscard]] float GetUp() const { return mUp; }
         [[nodiscard]] float GetDistance() const { return mDistance; }
-        [[nodiscard]] vec3 GetPosition() const { return mTarget + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
         [[nodiscard]] vec3 GetTarget() const { return mTarget; }
 
       private:

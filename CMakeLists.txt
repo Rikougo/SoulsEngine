@@ -26,8 +26,12 @@ set(
         src/ECS/Node.cpp
         src/Render/Shader.cpp
         src/Render/TrackBallCamera.cpp
-        src/Render/TextureLoader.cpp
-        src/Render/Mesh.cpp src/Render/AABB.cpp include/GUI/TextInput.hpp src/Core/Profiling.cpp src/Core/Geometry.cpp)
+        src/Render/Material.cpp
+        src/Render/Mesh.cpp
+        src/Render/AABB.cpp
+        src/Core/Profiling.cpp
+        src/Core/Geometry.cpp
+        src/ECS/Systems/RenderSystem.cpp src/Core/Input.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)

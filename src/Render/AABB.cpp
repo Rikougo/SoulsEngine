@@ -5,16 +5,6 @@
 #include <Render/AABB.hpp>
 
 namespace Elys {
-    bool AABB::Contains(const AABB &other) const { return Contains(other.lo) && Contains(other.hi); }
-
-    bool AABB::Contains(const vec3 &point) const {
-        return
-            point.x > lo.x && point.y > lo.y && point.z > lo.z &&
-            point.x < hi.x && point.y < hi.y && point.z < hi.z;
-    }
-
-    bool AABB::Overlap(const AABB &other) const { return Contains(other.lo) || Contains(other.hi); }
-
     // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
     bool AABB::IsInFrustum(Frustum frustum, mat4 transform) const {
         vec3 tMin = transform * glm::vec4(lo, 1.0f), tMax = transform * glm::vec4(hi, 1.0f);

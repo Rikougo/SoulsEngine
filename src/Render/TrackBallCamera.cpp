@@ -66,10 +66,7 @@ namespace Elys {
         mDirty = true;
     }
 
-    void TrackBallCamera::MouseInput(float x, float y) {
-        if (!mCapture)
-            return;
-
+    void TrackBallCamera::MouseInput(float x, float y, MouseCode button) {
         if (mNewCapture) {
             mLastMouseX = x / mViewWidth;
             mLastMouseY = y / mViewHeight;
@@ -89,9 +86,9 @@ namespace Elys {
 
         if (dx == 0.0f && dy == 0.0f) return;
 
-        if (mButtonType == 0) {
+        if (button == Mouse::ButtonLeft) {
             Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
-        } else if (mButtonType == 1) {
+        } else if (button == Mouse::ButtonRight) {
             Pan(dx * 10.0f, dy * 10.0f);
         }
     }

@@ -42,6 +42,8 @@ namespace Elys {
     class Mesh {
       public:
         Mesh() = default;
+        Mesh(const Mesh& other); // want to copy mesh data and generate new buffer
+        Mesh(Mesh& other); // want to copy mesh data and keep same buffer, may be deleted later since it is unsafe
 
         static Mesh LoadOFF(std::filesystem::path &path, bool loadNormals = true);
         static Mesh Plane(uint16_t width = 32, uint16_t height = 32);

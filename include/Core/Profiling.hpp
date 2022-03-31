@@ -11,7 +11,6 @@ namespace Elys {
         static void Init();
 
         static float Framerate;
-        static float AverageFramerate;
         static float DeltaTime;
         static unsigned int TotalMesh;
         static unsigned int DrawnMesh;

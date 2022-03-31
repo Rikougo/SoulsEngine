@@ -7,7 +7,7 @@
 namespace Elys {
     Application *Application::sInstance = nullptr;
 
-    Application::Application(const std::string &name) {
+    Application::Application(std::string name) {
         ELYS_CORE_INFO("[Running app on C++ : {0}]", __cplusplus);
 
         if (sInstance) {
@@ -17,7 +17,7 @@ namespace Elys {
 
         sInstance = this;
 
-        mWindow = Window::Create();
+        mWindow = Window::Create(Window::WindowData(std::move(name)));
         mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
         mImGUILayer = new ImGuiLayer();
@@ -35,7 +35,6 @@ namespace Elys {
             float deltaTime = time - mLastFrameTime;
 
             Profile::Framerate = 1.0f / deltaTime;
-            Profile::AverageFramerate = (Profile::AverageFramerate == 0) ? Profile::Framerate : (Profile::Framerate + Profile::AverageFramerate) * 0.5f;
             Profile::DeltaTime = deltaTime;
 
             mLastFrameTime = time;
@@ -87,5 +86,5 @@ namespace Elys {
         return false;
     }
 
-    Application *CreateApplication() { return new Application(); }
+    Application *CreateApplication(string name) { return new Application(std::move(name)); }
 } // namespace Elys

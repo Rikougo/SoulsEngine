@@ -8,7 +8,9 @@
 #include <glm/glm.hpp>
 
 #include <Core/Geometry.hpp>
+#include <Core/KeyCode.hpp>
 
+using glm::vec3;
 using glm::mat4;
 
 namespace Elys {
@@ -25,9 +27,15 @@ namespace Elys {
 
     class Camera {
       public:
+        virtual ~Camera() = default;
+
         [[nodiscard]] virtual mat4 GetProjection() const = 0;
         [[nodiscard]] virtual mat4 GetView() const = 0;
         [[nodiscard]] virtual Frustum GetFrustum() const = 0;
+
+        [[nodiscard]] virtual vec3 GetPosition() const = 0;
+
+        virtual void MouseInput(float x, float y, MouseCode button) = 0;
 
         inline void SetViewSize(float width, float height) {
             mViewWidth = width;

@@ -12,14 +12,25 @@
 #include <utility>
 #include <xutility>
 
-#include <ECS/Node.hpp>
+#include <Core/Base.hpp>
+
+#include <Events/Event.hpp>
+#include <Events/KeyEvent.hpp>
+#include <Events/MouseEvent.hpp>
+#include <Events/ApplicationEvent.hpp>
+
+// Components
+#include <ECS/Components/Node.hpp>
 #include <ECS/Components.hpp>
+#include <ECS/Components/MeshRenderer.hpp>
+
+// Managers
 #include <ECS/ComponentManager.hpp>
 #include <ECS/EntityManager.hpp>
 #include <ECS/SystemManager.hpp>
 
-#include <Render/TextureLoader.hpp>
-#include <Render/Mesh.hpp>
+// Systems
+#include <ECS/Systems/RenderSystem.hpp>
 
 using std::set;
 
@@ -37,16 +48,29 @@ namespace Elys {
         void DestroyEntity(Entity const &entity);
         Entity EntityFromNode(Node const &component);
 
+        void OnEvent(Event &event);
+
         std::set<Entity>::iterator begin() { return mEntities.begin(); }
         std::set<Entity>::iterator end() { return mEntities.end(); }
         [[nodiscard]] std::set<Entity>::const_iterator begin() const {return mEntities.begin();}
         [[nodiscard]] std::set<Entity>::const_iterator end() const { return mEntities.end(); }
+      private:
+        // EVENTS HANDLING
+        bool OnWindowResize(WindowResizeEvent &event);
+        bool OnKeyPressed(KeyPressedEvent &event);
+        bool OnKeyReleased(KeyReleasedEvent &event);
+        bool OnMousePressed(MouseButtonPressedEvent &event);
+        bool OnMouseReleased(MouseButtonReleasedEvent &event);
+        bool OnMouseScroll(MouseScrolledEvent &event);
       private:
         std::set<Entity> mEntities;
 
         ComponentManager mComponentManager;
         EntityManager mEntityManager;
         SystemManager mSystemManager;
+
+        std::shared_ptr<RenderSystem> mRenderSystem;
+        // PhysicSystem mPhysicSystem;
 
         friend class Entity;
       public:
@@ -63,7 +87,14 @@ namespace Elys {
         ~Entity() = default;
 
         template<typename T> T& AddComponent(T value) const {
-            return mScene->mComponentManager.AddComponent(mID, value);
+            T& comp = mScene->mComponentManager.AddComponent(mID, value);
+
+            // CHANGE SIGNATURE OF ENTITY AND UPDATE SYSTEMS
+            Signature newSignature = mScene->mEntityManager.GetSignature(mID);
+            newSignature.set(mScene->mComponentManager.GetComponentType<T>(), true);
+            mScene->mEntityManager.SetSignature(mID, newSignature);
+            mScene->mSystemManager.EntitySignatureChanged(mID, newSignature);
+            return comp;
         }
 
         template<typename T> T& GetComponent() const {
@@ -72,19 +103,25 @@ namespace Elys {
 
         template<typename T> void RemoveComponent() const {
             mScene->mComponentManager.RemoveComponent<T>(mID);
+
+            // CHANGE SIGNATURE OF ENTITY AND UPDATE SYSTEMS
+            Signature newSignature = mScene->mEntityManager.GetSignature(mID);
+            newSignature.set(mScene->mComponentManager.GetComponentType<T>(), false);
+            mScene->mEntityManager.SetSignature(mID, newSignature);
+            mScene->mSystemManager.EntitySignatureChanged(mID, newSignature);
         }
 
         template<typename T> [[nodiscard]] bool HasComponent() const {
             return mScene->mComponentManager.HasComponent<T>(mID);
         }
 
-        Entity Parent() const {
+        [[nodiscard]] Entity Parent() const {
             auto const &node = GetComponent<Node>();
 
             return mScene->EntityFromNode(*node.Parent());
         }
 
-        vector<Entity> Children() const {
+        [[nodiscard]] vector<Entity> Children() const {
             auto const &node = GetComponent<Node>();
             vector<Entity> children;
 

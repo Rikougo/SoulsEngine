@@ -24,10 +24,6 @@ namespace Elys {
 
         [[nodiscard]] bool IsInFrustum(Frustum frustum, mat4 transform) const override;
         [[nodiscard]] bool IsForwardPlan(const Geometry::Plan& plan) const;
-
-        [[nodiscard]] bool Contains(const AABB &other) const;
-        [[nodiscard]] bool Contains(const vec3 &point) const;
-        [[nodiscard]] bool Overlap(const AABB& other) const;
       private:
         vec3 hi, lo;
     };

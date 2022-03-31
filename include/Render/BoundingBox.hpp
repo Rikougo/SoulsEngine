@@ -14,7 +14,7 @@ using glm::mat4;
 namespace Elys {
     class BoundingBox {
       public:
-        virtual bool IsInFrustum(Frustum frustum, mat4 transform) const = 0;
+        [[nodiscard]] virtual bool IsInFrustum(Frustum frustum, mat4 transform) const = 0;
     };
 }
 

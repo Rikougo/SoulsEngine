@@ -21,7 +21,6 @@
 
 #include <Render/Shader.hpp>
 #include <Render/TrackBallCamera.hpp>
-#include <Render/TextureLoader.hpp>
 #include <Render/Mesh.hpp>
 
 namespace Elys {
@@ -34,13 +33,7 @@ namespace Elys {
         void OnUpdate(float deltaTime) override;
         void OnImGuiRender() override;
         void OnEvent(Event& e) override;
-
       private:
-        void Render();
-        void PhysicUpdate(float deltaTime);
-
-        void DrawEntity(Entity const &entity, Frustum const &frustum);
-
         void ListChildren(Entity const &entity);
 
         bool OnKeyPressed(KeyPressedEvent &event);
@@ -55,16 +48,8 @@ namespace Elys {
         void LoadScene(const std::filesystem::path& path);
         void SaveScene(const std::filesystem::path& path);
       private:
-        Shader* mShader = nullptr;
-        Shader* mGridShader = nullptr;
-
-        TrackBallCamera mCamera;
-
         float mRightPanelWidth = 0.33f;
         Scene mCurrentScene;
-        bool mWireframeMode = false;
-        bool mDrawBoundingBoxes = false;
-        bool mUseFrustumCulling = true;
 
         Entity mSelected;
         bool mUniformScale = true;

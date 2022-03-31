@@ -7,6 +7,25 @@
 #include <glad/glad.h>
 
 namespace Elys {
+    Mesh::Mesh(const Mesh &other) {
+        mVertices = other.mVertices;
+        mIndices = other.mIndices;
+
+        GenerateBuffers();
+    }
+    Mesh::Mesh(Mesh &other) {
+        mVertices = other.mVertices;
+        mIndices = other.mIndices;
+
+        mInitialized = other.mInitialized;
+
+        if (mInitialized) {
+            mVAO = other.mVAO;
+            mVBO = other.mVBO;
+            mEBO = other.mEBO;
+        }
+    }
+
     Mesh Mesh::LoadOFF(std::filesystem::path &path, bool loadNormals) {
         Mesh result{};
 

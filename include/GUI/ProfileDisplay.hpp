@@ -22,7 +22,6 @@ namespace Elys::GUI {
 
             if(ImGui::Begin("ProfileDisplay", nullptr, windowFlags)) {
                 ImGui::Text("Framerate : %0.1f", Profile::Framerate);
-                ImGui::Text("Average framerate : %0.1f", Profile::AverageFramerate);
                 ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
                 ImGui::Text("Draw time : %0.3f", Profile::DrawingTime);
                 ImGui::Text("\t- Computing bounding boxes : %0.3f", Profile::ComputingBoundingBoxes);

@@ -56,7 +56,7 @@ namespace Elys {
         inline void SetVec4(const std::string &name, const glm::vec4 &value) const {
             glUniform4fv(glGetUniformLocation(mID, name.c_str()), 1, &value[0]);
         }
-        inline void SetVec4(const std::string &name, float x, float y, float z, float w) {
+        inline void SetVec4(const std::string &name, float x, float y, float z, float w) const {
             glUniform4f(glGetUniformLocation(mID, name.c_str()), x, y, z, w);
         }
         // ------------------------------------------------------------------------
@@ -72,7 +72,7 @@ namespace Elys {
             glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
         }
 
-        inline unsigned int GetID() const { return mID; }
+        [[nodiscard]] inline unsigned int GetID() const { return mID; }
 
       private:
         unsigned int mID;

@@ -6,14 +6,12 @@
 #include <Core/Logger.hpp>
 #include <Core/Profiling.hpp>
 
-using namespace Elys;
-
 int main(int argc, char *argv[]) {
     try {
         Elys::Log::Init();
         Elys::Profile::Init();
 
-        Application* app = CreateApplication();
+        Elys::Application* app = Elys::CreateApplication();
 
         app->Run();
 

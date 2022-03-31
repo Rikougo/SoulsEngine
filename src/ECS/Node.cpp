@@ -2,7 +2,7 @@
 // Created by Sam on 3/24/2022.
 //
 
-#include <ECS/Node.hpp>
+#include "ECS/Components/Node.hpp"
 
 namespace Elys {
 
@@ -28,6 +28,11 @@ namespace Elys {
     void Node::AddChild(Node *child) {
         if (std::find(mChildren.begin(), mChildren.end(), child) != mChildren.end()) {
             ELYS_CORE_WARN("Child node is already a child of parent node.");
+            return;
+        }
+
+        if (child == this) {
+            ELYS_CORE_WARN("Can't put self as child.");
             return;
         }
 
@@ -98,13 +103,12 @@ namespace Elys {
 
     void Node::SetScale(vec3 scale) {
         if (mLocalScale != scale) {
-            ELYS_CORE_INFO("SCALE");
             mLocalScale = scale;
             InvalidateNode();
         }
     }
-    // void Node::SetScale(float x, float y, float z) { SetScale(vec3(x, y, z)); }
-    void Node::SetScale(float uniformScale) { ELYS_CORE_INFO("UNIFORM SCALE"); SetScale(vec3(uniformScale, uniformScale, uniformScale)); }
+    void Node::SetScale(float x, float y, float z) { SetScale(vec3(x, y, z)); }
+    void Node::SetScale(float uniformScale) { SetScale(vec3(uniformScale, uniformScale, uniformScale)); }
 
     void Node::InvalidateNode() const {
         for(auto child : mChildren) child->InvalidateNode();

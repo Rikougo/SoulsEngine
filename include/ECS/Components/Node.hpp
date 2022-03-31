@@ -7,11 +7,11 @@
 
 #include <vector>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/transform.hpp"
 
-#include <Core/Logger.hpp>
+#include "Core/Logger.hpp"
 
 using glm::vec3;
 using glm::mat4;
@@ -40,6 +40,8 @@ namespace Elys {
         void OnDelete() {
             if (mParent) mParent->RemoveChild(this);
 
+            // set new parent the parent of deleted node
+            // no matter if it hasn't any parent (children will have no parent)
             for (auto child : mChildren) {
                 child->SetParent(mParent);
             }
@@ -64,7 +66,7 @@ namespace Elys {
         void SetRotation(vec3 eulerAngles);
         void SetRotation(float eulerX, float eulerY, float eulerZ);
         void SetScale(vec3 scale);
-        // void SetScale(float x, float y, float z);
+        void SetScale(float x, float y, float z);
         void SetScale(float uniformScale);
 
         bool operator==(const Node &other) {
