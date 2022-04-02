@@ -5,9 +5,9 @@
 création d'un moteur de jeu utilisant OpenGL. Le moteur de jeu vise un type de jeu particulier, en l'occurence celui-ci
 a pour objectif de créer des jeux de type [Soulslike](https://en.wikipedia.org/wiki/Soulslike).
 En plus d'OpenGL le moteur est construit en utilisant principalement GLFW, Glad, glm et Dear ImGUI (d'autre librairies 
-sont utilisées et précisé [plus bas](./README.md#Dependances) le tout en C++17. Le projet est simplement un objet d'apprentissage
+sont utilisées et précisé [plus bas](#dependances) le tout en C++17. Le projet est simplement un objet d'apprentissage
 pour le moment, il n'est absolument pas une référence en l'état, si vous cherchez des ressources intéressantes concernant les 
-moteurs de jeux veuillez vous référer aux [références utilisées](./README.md#Références utilisées ).*
+moteurs de jeux veuillez vous référer aux [références utilisées](#références-utilisées ).*
 
 ## Exemple
 
