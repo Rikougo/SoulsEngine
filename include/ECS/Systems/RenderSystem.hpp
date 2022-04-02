@@ -15,34 +15,38 @@
 #include <Events/MouseEvent.hpp>
 
 #include <ECS/System.hpp>
+#include <ECS/Scene.hpp>
 
 #include <Render/Shader.hpp>
+#include <Render/Framebuffer.hpp>
 #include <Render/Camera.hpp>
 #include <Render/TrackBallCamera.hpp>
 
-namespace Elys {
-    class Scene;
+using std::shared_ptr;
 
+namespace Elys {
     class RenderSystem : public System {
       private:
-        Scene* mCurrentScene = nullptr;
+        shared_ptr<Scene> mCurrentScene;
 
+        bool mProcessInputs = false;
         bool mFrustumCulling = false;
         bool mDebugMode = false;
-        bool mWireframe = true;
+        bool mWireframe = false;
 
-        std::unique_ptr<Shader> mShader = nullptr;
-        std::unique_ptr<TrackBallCamera> mCamera = nullptr;
+        shared_ptr<TrackBallCamera> mCamera;
+        shared_ptr<Shader> mShader;
+
+        shared_ptr<Framebuffer> mFramebuffer;
       public:
-        RenderSystem();
+        RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer);
 
-        ~RenderSystem() {
-            mShader.reset();
-            mCamera.reset();
-        }
+        ~RenderSystem() = default;
 
         void SetCamera(const TrackBallCamera& camera);
-        void SetScene(Scene* scene);
+        void SetScene(shared_ptr<Scene> &sceneRef);
+
+        void AcceptEvents() { mProcessInputs = true;}
         void Update(float deltaTime) override;
 
         [[nodiscard]] const Camera& MainCamera() const {
@@ -57,9 +61,11 @@ namespace Elys {
             return *mCamera;
         }
 
-        void OnViewportChange(float width, float height);
+        void SetViewportSize(glm::vec2 offset, glm::vec2 size);
         void OnKeyPressed(KeyPressedEvent &event) override;
         void OnMouseScroll(MouseScrolledEvent &event) override;
+
+        std::shared_ptr<Framebuffer> GetFramebuffer() { return mFramebuffer; }
       private:
         void ProcessInput();
     };

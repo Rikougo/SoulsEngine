@@ -29,9 +29,6 @@
 #include <ECS/EntityManager.hpp>
 #include <ECS/SystemManager.hpp>
 
-// Systems
-#include <ECS/Systems/RenderSystem.hpp>
-
 using std::set;
 
 namespace Elys {
@@ -48,28 +45,24 @@ namespace Elys {
         void DestroyEntity(Entity const &entity);
         Entity EntityFromNode(Node const &component);
 
-        void OnEvent(Event &event);
+        template<typename T, typename ... Args> std::shared_ptr<T> RegisterSystem(Args&& ... args) {
+            return mSystemManager.RegisterSystem<T>(std::forward<Args>(args)...);
+        }
+
+        template<typename T, typename ... Components> void SetSystemSignature() {
+            mSystemManager.SetSignature<T>(mComponentManager.GetSignature<Components...>());
+        }
 
         std::set<Entity>::iterator begin() { return mEntities.begin(); }
         std::set<Entity>::iterator end() { return mEntities.end(); }
         [[nodiscard]] std::set<Entity>::const_iterator begin() const {return mEntities.begin();}
         [[nodiscard]] std::set<Entity>::const_iterator end() const { return mEntities.end(); }
       private:
-        // EVENTS HANDLING
-        bool OnWindowResize(WindowResizeEvent &event);
-        bool OnKeyPressed(KeyPressedEvent &event);
-        bool OnKeyReleased(KeyReleasedEvent &event);
-        bool OnMousePressed(MouseButtonPressedEvent &event);
-        bool OnMouseReleased(MouseButtonReleasedEvent &event);
-        bool OnMouseScroll(MouseScrolledEvent &event);
-      private:
         std::set<Entity> mEntities;
 
         ComponentManager mComponentManager;
         EntityManager mEntityManager;
         SystemManager mSystemManager;
-
-        std::shared_ptr<RenderSystem> mRenderSystem;
         // PhysicSystem mPhysicSystem;
 
         friend class Entity;
@@ -117,6 +110,8 @@ namespace Elys {
 
         [[nodiscard]] Entity Parent() const {
             auto const &node = GetComponent<Node>();
+
+            if (!node.Parent()) return {};
 
             return mScene->EntityFromNode(*node.Parent());
         }

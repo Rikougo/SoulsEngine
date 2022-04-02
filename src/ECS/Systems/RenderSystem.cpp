@@ -4,35 +4,38 @@
 
 #include <ECS/Systems/RenderSystem.hpp>
 
-// important to include in cpp file
-// otherwise it will cause circular dependency issues
-#include <ECS/Scene.hpp>
-
 namespace Elys {
-    RenderSystem::RenderSystem() {
-        mShader = std::make_unique<Shader>("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
-        mCamera = std::make_unique<TrackBallCamera>();
-    }
+    RenderSystem::RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer) :
+        mCurrentScene(scene), mCamera(camera), mShader(shader), mFramebuffer(framebuffer) {}
 
     void RenderSystem::SetCamera(const TrackBallCamera &camera) { mCamera = std::make_unique<TrackBallCamera>(camera); }
-    void RenderSystem::SetScene(Scene *scene) {
-        if (mCurrentScene != nullptr) {
+
+    void RenderSystem::SetScene(shared_ptr<Scene> &sceneRef) {
+        if (mCurrentScene) {
             ELYS_CORE_WARN("RenderSystem::SetScene : Shouldn't change scene if already one exists (may be due to wrong usage).");
-        }
-
-        mCurrentScene = scene;
-    }
-
-    void RenderSystem::Update(float deltaTime) {
-        if (!mShader || !mCamera) {
-            ELYS_CORE_ERROR("RenderSystem::Update : {0} not initialized (nullptr) !", mShader ? "Camera" : "Shader");
             return;
         }
 
-        ProcessInput();
+        mCurrentScene = sceneRef;
+    }
+
+    void RenderSystem::Update(float deltaTime) {
+        if (mProcessInputs) ProcessInput();
+        mFramebuffer->Bind();
 
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (!mShader || !mCamera) {
+            ELYS_CORE_ERROR("RenderSystem::Update : {0} not initialized (nullptr) !", mShader ? "Camera" : "Shader");
+            mFramebuffer->Unbind();
+            return;
+        }
+
+        if (!mShader || !mCamera) {
+            ELYS_CORE_ERROR("{0} not set in RenderSystem::Update and is required.", mShader ? "Shader" : "Camera");
+            return;
+        }
 
         mShader->Use();
         mShader->SetMat4("uProjection", mCamera->GetProjection());
@@ -46,25 +49,18 @@ namespace Elys {
 
         auto frustum = mCamera->GetFrustum();
 
-        float then = 0.0f;
-
         for (auto id : mEntities) {
-            auto entity = Entity(mCurrentScene, id);
+            auto entity = Entity(mCurrentScene.get(), id);
 
-            then = (float)glfwGetTime();
             auto const &node = entity.GetComponent<Node>();
             auto model = node.InheritedTransform();
             auto const &mesh = entity.GetComponent<MeshRenderer>();
-            Profile::DrawingMeshes += (float)glfwGetTime() - then;
 
-            then = (float)glfwGetTime();
             auto const &boundingBox = mesh.Mesh.GetAABB();
 
             if (mFrustumCulling && !boundingBox.IsInFrustum(frustum, model)) {
-                Profile::ComputingBoundingBoxes += (float)glfwGetTime() - then;
                 return;
             }
-            Profile::ComputingBoundingBoxes += (float)glfwGetTime() - then;
 
             // TODO DRAW DEBUG INFORMATION SUCH AS BOUNDING BOXES
             /*if (mDebugMode) {
@@ -74,8 +70,6 @@ namespace Elys {
             }*/
 
             // DRAWING MESH
-            then = (float)glfwGetTime();
-
             auto mat = mesh.Material;
 
             bool hasTexture = mat.texture != nullptr;
@@ -100,10 +94,12 @@ namespace Elys {
             glBindVertexArray(mesh.Mesh.VAO());
             glDrawElements(GL_TRIANGLES, (GLsizei)mesh.Mesh.IndicesSize(), GL_UNSIGNED_INT, nullptr);
             glBindVertexArray(0);
-            Profile::DrawingMeshes += (float)glfwGetTime() - then;
 
             Profile::DrawnMesh++;
         }
+
+        mFramebuffer->Unbind();
+        mProcessInputs = false;
     }
     void RenderSystem::ProcessInput() {
         if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
@@ -117,12 +113,12 @@ namespace Elys {
         }
     }
 
-    void RenderSystem::OnViewportChange(float width, float height) {
+    void RenderSystem::SetViewportSize(glm::vec2 offset, glm::vec2 size) {
         if (mCamera) {
-            mCamera->SetViewSize(width, height);
+            mCamera->SetViewSize(size.x, size.y);
         }
 
-        glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+        mFramebuffer->Resize(size.x, size.y);
     }
 
     void RenderSystem::OnKeyPressed(KeyPressedEvent &event) {

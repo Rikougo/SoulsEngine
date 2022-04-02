@@ -13,7 +13,7 @@
 namespace Elys {
     class SystemManager {
       public:
-        template <typename T> std::shared_ptr<T> RegisterSystem() {
+        template <typename T, typename ... Args> std::shared_ptr<T> RegisterSystem(Args&& ... args) {
             const char *typeName = typeid(T).name();
 
             if (mSystems.find(typeName) != mSystems.end())
@@ -22,7 +22,7 @@ namespace Elys {
 
             // Create a pointer to the system and return it so it can be used
             // externally
-            auto system = std::make_shared<T>();
+            auto system = std::make_shared<T>(std::forward<Args>(args)...);
             mSystems.insert({typeName, system});
             return system;
         }

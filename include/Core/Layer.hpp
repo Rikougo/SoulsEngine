@@ -33,6 +33,8 @@ namespace Elys {
         /// Occurs after gameloop update, used to render GUI. NO NEED TO CALL ImGui::Begin NOR ImGui::End !
         virtual void OnImGuiRender() {}
         virtual void OnEvent(Event &event) {}
+
+        virtual std::string Name() { return mDebugName; }
       protected:
         std::string mDebugName;
     };

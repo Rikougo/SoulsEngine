@@ -31,7 +31,7 @@ set(
         src/Render/AABB.cpp
         src/Core/Profiling.cpp
         src/Core/Geometry.cpp
-        src/ECS/Systems/RenderSystem.cpp src/Core/Input.cpp)
+        src/ECS/Systems/RenderSystem.cpp src/Core/Input.cpp src/Render/Framebuffer.cpp src/GUI/GraphScene.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)
