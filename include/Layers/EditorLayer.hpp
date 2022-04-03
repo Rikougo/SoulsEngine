@@ -42,12 +42,6 @@ namespace Elys {
         void OnEvent(Event& e) override;
       private:
         bool OnKeyPressed(KeyPressedEvent &event);
-        bool OnKeyReleased(KeyReleasedEvent &event);
-        bool OnMouseButtonPressed(MouseButtonPressedEvent& event);
-        bool OnMouseButtonReleased(MouseButtonReleasedEvent& event);
-        bool OnMouseMove(MouseMovedEvent& event);
-        bool OnMouseScroll(MouseScrolledEvent& event);
-        bool OnWindowResize(WindowResizeEvent &event);
 
         void CreateScene();
         void LoadScene(const std::filesystem::path& path);

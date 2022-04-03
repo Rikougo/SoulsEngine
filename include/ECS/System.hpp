@@ -14,12 +14,6 @@ namespace Elys{
       public:
         virtual void Update(float deltaTime) = 0;
 
-        virtual void OnKeyPressed(KeyPressedEvent &event) {};
-        virtual void OnKeyReleased(KeyReleasedEvent &event) {};
-        virtual void OnMouseButtonPressed(MouseButtonPressedEvent &event) {};
-        virtual void OnMouseButtonReleased(MouseButtonReleasedEvent &event) {};
-        virtual void OnMouseScroll(MouseScrolledEvent &event) {};
-
         std::set<EntityID> mEntities;
     };
 }

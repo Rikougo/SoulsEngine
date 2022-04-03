@@ -62,8 +62,8 @@ namespace Elys {
         }
 
         void SetViewportSize(glm::vec2 offset, glm::vec2 size);
-        void OnKeyPressed(KeyPressedEvent &event) override;
-        void OnMouseScroll(MouseScrolledEvent &event) override;
+        bool OnKeyPressed(KeyPressedEvent &event);
+        bool OnMouseScroll(MouseScrolledEvent &event);
 
         std::shared_ptr<Framebuffer> GetFramebuffer() { return mFramebuffer; }
       private:

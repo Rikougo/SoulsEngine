@@ -15,6 +15,7 @@ namespace Elys {
         static bool IsKeyPressed(KeyCode code);
         static bool IsMouseButtonPressed(MouseCode button);
         static glm::vec2 GetMousePosition();
+        static void SetCursorMode(CursorCode code);
     };
 }
 

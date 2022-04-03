@@ -66,26 +66,6 @@ namespace Elys {
             }
         }
 
-        void DispatchKeyPressed(KeyPressedEvent &event) {
-            for (auto const &pair : mSystems) pair.second->OnKeyPressed(event);
-        }
-
-        void DispatchKeyReleased(KeyReleasedEvent &event) {
-            for (auto const &pair : mSystems) pair.second->OnKeyReleased(event);
-        }
-
-        void DispatchMousePressed(MouseButtonPressedEvent &event) {
-            for (auto const &pair : mSystems) pair.second->OnMouseButtonPressed(event);
-        }
-
-        void DispatchMouseReleased(MouseButtonReleasedEvent &event) {
-            for (auto const &pair : mSystems) pair.second->OnMouseButtonReleased(event);
-        }
-
-        void DispatchMouseScroll(MouseScrolledEvent &event) {
-            for (auto const &pair : mSystems) pair.second->OnMouseScroll(event);
-        }
-
       private:
         std::unordered_map<const char *, Signature> mSignatures{};
         std::unordered_map<const char *, std::shared_ptr<System>> mSystems{};

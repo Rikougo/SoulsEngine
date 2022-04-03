@@ -12,10 +12,10 @@ namespace Elys {
 
         return transformedAABB.IsForwardPlan(frustum.topFace) &&
             transformedAABB.IsForwardPlan(frustum.bottomFace) &&
-            IsForwardPlan(frustum.leftFace) &&
-            IsForwardPlan(frustum.rightFace) &&
-            IsForwardPlan(frustum.nearFace) &&
-            IsForwardPlan(frustum.farFace);
+            transformedAABB.IsForwardPlan(frustum.leftFace) &&
+            transformedAABB.IsForwardPlan(frustum.rightFace) &&
+            transformedAABB.IsForwardPlan(frustum.nearFace) &&
+            transformedAABB.IsForwardPlan(frustum.farFace);
     }
 
     bool AABB::IsForwardPlan(const Geometry::Plan& plan) const {
@@ -25,5 +25,8 @@ namespace Elys {
         float r = extent.x * std::abs(plan.normal.x) + extent.y + std::abs(plan.normal.y) + extent.z * std::abs(plan.normal.z);
         float signedDistance = plan.GetSignedDistance(center);
         return -r <= signedDistance;
+    }
+    array<vec3, 8> AABB::Vertices() const {
+        return {};
     }
 }

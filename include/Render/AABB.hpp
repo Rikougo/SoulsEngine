@@ -6,12 +6,14 @@
 #define ELYS_AABB_HPP
 
 #include <chrono>
+#include <array>
 
 #include <glm/glm.hpp>
 
 #include <Core/Profiling.hpp>
 #include <Render/BoundingBox.hpp>
 
+using std::array;
 using glm::vec3;
 
 namespace Elys {
@@ -21,6 +23,8 @@ namespace Elys {
         AABB(vec3 min, float size) : lo(min), hi(min + size) {}
         AABB(vec3 min, vec3 max) : lo(min), hi(max) {}
         ~AABB() = default;
+
+        [[nodiscard]] array<vec3, 8> Vertices() const;
 
         [[nodiscard]] bool IsInFrustum(Frustum frustum, mat4 transform) const override;
         [[nodiscard]] bool IsForwardPlan(const Geometry::Plan& plan) const;

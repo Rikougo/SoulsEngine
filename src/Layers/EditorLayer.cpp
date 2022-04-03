@@ -4,10 +4,7 @@
 
 #include "Layers/EditorLayer.hpp"
 
-#include <filesystem>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <filesystem>²
 
 #include <imgui.h>
 
@@ -33,29 +30,30 @@ namespace Elys {
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
         auto mesh = Mesh::Sphere();
-        auto material = Material::FromTexture(std::filesystem::path("./assets/textures/earth.jpg"));
+        auto material = Material::FromTexture(std::filesystem::path("./assets/textures/stars_milky_way.jpg"));
+        material.ambient = {1.0f, 1.0f, 1.0f};
 
-        auto meshRenderer = MeshRenderer{
-            .Mesh = mesh,
-            .Material = material
+        auto skyRenderer = MeshRenderer{
+            .mesh = mesh,
+            .material = material
         };
 
         auto sky = mCurrentScene->CreateEntity("Sky");
-        sky.AddComponent<MeshRenderer>({
-            .Mesh = mesh,
-            .Material = Material::FromTexture(std::filesystem::path("./assets/textures/stars_milky_way.jpg"))
-        });
+        sky.GetComponent<Node>().SetScale({100.0f, 100.0f, 100.0f});
+        sky.AddComponent<MeshRenderer>(skyRenderer);
 
         auto sun = mCurrentScene->CreateEntity("Sun");
+        sun.GetComponent<Node>().SetPosition({-2.0f, 0.0f, 0.0f});
         sun.AddComponent<MeshRenderer>({
-            .Mesh = mesh,
-            .Material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg"))
+            .mesh = mesh,
+            .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg"))
         });
 
         auto earth = mCurrentScene->CreateEntity("Earth");
+        earth.GetComponent<Node>().SetScale({0.35f, 0.35f, 0.35f});
         earth.AddComponent<MeshRenderer>({
-            .Mesh = mesh,
-            .Material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_earth_daymap.jpg"))
+            .mesh = mesh,
+            .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_earth_daymap.jpg"))
         });
 
     }
@@ -117,13 +115,7 @@ namespace Elys {
         {
             if (ImGui::BeginMenu("File"))
             {
-                // Disabling fullscreen would allow the window to be moved to the front of other windows,
-                // which we can't undo at the moment without finer window depth/z control.
-                //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);1
-                if (ImGui::MenuItem("New", "Ctrl+N"));
-                if (ImGui::MenuItem("Open...", "Ctrl+O"));
-                if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"));
-                if (ImGui::MenuItem("Exit"));
+                if (ImGui::MenuItem("Exit")) {}
                 ImGui::EndMenu();
             }
 
@@ -170,25 +162,20 @@ namespace Elys {
     void EditorLayer::OnEvent(Event &event) {
         EventDispatcher dispatcher(event);
 
-        dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
-        dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_EVENT_FN(EditorLayer::OnMouseButtonReleased));
-        dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(EditorLayer::OnMouseMove));
-        dispatcher.Dispatch<MouseScrolledEvent>(BIND_EVENT_FN(EditorLayer::OnMouseScroll));
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
-        dispatcher.Dispatch<KeyReleasedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyReleased));
-        dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(EditorLayer::OnWindowResize));
+        dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
     }
-
-    bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) { return false; }
-    bool EditorLayer::OnKeyReleased(KeyReleasedEvent &event) { return false; }
-    bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent &event) { return false; }
-    bool EditorLayer::OnMouseButtonReleased(MouseButtonReleasedEvent &event) { return false; }
-    bool EditorLayer::OnMouseMove(MouseMovedEvent &event) { return false; }
-    bool EditorLayer::OnMouseScroll(MouseScrolledEvent &event) { return false; }
-    bool EditorLayer::OnWindowResize(WindowResizeEvent &event) { return false; }
 
     void EditorLayer::CreateScene() { mCurrentScene = std::make_shared<Scene>(); }
 
     void EditorLayer::LoadScene(const std::filesystem::path &path) {}
     void EditorLayer::SaveScene(const std::filesystem::path &path) {}
+
+    bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
+        if (event.GetKeyCode() == Key::Q && Input::IsKeyPressed(Key::LeftControl)) {
+            Application::Get().Shutdown();
+        }
+
+        return false;
+    }
 } // namespace Elys

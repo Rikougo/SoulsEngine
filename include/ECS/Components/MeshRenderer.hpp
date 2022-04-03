@@ -10,8 +10,8 @@
 
 namespace Elys {
     struct MeshRenderer {
-        Mesh Mesh;
-        Material Material;
+        Mesh mesh;
+        Material material;
     };
 }
 

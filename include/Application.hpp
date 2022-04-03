@@ -34,6 +34,7 @@ namespace Elys {
 
         void OnEvent(Event &event);
 
+        void Shutdown() { mRunning = false; }
       private:
         explicit Application(std::string name);
 

@@ -32,11 +32,6 @@ namespace Elys {
             return;
         }
 
-        if (!mShader || !mCamera) {
-            ELYS_CORE_ERROR("{0} not set in RenderSystem::Update and is required.", mShader ? "Shader" : "Camera");
-            return;
-        }
-
         mShader->Use();
         mShader->SetMat4("uProjection", mCamera->GetProjection());
         mShader->SetMat4("uView", mCamera->GetView());
@@ -56,21 +51,14 @@ namespace Elys {
             auto model = node.InheritedTransform();
             auto const &mesh = entity.GetComponent<MeshRenderer>();
 
-            auto const &boundingBox = mesh.Mesh.GetAABB();
+            auto const &boundingBox = mesh.mesh.GetAABB();
 
             if (mFrustumCulling && !boundingBox.IsInFrustum(frustum, model)) {
-                return;
+                continue;
             }
 
-            // TODO DRAW DEBUG INFORMATION SUCH AS BOUNDING BOXES
-            /*if (mDebugMode) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                mShader->SetVec3("uColor", {0.0, 0.5, 0.0});
-                mShader->SetBool("uShadingOn", false);
-            }*/
-
             // DRAWING MESH
-            auto mat = mesh.Material;
+            auto mat = mesh.material;
 
             bool hasTexture = mat.texture != nullptr;
             mShader->SetBool("uHasTexture", hasTexture);
@@ -91,8 +79,8 @@ namespace Elys {
             mShader->SetBool("uShadingOn", true);
 
             glPolygonMode(GL_FRONT_AND_BACK, mWireframe ? GL_LINE : GL_FILL);
-            glBindVertexArray(mesh.Mesh.VAO());
-            glDrawElements(GL_TRIANGLES, (GLsizei)mesh.Mesh.IndicesSize(), GL_UNSIGNED_INT, nullptr);
+            glBindVertexArray(mesh.mesh.VAO());
+            glDrawElements(GL_TRIANGLES, (GLsizei)mesh.mesh.IndicesSize(), GL_UNSIGNED_INT, nullptr);
             glBindVertexArray(0);
 
             Profile::DrawnMesh++;
@@ -105,11 +93,16 @@ namespace Elys {
         if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
             auto mPos = Input::GetMousePosition();
             mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
+
+            Input::SetCursorMode(Cursor::Disabled);
         } else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
             auto mPos = Input::GetMousePosition();
             mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonRight);
+
+            Input::SetCursorMode(Cursor::Disabled);
         } else {
             mCamera->EndCapture();
+            Input::SetCursorMode(Cursor::Normal);
         }
     }
 
@@ -118,15 +111,17 @@ namespace Elys {
             mCamera->SetViewSize(size.x, size.y);
         }
 
-        mFramebuffer->Resize(size.x, size.y);
+        if (mFramebuffer) {
+            mFramebuffer->Resize(size.x, size.y);
+        }
     }
 
-    void RenderSystem::OnKeyPressed(KeyPressedEvent &event) {
-        if (event.GetKeyCode() == Key::W) mWireframe = !mWireframe;
-        if (event.GetKeyCode() == Key::F) mFrustumCulling = !mFrustumCulling;
-    }
+    bool RenderSystem::OnKeyPressed(KeyPressedEvent &event) {
+        if (event.GetKeyCode() == Key::W && event.GetRepeatCount() == 0) mWireframe = !mWireframe;
+        if (event.GetKeyCode() == Key::F && event.GetRepeatCount() == 0) mFrustumCulling = !mFrustumCulling;
 
-    void RenderSystem::OnMouseScroll(MouseScrolledEvent &event) {
-        mCamera->Zoom(event.GetYOffset());
+        ELYS_CORE_INFO("Frustum {0}", mFrustumCulling);
+
+        return false;
     }
 }

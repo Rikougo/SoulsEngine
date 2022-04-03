@@ -26,4 +26,10 @@ namespace Elys {
         return {static_cast<float>(xPos), static_cast<float>(yPos)};
     }
 
+    void Input::SetCursorMode(CursorCode code) {
+        GLFWwindow *window = Application::Get().GetWindow().GetGLFWWindow();
+
+        glfwSetInputMode(window, GLFW_CURSOR, code);
+    }
+
 } // namespace Elys

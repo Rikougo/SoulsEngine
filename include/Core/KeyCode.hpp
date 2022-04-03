@@ -10,6 +10,7 @@
 namespace Elys {
     using KeyCode = uint16_t;
     using MouseCode = uint16_t;
+    using CursorCode = uint32_t;
 
     namespace Key {
         enum : KeyCode {
@@ -163,6 +164,14 @@ namespace Elys {
             ButtonLeft = Button0,
             ButtonRight = Button1,
             ButtonMiddle = Button2
+        };
+    }
+
+    namespace Cursor {
+        enum : CursorCode {
+            Normal   = 212993,
+            Hidden   = 212994,
+            Disabled = 212995,
         };
     }
 } // namespace Elys

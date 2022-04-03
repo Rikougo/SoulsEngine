@@ -19,6 +19,15 @@ namespace Elys::Geometry {
         Plan(const glm::vec3 &p1, const glm::vec3 &norm)
             : normal(glm::normalize(norm)), distance(glm::dot(normal, p1)) {}
 
+        Plan(const glm::vec4 &xyzw) {
+            glm::vec3 abc{xyzw.x, xyzw.y, xyzw.z};
+            float magnitude = glm::length(abc);
+            abc = glm::normalize(abc);
+
+            normal = abc;
+            distance = xyzw.w / magnitude;
+        }
+
         [[nodiscard]] float GetSignedDistance(const vec3 &point) const {
             return glm::dot(normal, point) - distance;
         }

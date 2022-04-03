@@ -66,7 +66,7 @@ namespace Elys {
         mDirty = true;
     }
 
-    void TrackBallCamera::MouseInput(float x, float y, MouseCode button) {
+    void TrackBallCamera::MouseInput(float x, float y, MouseCode button)    {
         if (mNewCapture) {
             mLastMouseX = x / mViewWidth;
             mLastMouseY = y / mViewHeight;
@@ -105,16 +105,20 @@ namespace Elys {
             const float halfHSide = halfVSide * mRatioAspect;
             const glm::vec3 frontMultFar = mFar * front;
 
+            // MATRIX
+            mProjection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
+            mView = glm::lookAt(position, mTarget, {0.0f, mUp, 0.0f});
+
+            auto vp = mProjection * mView;
+            glm::vec4 row1 = vp[0], row2 = vp[1], row3 = vp[2], row4 = vp[3];
+
+
             mFrustum.nearFace   = Geometry::Plan(position + (mNear * front), front);
             mFrustum.farFace    = Geometry::Plan(position + frontMultFar, -front);
             mFrustum.rightFace  = Geometry::Plan(position, glm::cross(up, frontMultFar + right * halfHSide));
             mFrustum.leftFace   = Geometry::Plan(position, glm::cross(frontMultFar - right * halfHSide, up));
             mFrustum.topFace    = Geometry::Plan(position, glm::cross(right, frontMultFar - up * halfVSide));
             mFrustum.bottomFace = Geometry::Plan(position, glm::cross(frontMultFar + up * halfVSide, right));
-
-            // MATRIX
-            mProjection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
-            mView = glm::lookAt(position, mTarget, {0.0f, mUp, 0.0f});;
 
 
             mDirty = false;
