@@ -94,15 +94,15 @@ namespace Elys {
             auto mPos = Input::GetMousePosition();
             mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
 
-            Input::SetCursorMode(Cursor::Disabled);
+            // Input::SetCursorMode(Cursor::Disabled);
         } else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
             auto mPos = Input::GetMousePosition();
             mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonRight);
 
-            Input::SetCursorMode(Cursor::Disabled);
+            // Input::SetCursorMode(Cursor::Disabled);
         } else {
             mCamera->EndCapture();
-            Input::SetCursorMode(Cursor::Normal);
+            // Input::SetCursorMode(Cursor::Normal);
         }
     }
 

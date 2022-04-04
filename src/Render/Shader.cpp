@@ -41,8 +41,7 @@ namespace Elys {
                 geometryCode = gShaderStream.str();
             }
         } catch (std::ifstream::failure &e) {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: " << e.what()
-                      << std::endl;
+            ELYS_CORE_ERROR("SHADER::FILE_NOT_SUCCESSFULLY_READ: {0}", e.what());
         }
         const char *vShaderCode = vertexCode.c_str();
         const char *fShaderCode = fragmentCode.c_str();

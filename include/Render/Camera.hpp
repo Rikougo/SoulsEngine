@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 
+#include <Core/Logger.hpp>
 #include <Core/Geometry.hpp>
 #include <Core/KeyCode.hpp>
 
@@ -38,6 +39,11 @@ namespace Elys {
         virtual void MouseInput(float x, float y, MouseCode button) = 0;
 
         inline void SetViewSize(float width, float height) {
+            if (width == 0.0f || height == 0.0f) {
+                ELYS_CORE_TRACE("Setting invalid values to camera size [{0}x{1}].", width, height);
+                return;
+            }
+
             mViewWidth = width;
             mViewHeight = height;
             mRatioAspect = width / height;

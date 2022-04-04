@@ -4,7 +4,7 @@
 
 #include "Layers/EditorLayer.hpp"
 
-#include <filesystem>²
+#include <filesystem>
 
 #include <imgui.h>
 
@@ -68,7 +68,6 @@ namespace Elys {
             mCamera->SetViewSize(mViewport.size.x, mViewport.size.y);
         }
 
-        mCurrentScene->OnUpdate(deltaTime);
         if (mViewportHovered) mRenderSystem->AcceptEvents();
         mRenderSystem->Update(deltaTime);
     }
@@ -82,81 +81,83 @@ namespace Elys {
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
         ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
         window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
         window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
         // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
         if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) {
-            ELYS_CORE_INFO("No background");
             window_flags |= ImGuiWindowFlags_NoBackground;
         }
 
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
-
-        ImGui::PopStyleVar(3);
-
-        // DockSpace
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiStyle& style = ImGui::GetStyle();
-        float minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x = 370.0f;
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        }
-
-        style.WindowMinSize.x = minWinSizeX;
-
-        if (ImGui::BeginMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
+        if (ImGui::Begin("MainDock", &dockspaceOpen, window_flags)) {
+            ImGui::PopStyleVar(3);
+            // DockSpace
+            ImGuiIO& io = ImGui::GetIO();
+            ImGuiStyle& style = ImGui::GetStyle();
+            float minWinSizeX = style.WindowMinSize.x;
+            style.WindowMinSize.x = 370.0f;
+            if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
             {
-                if (ImGui::MenuItem("Exit")) {}
-                ImGui::EndMenu();
+                ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+                ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
             }
 
-            ImGui::EndMenuBar();
-        }
+            style.WindowMinSize.x = minWinSizeX;
 
-        if (ImGui::Begin("Stats")) {
-            ImGui::Text("Framerate : %0.1f", Profile::Framerate);
-            ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
-            ImGui::Text("Draw time : %0.3f", Profile::DrawingTime);
-            ImGui::Text("\t- Computing bounding boxes : %0.3f", Profile::ComputingBoundingBoxes);
-            ImGui::Text("\t- Drawing meshes : %0.3f", Profile::DrawingMeshes);
-            ImGui::Text("GUI time : %0.3f", Profile::GUITime);
-            ImGui::Text("DrawnMesh : %d", Profile::DrawnMesh);
-            ImGui::End();
-        }
+            if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("File"))
+                {
+                    if (ImGui::MenuItem("Exit")) {}
 
-        mGraphScene.OnImGUIRender(mCurrentScene);
-        mComponentsEditor.OnImGUIRender(mGraphScene.GetSelected());
+                    ImGui::EndMenu();
+                }
+            } ImGui::EndMenuBar();
 
-        ImGui::ShowDemoWindow();
+            if (ImGui::Begin("Stats")) {
+                /*static bool VSYNC = true;
+                bool temp = VSYNC;
+                ImGui::Checkbox("Vsync", &temp);
+                if (temp != VSYNC) {
+                    VSYNC = temp;
+                    Application::Get().GetWindow().EnableVSync(VSYNC);
+                }*/
+                ImGui::Text("Framerate : %0.1f", Profile::Framerate);
+                ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
+                ImGui::Text("DrawnMesh : %d", Profile::DrawnMesh);
+            } ImGui::End();
 
-        // VIEWPORT
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-        if (ImGui::Begin("Viewport")) {
-            auto viewportSize = ImGui::GetContentRegionAvail();
+            mGraphScene.OnImGUIRender(mCurrentScene);
+            mComponentsEditor.OnImGUIRender(mGraphScene.GetSelected());
 
-            mViewport.size = {viewportSize.x, viewportSize.y};
+            ImGui::ShowDemoWindow();
 
-            // BIND FRAMEBUFFER COLOR DATA TO WINDOW
-            unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID();
-            ImGui::Image(reinterpret_cast<void*>(textureID), viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+            // VIEWPORT
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+            if (ImGui::Begin("Viewport")) {
+                auto viewportSize = ImGui::GetContentRegionAvail();
 
-            mViewportHovered = ImGui::IsWindowHovered();
-            Application::Get().GetImGUILayer().SetBlocking(!mViewportHovered);
+                mViewport.size = {viewportSize.x, viewportSize.y};
 
-            ImGui::End();
+                // BIND FRAMEBUFFER COLOR DATA TO WINDOW
+                unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID();
+                ImGui::Image(reinterpret_cast<void*>(textureID), viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+                mViewportHovered = ImGui::IsWindowHovered();
+                Application::Get().GetImGUILayer().SetBlocking(!mViewportHovered);
+
+
+            } ImGui::End();
             ImGui::PopStyleVar();
-        }
 
-        ImGui::End();
+            ImGui::End();
+        } else {
+            ImGui::PopStyleVar(3);
+        }
     }
 
     void EditorLayer::OnEvent(Event &event) {

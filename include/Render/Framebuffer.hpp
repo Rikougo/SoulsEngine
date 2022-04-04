@@ -7,6 +7,8 @@
 
 #include <glm/glm.hpp>
 
+#include <Core/Logger.hpp>
+
 namespace Elys {
     struct FramebufferData {
         float Width;

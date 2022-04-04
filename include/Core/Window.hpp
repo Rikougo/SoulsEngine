@@ -52,6 +52,10 @@ namespace Elys {
 
         void SetEventCallback(const EventCallbackFn &callback);
 
+        void EnableVSync(bool enable) {
+            glfwSwapInterval(enable ? 1 : 0);
+        }
+
         static std::unique_ptr<Window> Create(const WindowData &data = WindowData());
 
       private:

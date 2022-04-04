@@ -30,33 +30,60 @@ void Elys::Framebuffer::Update() {
     if (mBufferID) {
         glDeleteFramebuffers(1, &mBufferID);
         glDeleteTextures(1, &mColorAttachmentID);
-        glDeleteTextures(1, &mDepthAttachmentID);
         mColorAttachmentID = 0;
+        glDeleteTextures(1, &mDepthAttachmentID);
         mDepthAttachmentID = 0;
     }
-    
-    glCreateFramebuffers(1, &mBufferID);
+
+    glGenFramebuffers(1, &mBufferID);
     glBindFramebuffer(GL_FRAMEBUFFER, mBufferID);
 
     // COLOR ATTACHMENT
-    glCreateTextures(GL_TEXTURE_2D, 1, &mColorAttachmentID);
+    glGenTextures(1, &mColorAttachmentID);
     glBindTexture(GL_TEXTURE_2D, mColorAttachmentID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mData.Width, mData.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorAttachmentID, 0);
 
     // DEPTH TEXTURE
-    glCreateTextures(GL_TEXTURE_2D, 1, &mDepthAttachmentID);
+    glGenTextures(1, &mDepthAttachmentID);
     glBindTexture(GL_TEXTURE_2D, mDepthAttachmentID);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, mData.Width, mData.Height);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, mData.Width, mData.Height, 0,  GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, mDepthAttachmentID, 0);
+
+    switch (glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
+    case GL_FRAMEBUFFER_UNDEFINED:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer undefined");
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer incomplete attachment");
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer missing attachment");
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer incomplete draw buffer");
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer incomplete read buffer");
+        break;
+    case GL_FRAMEBUFFER_UNSUPPORTED:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer unsupported");
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer incomplete multisample");
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+        ELYS_CORE_ERROR("Framebuffer::Update : Framebuffer incomplete layer targets");
+        break;
+    case GL_FRAMEBUFFER_COMPLETE:
+        ELYS_CORE_INFO("Updated frame successfully [{0}x{1}].", mData.Width, mData.Height);
+        break;
+    default:
+        ELYS_CORE_WARN("Unhandled Framebuffer status.");
+    }
 }

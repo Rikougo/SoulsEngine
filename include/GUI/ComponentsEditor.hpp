@@ -16,7 +16,10 @@ namespace Elys::GUI {
         void OnImGUIRender(Entity &entity) {
             static bool componentsEditorOpen = true;
             if (ImGui::Begin("Components Editor", &componentsEditorOpen, ImGuiWindowFlags_AlwaysAutoResize)) {
-                if (!entity.IsValid()) return;
+                if (!entity.IsValid()) {
+                    ImGui::End();
+                    return;
+                }
 
                 auto& tag = entity.GetComponent<Tag>().name;
 
@@ -32,17 +35,17 @@ namespace Elys::GUI {
 
                 // --- NODE COMPONENT ---
                 // Shared by every entity
-
                 if (ImGui::TreeNode("Transform")) {
                     auto &node = entity.GetComponent<Node>();
 
                     auto pos = node.LocalPosition();
-                    auto rot = eulerAngles(node.LocalRotation()) * (180.0f / static_cast<float>(M_PI));
+                    auto rot =
+                        eulerAngles(node.LocalRotation()) * (180.0f / static_cast<float>(M_PI));
                     auto scale = node.LocalScale();
 
                     static bool uniformScale = true;
 
-                    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+                    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
                     Vec3Editor("Position", pos);
                     Vec3Editor("Rotation", rot, 1.0f);
                     Vec3Editor("Scale", scale);
@@ -54,7 +57,8 @@ namespace Elys::GUI {
                                 break;
                             }
                         }
-                    } else node.SetScale(scale);
+                    } else
+                        node.SetScale(scale);
 
                     node.SetPosition(pos);
                     node.SetRotation(glm::quat(rot * (static_cast<float>(M_PI) / 180.0f)));
@@ -80,7 +84,7 @@ namespace Elys::GUI {
                 }
 
                 ImGui::PopID();
-            }
+            } ImGui::End();
         };
 
         void Vec3Editor(std::string const &label, glm::vec3 &data, float speed = 0.1f) {

@@ -30,11 +30,17 @@ namespace Elys {
     }
 
     void Application::Run() {
+        static float cumulator = 0.0f;
         while (mRunning) {
             auto time = (float)glfwGetTime();
             float deltaTime = time - mLastFrameTime;
 
-            Profile::Framerate = 1.0f / deltaTime;
+            cumulator += deltaTime;
+
+            if (cumulator > 0.05f) {
+                Profile::Framerate = 1.0f / deltaTime;
+                cumulator = 0.0f;
+            }
             Profile::DeltaTime = deltaTime;
 
             mLastFrameTime = time;

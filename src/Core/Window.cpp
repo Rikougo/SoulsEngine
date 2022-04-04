@@ -51,6 +51,7 @@ namespace Elys {
 
         glfwSetWindowUserPointer(mWindow, &mData);
 
+        // EVENTS CALLBACKS
         glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height){
             WindowData &wData = *(WindowData*) glfwGetWindowUserPointer(window);
 
