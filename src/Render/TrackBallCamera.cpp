@@ -52,7 +52,7 @@ namespace Elys {
         vec3 right = normalize(glm::cross(look, worldUp));
         vec3 up = normalize(glm::cross(look, right));
 
-        mTarget += (right * deltaX + up * deltaY);
+        mPosition += (right * deltaX + up * deltaY);
 
         mDirty = true;
     }
@@ -67,30 +67,62 @@ namespace Elys {
     }
 
     void TrackBallCamera::MouseInput(float x, float y, MouseCode button)    {
-        if (mNewCapture) {
-            mLastMouseX = x / mViewWidth;
-            mLastMouseY = y / mViewHeight;
-        }
+        /*
+        */
 
-        mNewCapture = false;
-
-        auto dx = mLastMouseX - (x / mViewWidth);
-        auto dy = mLastMouseY - (y / mViewHeight);
-
-        mLastMouseX = (x / mViewWidth);
-        mLastMouseY = (y / mViewHeight);
-
-        // DEAD ZONE
-        dx = (abs(dx) < 0.001f) ? 0.0f : dx;
-        dy = (abs(dy) < 0.001f) ? 0.0f : dy;
-
-        if (dx == 0.0f && dy == 0.0f) return;
-
+        /// Rotation de la caméra
         if (button == Mouse::ButtonLeft) {
-            Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
-        } else if (button == Mouse::ButtonRight) {
+            if (mNewCapture) {
+                mLastMouseX = x;
+                mLastMouseY = y;
+            }
+            float xoffset = x - mLastMouseX;
+            float yoffset = mLastMouseY - y;
+            mLastMouseX = x;
+            mLastMouseY = y;
+
+            float sensitivity = 0.1f;
+            xoffset *= sensitivity;
+            yoffset *= sensitivity;
+            ELYS_CORE_INFO("Yaw : {0} - Pitch : {1}", mYaw, mPitch);
+            mYaw   += xoffset;
+            mPitch += yoffset;
+
+            if(mPitch > 89.0f)
+                mPitch = 89.0f;
+            if(mPitch < -89.0f)
+                mPitch = -89.0f;
+
+            mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+            mDirection.y = sin(glm::radians(mPitch));
+            mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+            mTarget = glm::normalize(mDirection);
+            mDirty = true;
+            //camera->view = lookAt(camera->position, camera->position + camera->target, camera->up);
+
+            //Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
+        }
+        /// Déplacement de la caméra
+        else if (button == Mouse::ButtonRight) {
+            if (mNewCapture) {
+                mLastMouseX = (x / mViewWidth);
+                mLastMouseY = (y / mViewHeight);
+            }
+            auto dx = mLastMouseX - (x / mViewWidth);
+            auto dy = mLastMouseY - (y / mViewHeight);
+
+            // DEAD ZONE
+            dx = (abs(dx) < 0.001f) ? 0.0f : dx;
+            dy = (abs(dy) < 0.001f) ? 0.0f : dy;
+
+            if (dx == 0.0f && dy == 0.0f) return;
+
+            // Pose problème car translation sur 2 axes peu importe la rotation de la caméra
             Pan(dx * 10.0f, dy * 10.0f);
         }
+        mNewCapture = false;
+
+
     }
 
     void TrackBallCamera::UpdateCameraData() const {
@@ -107,7 +139,7 @@ namespace Elys {
 
             // MATRIX
             mProjection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
-            mView = glm::lookAt(position, mTarget, {0.0f, mUp, 0.0f});
+            mView = glm::lookAt(position, position + mTarget, {0.0f, mUp, 0.0f});
 
             auto vp = mProjection * mView;
             glm::vec4 row1 = vp[0], row2 = vp[1], row3 = vp[2], row4 = vp[3];
@@ -123,5 +155,10 @@ namespace Elys {
 
             mDirty = false;
         }
+    }
+    void TrackBallCamera::Translate(vec3 direction, float speed) {
+        mPosition += direction * speed;
+
+        mDirty = true;
     }
 } // namespace Elys
