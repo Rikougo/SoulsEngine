@@ -19,8 +19,6 @@ namespace Elys::GUI {
                     ImGui::PopID();
                 }
             }
-
-            ImGui::End();
-        }
+        } ImGui::End();
     }
 }
