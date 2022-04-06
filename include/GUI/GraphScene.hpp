@@ -16,6 +16,9 @@ namespace Elys::GUI {
 
         Entity& GetSelected() { return mSelected; };
       private:
+        void DrawEntity(std::shared_ptr<Scene> &sceneRef, Entity const &entity);
+      private:
+        ImGuiTreeNodeFlags BaseNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
         Entity mSelected;
     };
 }

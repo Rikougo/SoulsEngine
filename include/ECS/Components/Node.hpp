@@ -37,15 +37,7 @@ namespace Elys {
         [[nodiscard]] Node* Parent() const;
         [[nodiscard]] vector<Node*> Children() const;
 
-        void OnDelete() {
-            if (mParent) mParent->RemoveChild(this);
-
-            // set new parent the parent of deleted node
-            // no matter if it hasn't any parent (children will have no parent)
-            for (auto child : mChildren) {
-                child->SetParent(mParent);
-            }
-        }
+        void OnDelete();
 
         [[nodiscard]] vec3 InheritedPosition() const;
         [[nodiscard]] vec3 InheritedScale() const;
