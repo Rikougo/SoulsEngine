@@ -69,8 +69,14 @@ namespace Elys {
         void SetScale(float x, float y, float z);
         void SetScale(float uniformScale);
 
+        /**
+         * @brief Compare Node using pointer adress
+         * @param other 
+         * @return
+         */
         bool operator==(const Node &other) {
-            return mParent == other.mParent && mChildren == other.mChildren;
+            return this == &other;
+            // return mParent == other.mParent && mChildren == other.mChildren;
         }
       private:
         void InvalidateNode() const;
