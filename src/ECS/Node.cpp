@@ -19,10 +19,15 @@ namespace Elys {
             return;
         }
 
-        mParent = parent;
-
         if (mParent) {
+            mParent->RemoveChild(this);
+        }
+
+        if (parent) {
+            mParent = parent;
             mParent->AddChild(this);
+        } else {
+            mParent = nullptr;
         }
     }
     void Node::AddChild(Node *child) {
@@ -41,12 +46,25 @@ namespace Elys {
     }
     void Node::RemoveChild(Node *node) {
         auto it = std::find(mChildren.begin(), mChildren.end(), node);
-        if (it != mChildren.end()) mChildren.erase(it);
+        if (it != mChildren.end()) {
+            (*it)->mParent = nullptr;
+            mChildren.erase(it);
+        }
         else ELYS_CORE_WARN("Child not found.");
     }
 
     Node* Node::Parent() const { return mParent; }
     vector<Node *> Node::Children() const { return mChildren; }
+
+    void Node::OnDelete() {
+        if (mParent) mParent->RemoveChild(this);
+
+        // set new parent the parent of deleted node
+        // no matter if it hasn't any parent (children will have no parent)
+        for (auto child : mChildren) {
+            child->SetParent(mParent);
+        }
+    };
 
     vec3 Node::InheritedPosition() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalPosition; }
     vec3 Node::InheritedScale() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalScale; }
