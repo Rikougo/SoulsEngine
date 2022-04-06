@@ -29,33 +29,49 @@ namespace Elys {
                 .path = path.string()
             };
         }
-
-        static Texture* PtrFromPath(const std::filesystem::path &path) {
-            return new Texture {
-                .id = GLTextureFromFile(path),
-                .path = path.string()
-            };
-        }
     };
 
     struct Material {
-        vec3 ambient{0.0f, 0.0f, 0.0f};
-        vec3 diffuse{1.0f, 1.0f, 1.0f};
-        vec3 specular{0.0f, 0.0f, 0.0f};
+        float metallic;
+        float roughness;
+        bool selfLight = false;
 
-        Texture *texture = nullptr;
-        vec4 color{0.58f, 0.58f, 0.58f, 1.0f};
-        Texture *normalMap = nullptr;
+        vec4 albedo{0.58f, 0.58f, 0.58f, 1.0f};
+        std::optional<Texture> texture;
+        std::optional<Texture> normalMap;
 
-        static Material FromTexture(const Texture &texture) {
+        /** @brief
+         *  Create Material texture, it does have default Ambient/Diffuse/Specular specs but have white opaque color.
+         */
+        static Material FromTexture(const Texture &texture, vec4 a = {1.0f, 1.0f, 1.0f, 1.0f}, float roughness = 0.0f, float metallic = 0.0f) {
             return {
-                .texture = new Texture(texture),
-                .color = {0.0f, 0.0f, 0.0f, 0.0f}
+                .metallic = metallic,
+                .roughness = roughness,
+                .albedo = a,
+                .texture = texture,
             };
         }
 
-        static Material FromTexture(const std::filesystem::path &texturePath) {
-            return FromTexture(Texture::FromPath(texturePath));
+        /** @brief
+         *  Create Material texture, it does have default Ambient/Diffuse/Specular specs but have white opaque color.
+         */
+        static Material FromTexture(const std::filesystem::path &texturePath, vec4 a = {1.0f, 1.0f, 1.0f, 1.0f}, float roughness = 0.0f, float metallic = 0.0f) {
+            return FromTexture(Texture::FromPath(texturePath), a, roughness, metallic);
+        }
+
+        Material& SetSelfLight(bool value) {
+            selfLight = value;
+            return *this;
+        }
+
+        Material& SetNormalMap(const Texture &value) {
+            normalMap = value;
+            return *this;
+        }
+
+        Material& ResetNormalMap() {
+            normalMap.reset();
+            return *this;
         }
     };
 }

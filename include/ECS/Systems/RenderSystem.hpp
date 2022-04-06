@@ -33,6 +33,7 @@ namespace Elys {
         bool mFrustumCulling = false;
         bool mDebugMode = false;
         bool mWireframe = false;
+        bool mLightning = true;
 
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
@@ -63,7 +64,8 @@ namespace Elys {
 
         void SetViewportSize(glm::vec2 offset, glm::vec2 size);
         bool OnKeyPressed(KeyPressedEvent &event);
-        bool OnMouseScroll(MouseScrolledEvent &event);
+
+        void SetLightning(bool enabled) { mLightning = enabled; }
 
         std::shared_ptr<Framebuffer> GetFramebuffer() { return mFramebuffer; }
       private:

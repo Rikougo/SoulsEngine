@@ -30,23 +30,19 @@ namespace Elys {
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
         auto mesh = Mesh::Sphere();
-        auto material = Material::FromTexture(std::filesystem::path("./assets/textures/stars_milky_way.jpg"));
-        material.ambient = {1.0f, 1.0f, 1.0f};
 
-        auto skyRenderer = MeshRenderer{
-            .mesh = mesh,
-            .material = material
-        };
-
-        auto sky = mCurrentScene->CreateEntity("Sky");
+        /*auto sky = mCurrentScene->CreateEntity("Sky");
         sky.GetComponent<Node>().SetScale({100.0f, 100.0f, 100.0f});
-        sky.AddComponent<MeshRenderer>(skyRenderer);
+        sky.AddComponent<MeshRenderer>({
+            .mesh = mesh,
+            .material = Material::FromTexture(std::filesystem::path("./assets/textures/stars_milky_way.jpg")).SetSelfLight(true)
+        });
 
         auto sun = mCurrentScene->CreateEntity("Sun");
         sun.GetComponent<Node>().SetPosition({-2.0f, 0.0f, 0.0f});
         sun.AddComponent<MeshRenderer>({
             .mesh = mesh,
-            .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg"))
+            .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg")).SetSelfLight(true)
         });
 
         auto earth = mCurrentScene->CreateEntity("Earth");
@@ -54,7 +50,25 @@ namespace Elys {
         earth.AddComponent<MeshRenderer>({
             .mesh = mesh,
             .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_earth_daymap.jpg"))
-        });
+        });*/
+
+        for(int i = 0; i <= 5; i++) {
+            auto line = mCurrentScene->CreateEntity("Line[" + std::to_string(i) + "]");
+            for(int j = 0; j <= 5; j++) {
+                auto entity = mCurrentScene->CreateEntity("Sphere[" + std::to_string(j) + "]");
+                line.GetComponent<Node>().AddChild(&entity.GetComponent<Node>());
+                entity.GetComponent<Node>().SetPosition({2.0f * i - 6.0f, 2.0f * j - 6.0f, 0.0f});
+                entity.AddComponent<MeshRenderer>({
+                    .mesh = mesh,
+                    .material = {.metallic = j * 0.2f, .roughness = i * 0.2f, .albedo = {1.0, 0.0, 0.0, 1.0}}
+                });
+            }
+
+            ELYS_CORE_INFO("Child of line {0}:", i);
+            for(auto const child : line.Children()) {
+                ELYS_CORE_INFO("\t- {0}", child.GetComponent<Tag>().name);
+            }
+        }
 
     }
 
@@ -119,13 +133,22 @@ namespace Elys {
             } ImGui::EndMenuBar();
 
             if (ImGui::Begin("Stats")) {
-                /*static bool VSYNC = true;
-                bool temp = VSYNC;
-                ImGui::Checkbox("Vsync", &temp);
-                if (temp != VSYNC) {
-                    VSYNC = temp;
+                static bool VSYNC = true;
+                static bool LIGHTNING = true;
+                bool tempVSYNC = VSYNC;
+                bool tempLightning = LIGHTNING;
+                ImGui::Checkbox("Vsync", &tempVSYNC);
+                if (tempVSYNC != VSYNC) {
+                    VSYNC = tempVSYNC;
                     Application::Get().GetWindow().EnableVSync(VSYNC);
-                }*/
+                }
+
+                ImGui::Checkbox("Lightning", &tempLightning);
+                if (tempLightning != LIGHTNING) {
+                    LIGHTNING = tempLightning;
+                    mRenderSystem->SetLightning(LIGHTNING);
+                }
+
                 ImGui::Text("Framerate : %0.1f", Profile::Framerate);
                 ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
                 ImGui::Text("DrawnMesh : %d", Profile::DrawnMesh);
@@ -165,6 +188,11 @@ namespace Elys {
 
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
+        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
+            mCamera->Zoom(event.GetYOffset());
+
+            return false;
+        });
     }
 
     void EditorLayer::CreateScene() { mCurrentScene = std::make_shared<Scene>(); }
@@ -175,6 +203,10 @@ namespace Elys {
     bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
         if (event.GetKeyCode() == Key::Q && Input::IsKeyPressed(Key::LeftControl)) {
             Application::Get().Shutdown();
+        }
+
+        if (event.GetKeyCode() == Key::R && Input::IsKeyPressed(Key::LeftControl)) {
+            mShader->Reload("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
         }
 
         return false;

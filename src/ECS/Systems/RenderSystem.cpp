@@ -23,7 +23,7 @@ namespace Elys {
         if (mProcessInputs) ProcessInput();
         mFramebuffer->Bind();
 
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!mShader || !mCamera) {
@@ -35,8 +35,17 @@ namespace Elys {
         mShader->Use();
         mShader->SetMat4("uProjection", mCamera->GetProjection());
         mShader->SetMat4("uView", mCamera->GetView());
+        mShader->SetVec3("uViewPos", mCamera->GetPosition());
 
-        mShader->SetVec3("uLightPosition", mCamera->GetPosition());
+        mShader->SetVec3("uLights[0].position", vec3{10.0f, -10.0f, 10.0f});
+        mShader->SetVec3("uLights[0].color", vec3{300.0f, 300.0f, 300.0f});
+        mShader->SetVec3("uLights[1].position", vec3{10.0f, 10.0f, 10.0f});
+        mShader->SetVec3("uLights[1].color", vec3{300.0f, 300.0f, 300.0f});
+        mShader->SetVec3("uLights[2].position", vec3{-10.0f, 10.0f, 10.0f});
+        mShader->SetVec3("uLights[2].color", vec3{300.0f, 300.0f, 300.0f});
+        mShader->SetVec3("uLights[3].position", vec3{-10.0f, -10.0f, 10.0f});
+        mShader->SetVec3("uLights[3].color", vec3{300.0f, 300.0f, 300.0f});
+        mShader->SetInt("uLightsAmount", 4);
 
         Profile::DrawnMesh = 0;
         Profile::ComputingBoundingBoxes = 0.0f;
@@ -60,23 +69,20 @@ namespace Elys {
             // DRAWING MESH
             auto mat = mesh.material;
 
-            bool hasTexture = mat.texture != nullptr;
-            mShader->SetBool("uHasTexture", hasTexture);
-            if (hasTexture) {
-                auto const &texture = (*mat.texture);
+            mShader->SetVec4("uMaterial.albedo", mat.albedo);
+            mShader->SetBool("uMaterial.hasTexture", mat.texture.has_value());
+            if (mat.texture) {
+                auto const &texture = mat.texture;
                 glActiveTexture(GL_TEXTURE0);
                 mShader->SetInt("uTexture", GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, texture.id);
-            } else {
-                mShader->SetVec4("uColor", mat.color);
+                glBindTexture(GL_TEXTURE_2D, texture->id);
             }
 
-            mShader->SetVec3("uMaterial.Ambient", mat.ambient);
-            mShader->SetVec3("uMaterial.Diffuse", mat.diffuse);
-            mShader->SetVec3("uMaterial.Specular", mat.specular);
+            mShader->SetFloat("uMaterial.metallic", mat.metallic);
+            mShader->SetFloat("uMaterial.roughness", std::max(0.05f, mat.roughness));
 
             mShader->SetMat4("uModel", model);
-            mShader->SetBool("uShadingOn", true);
+            mShader->SetBool("uLightsOn", mLightning && !mat.selfLight);
 
             glPolygonMode(GL_FRONT_AND_BACK, mWireframe ? GL_LINE : GL_FILL);
             glBindVertexArray(mesh.mesh.VAO());
@@ -119,8 +125,6 @@ namespace Elys {
     bool RenderSystem::OnKeyPressed(KeyPressedEvent &event) {
         if (event.GetKeyCode() == Key::W && event.GetRepeatCount() == 0) mWireframe = !mWireframe;
         if (event.GetKeyCode() == Key::F && event.GetRepeatCount() == 0) mFrustumCulling = !mFrustumCulling;
-
-        ELYS_CORE_INFO("Frustum {0}", mFrustumCulling);
 
         return false;
     }

@@ -69,15 +69,14 @@ namespace Elys::GUI {
 
                 // --- MESH RENDERER ---
                 if (entity.HasComponent<MeshRenderer>()) {
-                    if (ImGui::TreeNode("mesh Renderer")) {
+                    if (ImGui::TreeNode("Mesh Renderer")) {
                         auto &meshRenderer = entity.GetComponent<MeshRenderer>();
 
-                        ImGui::ColorEdit4("Color", glm::value_ptr(meshRenderer.material.color), ImGuiColorEditFlags_NoInputs);
+                        ImGui::ColorEdit4("Color", glm::value_ptr(meshRenderer.material.albedo), ImGuiColorEditFlags_NoInputs);
 
                         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
-                        Vec3Editor("Ambient", meshRenderer.material.ambient);
-                        Vec3Editor("Diffuse", meshRenderer.material.diffuse);
-                        Vec3Editor("Specular", meshRenderer.material.specular);
+                        ImGui::DragFloat("Metallic", &meshRenderer.material.metallic, 0.05f, 0.0f, 1.0f);
+                        ImGui::DragFloat("Roughness", &meshRenderer.material.roughness, 0.05f, 0.0f, 1.0f);
                         ImGui::PopStyleVar();
                         ImGui::TreePop();
                     }
