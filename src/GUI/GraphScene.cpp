@@ -23,8 +23,7 @@ namespace Elys::GUI {
         if (node.Children().empty())
             nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
-        bool node_open = ImGui::TreeNodeEx((void *)(intptr_t)entity.ID(), nodeFlags, "%s#%i",
-                                           entity.GetComponent<Tag>().name.c_str(), entity.ID());
+        bool node_open = ImGui::TreeNodeEx((void *)(intptr_t)entity.ID(), nodeFlags, "%s", entity.GetComponent<Tag>().name.c_str());
 
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             mSelected = entity;
