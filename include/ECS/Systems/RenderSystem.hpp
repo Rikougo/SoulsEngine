@@ -5,9 +5,6 @@
 #ifndef ELYS_RENDER_SYSTEM_HPP
 #define ELYS_RENDER_SYSTEM_HPP
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <Core/Logger.hpp>
 #include <Core/Input.hpp>
 
@@ -16,6 +13,7 @@
 
 #include <ECS/System.hpp>
 #include <ECS/Scene.hpp>
+#include <ECS/Components.hpp>
 
 #include <Render/Shader.hpp>
 #include <Render/Framebuffer.hpp>
@@ -27,17 +25,15 @@ using std::shared_ptr;
 namespace Elys {
     class RenderSystem : public System {
       private:
-        shared_ptr<Scene> mCurrentScene;
-
         bool mProcessInputs = false;
         bool mFrustumCulling = false;
         bool mDebugMode = false;
         bool mWireframe = false;
         bool mLightning = true;
 
+        shared_ptr<Scene> mCurrentScene;
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
-
         shared_ptr<Framebuffer> mFramebuffer;
       public:
         RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer);
@@ -47,18 +43,28 @@ namespace Elys {
         void SetCamera(const TrackBallCamera& camera);
         void SetScene(shared_ptr<Scene> &sceneRef);
 
+        /**
+         * @brief Important to call before Update() if you want render system to take input in account
+         * (may be deleted later, for a better design option)
+         */
         void AcceptEvents() { mProcessInputs = true;}
+        /**
+         * @brief has a look on all mesh renderer components, will draw it (using node component for
+         * position and camera model/projection). It also makes use of material (contained in mesh renderer)
+         * to draw Color/Texture/NormalMap(WIP).
+         * @param deltaTime time since last time
+         */
         void Update(float deltaTime) override;
 
         [[nodiscard]] const Camera& MainCamera() const {
             if (!mCamera)
-                ELYS_CORE_ERROR("RenderSystem::MainCamera : No camera set on render system.");
+                throw std::runtime_error("RenderSystem::MainCamera : No camera set on render system.");
             return *mCamera;
         }
 
         [[nodiscard]] Camera& MainCamera() {
             if (!mCamera)
-                ELYS_CORE_ERROR("RenderSystem::MainCamera : No camera set on render system.");
+                throw std::runtime_error("RenderSystem::MainCamera : No camera set on render system.");
             return *mCamera;
         }
 
@@ -66,8 +72,9 @@ namespace Elys {
         bool OnKeyPressed(KeyPressedEvent &event);
 
         void SetLightning(bool enabled) { mLightning = enabled; }
+        [[nodiscard]] bool UseLightning() { return mLightning; }
 
-        std::shared_ptr<Framebuffer> GetFramebuffer() { return mFramebuffer; }
+        shared_ptr<Framebuffer> GetFramebuffer() { return mFramebuffer; }
       private:
         void ProcessInput();
     };

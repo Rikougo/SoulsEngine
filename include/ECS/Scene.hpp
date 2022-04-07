@@ -20,8 +20,9 @@
 
 // Components
 #include <ECS/Components/Node.hpp>
-#include <ECS/Components.hpp>
+#include <ECS/Components/Light.hpp>
 #include <ECS/Components/MeshRenderer.hpp>
+#include <ECS/Components.hpp>
 
 // Managers
 #include <ECS/ComponentManager.hpp>
@@ -37,8 +38,8 @@ namespace Elys {
       public:
         Scene();
 
-        void OnUpdate(float deltaTime);
-        void OnRuntimeUpdate(float deltaTime);
+        /* void OnUpdate(float deltaTime);
+        void OnRuntimeUpdate(float deltaTime); */
 
         Entity CreateEntity(std::string name = "Entity");
         void DestroyEntity(Entity const &entity);
@@ -89,7 +90,7 @@ namespace Elys {
             return comp;
         }
 
-        template<typename T> T& GetComponent() const {
+        template<typename T> [[nodiscard]] T& GetComponent() const {
             return mScene->mComponentManager.GetComponent<T>(mID);
         }
 
@@ -105,6 +106,20 @@ namespace Elys {
 
         template<typename T> [[nodiscard]] bool HasComponent() const {
             return mScene->mComponentManager.HasComponent<T>(mID);
+        }
+
+        void SetParent(Entity &parent) {
+            auto &node = GetComponent<Node>();
+            auto &parentNode = parent.GetComponent<Node>();
+
+            node.SetParent(&parentNode);
+        }
+
+        void AddChildren(Entity &child) {
+            auto &node = GetComponent<Node>();
+            auto &childNode = child.GetComponent<Node>();
+
+            node.AddChild(&childNode);
         }
 
         [[nodiscard]] Entity Parent() const {
@@ -131,7 +146,6 @@ namespace Elys {
         [[nodiscard]] bool IsValid() const { return mScene != nullptr && mID < MAX_ENTITIES; }
 
         bool operator==(const Entity &other) const {
-
             return mID == other.mID && mScene == other.mScene;
         }
 

@@ -48,12 +48,23 @@ void Elys::Framebuffer::Update() {
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorAttachmentID, 0);
 
+    // ENTITY ATTACHMENT
+    // (used to retrieve Entity ID by reading pixels)
+    glGenTextures(1, &mEntityAttachmentID);
+    glBindTexture(GL_TEXTURE_2D, mEntityAttachmentID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, mData.Width, mData.Height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, mEntityAttachmentID, 0);
+
     // DEPTH TEXTURE
     glGenTextures(1, &mDepthAttachmentID);
     glBindTexture(GL_TEXTURE_2D, mDepthAttachmentID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, mData.Width, mData.Height, 0,  GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, mDepthAttachmentID, 0);
+
+    GLenum cAttachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+    glDrawBuffers(2, cAttachments);
 
     switch (glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
     case GL_FRAMEBUFFER_UNDEFINED:
@@ -86,4 +97,12 @@ void Elys::Framebuffer::Update() {
     default:
         ELYS_CORE_WARN("Unhandled Framebuffer status.");
     }
+}
+
+int Elys::Framebuffer::GetEntityData(int x, int y) {
+    throw std::runtime_error("Framebuffer::GetEntityData() : Not implemented yet.");
+    // int pixelData;
+    // glReadBuffer(GL_COLOR_ATTACHMENT1);
+    // glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+    // return pixelData;
 }

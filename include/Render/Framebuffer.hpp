@@ -21,7 +21,10 @@ namespace Elys {
         ~Framebuffer() = default;
 
         [[nodiscard]] unsigned int GetColorTextureID() const { return mColorAttachmentID; }
+        [[nodiscard]] unsigned int GetEntityTextureID() const { return mEntityAttachmentID; }
         [[nodiscard]] FramebufferData GetData() const { return mData; }
+
+        [[nodiscard]] int GetEntityData(int x, int y);
 
         void Bind() const;
         static void Unbind() ;
@@ -34,6 +37,7 @@ namespace Elys {
       private:
         unsigned int mBufferID;
         unsigned int mColorAttachmentID;
+        unsigned int mEntityAttachmentID;
         unsigned int mDepthAttachmentID;
 
         FramebufferData mData;

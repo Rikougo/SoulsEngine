@@ -20,11 +20,10 @@ using glm::quat;
 using std::vector;
 
 namespace Elys {
-    /// \Brief
-    ///     Node used as component. It stores parent pointer (if has parent) and Children pointers (if has any),
-    ///     on accessing Inherited information it will use parent as well.
-    /// \Todo
-    ///     Compute Inherited information on modification and cache it.
+    /**
+     * @brief
+     * Core component of all Entity, it is used to build graph hierarchy
+     */
     class Node {
       public:
         Node();
@@ -62,13 +61,12 @@ namespace Elys {
         void SetScale(float uniformScale);
 
         /**
-         * @brief Compare Node using pointer adress
+         * @brief Compare Node using pointer address
          * @param other 
          * @return
          */
         bool operator==(const Node &other) {
             return this == &other;
-            // return mParent == other.mParent && mChildren == other.mChildren;
         }
       private:
         void InvalidateNode() const;
@@ -81,11 +79,13 @@ namespace Elys {
         vec3 mLocalPosition{0.0f, 0.0f, 0.0f};
         vec3 mLocalScale{1.0f, 1.0f, 1.0f};
         quat mLocalRotation{vec3(0.0f, 0.0f, 0.0f)};
+        mutable mat4 mLocalTransform{1.0f};
 
         mutable vec3 mGlobalPosition{0.0f, 0.0f, 0.0f};
         mutable vec3 mGlobalScale{1.0f, 1.0f, 1.0f};
         mutable quat mGlobalRotation{vec3{0.0f, 0.0f, 0.0f}};
         mutable bool mGlobalUpdated = false;
+        mutable mat4 mGlobalTransform{1.0f};
     };
 }
 

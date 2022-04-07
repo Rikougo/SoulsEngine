@@ -12,6 +12,11 @@
 
 #include <Core/Logger.hpp>
 
+// INCLUDE ALL COMPONENTS HERE TO REGROUP ALL
+#include <ECS/Components/Node.hpp>
+#include <ECS/Components/Light.hpp>
+#include <ECS/Components/MeshRenderer.hpp>
+
 using std::string;
 
 using glm::vec3;

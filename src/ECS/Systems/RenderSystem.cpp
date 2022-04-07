@@ -4,6 +4,8 @@
 
 #include <ECS/Systems/RenderSystem.hpp>
 
+#include <glad/glad.h>
+
 namespace Elys {
     RenderSystem::RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer) :
         mCurrentScene(scene), mCamera(camera), mShader(shader), mFramebuffer(framebuffer) {}
@@ -36,16 +38,6 @@ namespace Elys {
         mShader->SetMat4("uProjection", mCamera->GetProjection());
         mShader->SetMat4("uView", mCamera->GetView());
         mShader->SetVec3("uViewPos", mCamera->GetPosition());
-
-        mShader->SetVec3("uLights[0].position", vec3{10.0f, -10.0f, 10.0f});
-        mShader->SetVec3("uLights[0].color", vec3{300.0f, 300.0f, 300.0f});
-        mShader->SetVec3("uLights[1].position", vec3{10.0f, 10.0f, 10.0f});
-        mShader->SetVec3("uLights[1].color", vec3{300.0f, 300.0f, 300.0f});
-        mShader->SetVec3("uLights[2].position", vec3{-10.0f, 10.0f, 10.0f});
-        mShader->SetVec3("uLights[2].color", vec3{300.0f, 300.0f, 300.0f});
-        mShader->SetVec3("uLights[3].position", vec3{-10.0f, -10.0f, 10.0f});
-        mShader->SetVec3("uLights[3].color", vec3{300.0f, 300.0f, 300.0f});
-        mShader->SetInt("uLightsAmount", 4);
 
         Profile::DrawnMesh = 0;
         Profile::ComputingBoundingBoxes = 0.0f;
@@ -83,6 +75,8 @@ namespace Elys {
 
             mShader->SetMat4("uModel", model);
             mShader->SetBool("uLightsOn", mLightning && !mat.selfLight);
+
+            mShader->SetInt("uEntity", static_cast<int>(id));
 
             glPolygonMode(GL_FRONT_AND_BACK, mWireframe ? GL_LINE : GL_FILL);
             glBindVertexArray(mesh.mesh.VAO());

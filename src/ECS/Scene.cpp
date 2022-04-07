@@ -10,6 +10,7 @@ namespace Elys {
         mComponentManager.RegisterComponent<Tag>();
         mComponentManager.RegisterComponent<RigidBody>();
         mComponentManager.RegisterComponent<MeshRenderer>();
+        mComponentManager.RegisterComponent<Light>();
     }
 
     Entity Scene::CreateEntity(std::string name) {
@@ -19,7 +20,6 @@ namespace Elys {
         entity.AddComponent(Node{});
 
         mEntities.insert(entity);
-
 
         ELYS_CORE_INFO("Created entity {0}", newID);
         return entity;
@@ -43,9 +43,9 @@ namespace Elys {
         return Entity(this, id);
     }
 
-    void Scene::OnUpdate(float deltaTime) { }
+    /*void Scene::OnUpdate(float deltaTime) { }
 
-    void Scene::OnRuntimeUpdate(float deltaTime) { }
+    void Scene::OnRuntimeUpdate(float deltaTime) { }*/
 
     Scene Scene::FromFile(std::filesystem::path &path) {
         throw std::runtime_error("Scene::OnRuntimeUpdate : Not implemented yet.");

@@ -15,11 +15,14 @@ struct Light {
     vec3 color;
 };
 
-out vec4 glFragColor;
+layout (location = 0) out vec4 glFragColor;
+layout (location = 3) out int outEntity;
 
 in vec3 vFragNormal;
 in vec4 vWorldSpaceCoord;
 in vec2 vTexCoords;
+
+uniform int uEntity;
 
 uniform Material uMaterial;
 uniform sampler2D uTexture0;
@@ -83,6 +86,7 @@ void main()
         return;
     }
 
+    // PBR SHADING
     vec3 N = normalize(vFragNormal);
     vec3 V = normalize(uViewPos - vWorldSpaceCoord.xyz);
 
@@ -119,8 +123,9 @@ void main()
     vec3 ambient = vec3(0.03) * uMaterial.albedo.xyz;
     vec3 color = ambient + Lo;
 
-    color = color / (color + vec3(1.0f));
-    // color = pow(color, vec3(1.0f / 2.2f));
+    color = color / (color + vec3(1.0f)); // HDR Tonemapping
+    // color = pow(color, vec3(1.0f / 2.2f)); // gamma correct
 
     glFragColor = vec4(color, 1.0f);
+    outEntity = 0;
 }

@@ -14,6 +14,7 @@
 
 #include <ECS/Scene.hpp>
 #include <ECS/Components.hpp>
+#include <ECS/Systems/LightSystem.hpp>
 #include <ECS/Systems/RenderSystem.hpp>
 
 #include <Events/Event.hpp>
@@ -55,6 +56,7 @@ namespace Elys {
         bool mViewportHovered = false;
         shared_ptr<Scene> mCurrentScene;
 
+        shared_ptr<LightSystem> mLightSystem;
         shared_ptr<RenderSystem> mRenderSystem;
         shared_ptr<Framebuffer> mFramebuffer;
         shared_ptr<TrackBallCamera> mCamera;

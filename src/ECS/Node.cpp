@@ -72,30 +72,14 @@ namespace Elys {
     mat4 Node::InheritedTransform() const {
         if (!mGlobalUpdated) UpdateTransform();
 
-        mat4 model(1.0f);
-
-        model = glm::translate(model, InheritedPosition());
-
-        model *= mat4_cast(InheritedRotation());
-
-        model = glm::scale(model, InheritedScale());
-
-        return model;
+        return mGlobalTransform;
     }
 
     vec3 Node::LocalPosition() const { return mLocalPosition; }
     vec3 Node::LocalScale() const { return mLocalScale; }
     quat Node::LocalRotation() const { return mLocalRotation; }
     mat4 Node::LocalTransform() const {
-        mat4 model(1.0f);
-
-        model = glm::translate(model, LocalPosition());
-
-        model *= mat4_cast(LocalRotation());
-
-        model = glm::scale(model, LocalScale());
-
-        return model;
+        return mLocalTransform;
     }
 
     void Node::Move(vec3 translation) { mLocalPosition += translation; InvalidateNode(); }
@@ -146,6 +130,16 @@ namespace Elys {
             mGlobalRotation = mLocalRotation;
             mGlobalScale    = mLocalScale;
         }
+
+        mGlobalTransform = mat4(1.0f);
+        mGlobalTransform = glm::translate(mGlobalTransform, mGlobalPosition);
+        mGlobalTransform *= glm::mat4_cast(mGlobalRotation);
+        mGlobalTransform = glm::scale(mGlobalTransform, mGlobalScale);
+
+        mLocalTransform = mat4(1.0f);
+        mLocalTransform = glm::translate(mLocalTransform, mLocalPosition);
+        mLocalTransform *= glm::mat4_cast(mLocalRotation);
+        mLocalTransform = glm::translate(mLocalTransform, mLocalScale);
 
         mGlobalUpdated = true;
     }
