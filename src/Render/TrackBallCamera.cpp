@@ -19,34 +19,23 @@ namespace Elys {
         return mFrustum;
     }
 
-    void TrackBallCamera::Rotate(float deltaT, float deltaP) {
-        if (mUp > 0.0f) {
-            mTheta += deltaT;
-        } else {
-            mTheta -= deltaT;
-        }
+    void TrackBallCamera::Rotate(float deltaX, float deltaY) {
+        mYaw   += deltaX;
+        mPitch += deltaY;
 
-        mPhi += deltaP;
+        if(mPitch > 89.0f)
+            mPitch = 89.0f;
+        if(mPitch < -89.0f)
+            mPitch = -89.0f;
 
-        // Keep phi within -2PI to +2PI for easy 'up' comparison
-        if (mPhi > M_2_PI) {
-            mPhi -= M_2_PI;
-        } else if (mPhi < -M_2_PI) {
-            mPhi += M_2_PI;
-        }
-
-        // If phi is between 0 to PI or -PI to -2PI, make 'up' be positive Y, other wise make it
-        // negative Y
-        if ((mPhi > 0 && mPhi < M_PI) || (mPhi < -M_PI && mPhi > -M_2_PI)) {
-            mUp = 1.0f;
-        } else {
-            mUp = -1.0f;
-        }
-
+        mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+        mDirection.y = sin(glm::radians(mPitch));
+        mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+        mTarget = glm::normalize(mDirection);
         mDirty = true;
     }
     void TrackBallCamera::Pan(float deltaX, float deltaY) {
-        vec3 look = normalize(-Geometry::ToCartesian(mPhi, mTheta, mDistance));
+        vec3 look = normalize(-GetPosition());
         vec3 worldUp = {0.0f, mUp, 0.0f};
 
         vec3 right = normalize(glm::cross(look, worldUp));
@@ -84,23 +73,8 @@ namespace Elys {
             float sensitivity = 0.1f;
             xoffset *= sensitivity;
             yoffset *= sensitivity;
-            ELYS_CORE_INFO("Yaw : {0} - Pitch : {1}", mYaw, mPitch);
-            mYaw   += xoffset;
-            mPitch += yoffset;
 
-            if(mPitch > 89.0f)
-                mPitch = 89.0f;
-            if(mPitch < -89.0f)
-                mPitch = -89.0f;
-
-            mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-            mDirection.y = sin(glm::radians(mPitch));
-            mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-            mTarget = glm::normalize(mDirection);
-            mDirty = true;
-            //camera->view = lookAt(camera->position, camera->position + camera->target, camera->up);
-
-            //Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
+            Rotate(xoffset, yoffset);
         }
         /// Déplacement de la caméra
         else if (button == Mouse::ButtonRight) {
@@ -110,14 +84,9 @@ namespace Elys {
             }
             auto dx = mLastMouseX - (x / mViewWidth);
             auto dy = mLastMouseY - (y / mViewHeight);
+            mLastMouseX = (x / mViewWidth);
+            mLastMouseY = (y / mViewHeight);
 
-            // DEAD ZONE
-            dx = (abs(dx) < 0.001f) ? 0.0f : dx;
-            dy = (abs(dy) < 0.001f) ? 0.0f : dy;
-
-            if (dx == 0.0f && dy == 0.0f) return;
-
-            // Pose problème car translation sur 2 axes peu importe la rotation de la caméra
             Pan(dx * 10.0f, dy * 10.0f);
         }
         mNewCapture = false;

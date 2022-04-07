@@ -20,6 +20,7 @@ namespace Elys {
         mShader = std::make_shared<Shader>("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
         // TODO Change TrackBallCamera by general Camera object and control it with an instance of CameraController object
         mCamera = std::make_shared<TrackBallCamera>();
+        mCamera->Rotate(0,0);
         mCamera->SetViewSize(1280, 720);
         mFramebuffer = std::make_shared<Framebuffer>(FramebufferData{
             .Width = 1280,
