@@ -36,10 +36,12 @@ namespace Elys {
             mButtonType = button;
         }
 
+        enum Direction {UP, DOWN, LEFT, RIGHT, FRONT, BACK};
+
         void EndCapture() { mCapture = false; mNewCapture = true; }
 
         void Rotate(float deltaT, float deltaP);
-        void Translate(vec3 direction, float speed=1.0f);
+        void Translate(Direction direction, float speed=0.1f);
         void Zoom(float delta);
         void Pan(float deltaX, float deltaY);
         void MouseInput(float x, float y, MouseCode button) override;
@@ -49,6 +51,7 @@ namespace Elys {
         [[nodiscard]] float GetUp() const { return mUp; }
         [[nodiscard]] float GetDistance() const { return mDistance; }
         [[nodiscard]] vec3 GetTarget() const { return mTarget; }
+
 
       private:
         void UpdateCameraData() const;

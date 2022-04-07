@@ -32,32 +32,23 @@ namespace Elys {
         mDirection.y = sin(glm::radians(mPitch));
         mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
         mTarget = glm::normalize(mDirection);
+
         mDirty = true;
     }
     void TrackBallCamera::Pan(float deltaX, float deltaY) {
-        vec3 look = normalize(-GetPosition());
-        vec3 worldUp = {0.0f, mUp, 0.0f};
-
-        vec3 right = normalize(glm::cross(look, worldUp));
-        vec3 up = normalize(glm::cross(look, right));
-
-        mPosition += (right * deltaX + up * deltaY);
+        Translate(RIGHT, deltaX);
+        Translate(UP, deltaY);
 
         mDirty = true;
     }
     void TrackBallCamera::Zoom(float delta) {
-        mDistance -= delta * mZoomSpeed;
-
-        if (mDistance < 1.0f) {
-            mDistance = 1.0f;
-        }
+        mPosition += mTarget * delta * mZoomSpeed;
 
         mDirty = true;
     }
 
     void TrackBallCamera::MouseInput(float x, float y, MouseCode button)    {
-        /*
-        */
+        float sensitivity = 0.1f;
 
         /// Rotation de la caméra
         if (button == Mouse::ButtonLeft) {
@@ -70,11 +61,7 @@ namespace Elys {
             mLastMouseX = x;
             mLastMouseY = y;
 
-            float sensitivity = 0.1f;
-            xoffset *= sensitivity;
-            yoffset *= sensitivity;
-
-            Rotate(xoffset, yoffset);
+            Rotate(xoffset * sensitivity, yoffset * sensitivity);
         }
         /// Déplacement de la caméra
         else if (button == Mouse::ButtonRight) {
@@ -83,11 +70,11 @@ namespace Elys {
                 mLastMouseY = (y / mViewHeight);
             }
             auto dx = mLastMouseX - (x / mViewWidth);
-            auto dy = mLastMouseY - (y / mViewHeight);
+            auto dy = (y / mViewHeight) - mLastMouseY;
             mLastMouseX = (x / mViewWidth);
             mLastMouseY = (y / mViewHeight);
 
-            Pan(dx * 10.0f, dy * 10.0f);
+            Pan(dx * 10.0f, dy *  10.0f);
         }
         mNewCapture = false;
 
@@ -125,8 +112,34 @@ namespace Elys {
             mDirty = false;
         }
     }
-    void TrackBallCamera::Translate(vec3 direction, float speed) {
-        mPosition += direction * speed;
+    void TrackBallCamera::Translate(Direction direction, float speed) {
+        vec3 up, right;
+        auto position = GetPosition();
+        auto front = glm::normalize(mTarget - position);
+        right = glm::normalize(glm::cross(front, {0.0f, 1.0f, 0.0f}));
+        up = glm::normalize(glm::cross(right, front));
+
+        switch(direction)
+        {
+        case UP:
+            mPosition += up * speed * mZoomSpeed;
+            break;
+        case DOWN:
+            mPosition -= up * speed * mZoomSpeed;
+            break;
+        case LEFT:
+            mPosition -= right * speed * mZoomSpeed;
+            break;
+        case RIGHT:
+            mPosition += right * speed * mZoomSpeed;
+            break;
+        case FRONT:
+            mPosition += mTarget * speed * mZoomSpeed;
+            break;
+        case BACK:
+            mPosition -= mTarget * speed * mZoomSpeed;
+            break;
+        }
 
         mDirty = true;
     }

@@ -90,6 +90,27 @@ namespace Elys {
         mProcessInputs = false;
     }
     void RenderSystem::ProcessInput() {
+        // Keyboard Inputs
+        if (Input::IsKeyPressed(Key::E)) {
+            mCamera->Translate(TrackBallCamera::UP);
+        }
+        if (Input::IsKeyPressed(Key::Q)) {
+            mCamera->Translate(TrackBallCamera::DOWN);
+        }
+        if (Input::IsKeyPressed(Key::A)) {
+            mCamera->Translate(TrackBallCamera::LEFT);
+        }
+        if (Input::IsKeyPressed(Key::D)) {
+            mCamera->Translate(TrackBallCamera::RIGHT);
+        }
+        if (Input::IsKeyPressed(Key::W)) {
+            mCamera->Translate(TrackBallCamera::FRONT);
+        }
+        if (Input::IsKeyPressed(Key::S)) {
+            mCamera->Translate(TrackBallCamera::BACK);
+        }
+
+        // Mouse Inputs
         if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
             auto mPos = Input::GetMousePosition();
             mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
