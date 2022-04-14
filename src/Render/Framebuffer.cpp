@@ -52,7 +52,7 @@ void Elys::Framebuffer::Update() {
     // (used to retrieve Entity ID by reading pixels)
     glGenTextures(1, &mEntityAttachmentID);
     glBindTexture(GL_TEXTURE_2D, mEntityAttachmentID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, mData.Width, mData.Height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, mData.Width, mData.Height, 0, GL_RED_INTEGER, GL_INT, nullptr);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, mEntityAttachmentID, 0);
 
@@ -100,9 +100,10 @@ void Elys::Framebuffer::Update() {
 }
 
 int Elys::Framebuffer::GetEntityData(int x, int y) {
-    throw std::runtime_error("Framebuffer::GetEntityData() : Not implemented yet.");
-    // int pixelData;
-    // glReadBuffer(GL_COLOR_ATTACHMENT1);
-    // glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
-    // return pixelData;
+    Bind();
+    int pixelData;
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+    glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+    Unbind();
+    return pixelData;
 }

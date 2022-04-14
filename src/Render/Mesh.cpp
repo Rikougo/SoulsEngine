@@ -10,20 +10,12 @@ namespace Elys {
     Mesh::Mesh(const Mesh &other) {
         mVertices = other.mVertices;
         mIndices = other.mIndices;
-
-        GenerateBuffers();
+        mVAO = other.mVAO;
     }
     Mesh::Mesh(Mesh &other) {
         mVertices = other.mVertices;
         mIndices = other.mIndices;
-
-        mInitialized = other.mInitialized;
-
-        if (mInitialized) {
-            mVAO = other.mVAO;
-            mVBO = other.mVBO;
-            mEBO = other.mEBO;
-        }
+        mVAO = other.mVAO;
     }
 
     Mesh Mesh::LoadOFF(std::filesystem::path &path, bool loadNormals) {
@@ -224,40 +216,19 @@ namespace Elys {
     }
 
     void Mesh::GenerateBuffers() {
-        glGenVertexArrays(1, &mVAO);
-        glGenBuffers(1, &mVBO);
-        glGenBuffers(1, &mEBO);
+        mVAO = std::make_shared<VertexArray>();
+        auto vertexBuffer = std::make_shared<VertexBuffer>((void*)&mVertices[0], mVertices.size() * sizeof(Vertex));
+        BufferLayout vertexLayout{
+            {"position", sizeof(vec3), 3, GL_FLOAT},
+            {"normal", sizeof(vec3), 3, GL_FLOAT},
+            {"texCoord", sizeof(vec2), 2, GL_FLOAT}
+        };
+        vertexBuffer->SetLayout(vertexLayout);
+        mVAO->AddVertexBuffer(vertexBuffer);
+        auto indexBuffer = std::make_shared<IndexBuffer>(&mIndices[0], mIndices.size());
+        mVAO->SetIndexBuffer(indexBuffer);
+        ELYS_CORE_INFO("sizeof(Vertex) : {0} | layout stride : {1}", sizeof(Vertex), vertexLayout.GetStride());
 
-        glBindVertexArray(mVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-
-        glBufferData(
-            GL_ARRAY_BUFFER,                                             // BUFFER TYPE
-            static_cast<GLsizeiptr>(mVertices.size() * sizeof(Vertex)),  // BUFFER SIZE
-            &mVertices[0],                                               // BUFFER ADDRESS
-            GL_STATIC_DRAW                                               // USAGE
-        );
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
-        glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER,                                     // BUFFER TYPE
-            static_cast<GLsizeiptr>(mIndices.size() * sizeof(uint32_t)), // BUFFER SIZE
-            &mIndices[0],                                                // BUFFER ADDRESS
-            GL_STATIC_DRAW                                               // USAGE
-        );
-
-        // SET UP VERTEX ARRAY LAYOUT
-        // vertex positions
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
-        // vertex normals
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal));
-        // vertex texture coords
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, texCoord));
-
-        // unbind VAO
-        glBindVertexArray(0);
+        ELYS_CORE_INFO("{0} {1} {2}", offsetof(Vertex, position), offsetof(Vertex, normal), offsetof(Vertex, texCoord));
     }
 } // namespace Elys

@@ -15,6 +15,7 @@ namespace Elys::GUI {
         void OnImGUIRender(std::shared_ptr<Scene> &sceneRef);
 
         Entity& GetSelected() { return mSelected; };
+        void SetSelected(Entity entity) { mSelected = entity; }
       private:
         void DrawEntity(std::shared_ptr<Scene> &sceneRef, Entity const &entity);
       private:

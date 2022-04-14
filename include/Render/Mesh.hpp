@@ -10,11 +10,14 @@
 #include <vector>
 #include <algorithm>
 #include <random>
+#include <memory>
 
 #include <glm/glm.hpp>
 
 #include <Core/Logger.hpp>
 #include <Core/Base.hpp>
+
+#include <Render/DataHolder.hpp>
 #include <Render/AABB.hpp>
 
 using glm::vec2;
@@ -50,7 +53,7 @@ namespace Elys {
         static Mesh Cube();
         static Mesh Sphere(uint16_t slice = 32, uint16_t stack = 32);
 
-        [[nodiscard]] unsigned int VAO() const { return mVAO; }
+        [[nodiscard]] const shared_ptr<VertexArray>& VAO() const { return mVAO; }
         [[nodiscard]] size_t IndicesSize() const { return mIndices.size(); }
         [[nodiscard]] bool IsInit() const { return mInitialized; }
         [[nodiscard]] const vector<Vertex>& Vertices() const { return mVertices; }
@@ -77,9 +80,11 @@ namespace Elys {
         void GenerateBuffers();
 
       private:
-        unsigned int mVAO, mVBO, mEBO;
+        shared_ptr<VertexArray> mVAO;
+
         vector<Vertex> mVertices;
         vector<uint32_t> mIndices;
+
         bool mInitialized = false;
 
         mutable BoundingBox* mBoundingBox = nullptr;

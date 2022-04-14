@@ -45,6 +45,12 @@ namespace Elys {
         void DestroyEntity(Entity const &entity);
         Entity EntityFromNode(Node const &component);
 
+        void SetSelected(int id) { mSelected = id; }
+        [[nodiscard]] int GetSelected() const { return mSelected; }
+
+        void SetHovered(int id) { mHovered = id; }
+        [[nodiscard]] int GetHovered() const { return mHovered; }
+
         template<typename T, typename ... Args> std::shared_ptr<T> RegisterSystem(Args&& ... args) {
             return mSystemManager.RegisterSystem<T>(std::forward<Args>(args)...);
         }
@@ -59,6 +65,8 @@ namespace Elys {
         [[nodiscard]] std::set<Entity>::const_iterator end() const { return mEntities.end(); }
       private:
         std::set<Entity> mEntities;
+
+        int mSelected, mHovered;
 
         ComponentManager mComponentManager;
         EntityManager mEntityManager;

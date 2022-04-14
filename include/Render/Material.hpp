@@ -32,8 +32,8 @@ namespace Elys {
     };
 
     struct Material {
-        float metallic;
-        float roughness;
+        float metallic = 0.0f;
+        float roughness = 0.0f;
         bool selfLight = false;
 
         vec4 albedo{0.58f, 0.58f, 0.58f, 1.0f};
@@ -71,6 +71,36 @@ namespace Elys {
 
         Material& ResetNormalMap() {
             normalMap.reset();
+            return *this;
+        }
+
+        Material& SetTexture(const Texture &value) {
+            texture = value;
+            return *this;
+        }
+
+        Material& ResetTexture() {
+            texture.reset();
+            return *this;
+        }
+
+        Material& SetAlbedo(float x, float y, float z, float w = 1.0f) {
+            albedo = {x, y, z, w};
+            return *this;
+        }
+
+        Material& SetAlbedo(const vec4 &value) {
+            albedo = value;
+            return *this;
+        }
+
+        Material& SetMetallic(float value) {
+            metallic = value;
+            return *this;
+        }
+
+        Material& SetRoughness(float value) {
+            roughness = value;
             return *this;
         }
     };

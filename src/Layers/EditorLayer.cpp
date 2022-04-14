@@ -77,6 +77,13 @@ namespace Elys {
         mRenderSystem->Update(deltaTime);
 
         // TODO Handle mouse position to determine which entity is hovered (use of mViewport and frame buffer entity attachment)
+        if (mViewportHovered) {
+            auto [mx, my] = ImGui::GetMousePos();
+            mx -= mViewport.offset.x; my -= mViewport.offset.y;
+
+            auto entityID = mFramebuffer->GetEntityData(mx, mViewport.size.y - my);
+            mCurrentScene->SetHovered(entityID);
+        }
     }
 
     void EditorLayer::OnImGuiRender() {
@@ -153,6 +160,7 @@ namespace Elys {
             } ImGui::End();
 
             mGraphScene.OnImGUIRender(mCurrentScene);
+            mCurrentScene->SetSelected(mGraphScene.GetSelected().ID());
             mComponentsEditor.OnImGUIRender(mGraphScene.GetSelected());
 
             ImGui::ShowDemoWindow();
@@ -190,6 +198,19 @@ namespace Elys {
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
         dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
             mCamera->Zoom(event.GetYOffset());
+
+            return false;
+        });
+
+        dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &event) {
+            auto [mx, my] = ImGui::GetMousePos();
+            mx -= mViewport.offset.x; my -= mViewport.offset.y;
+
+            auto entityID = mFramebuffer->GetEntityData(mx, mViewport.size.y - my);
+
+            mGraphScene.SetSelected(Entity(mCurrentScene.get(), entityID));
+
+            ELYS_CORE_INFO("Clicked entity {0} at [x: {1}, y: {2}]", entityID, mx, my);
 
             return false;
         });

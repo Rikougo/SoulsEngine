@@ -16,7 +16,7 @@ struct Light {
 };
 
 layout (location = 0) out vec4 glFragColor;
-layout (location = 3) out int outEntity;
+layout (location = 1) out int outEntity;
 
 in vec3 vFragNormal;
 in vec4 vWorldSpaceCoord;
@@ -71,6 +71,7 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 void main()
 {
+    outEntity = uEntity;
     vec4 rawColor = vec4(1.0f);
 
     if (uMaterial.hasTexture) {
@@ -127,5 +128,4 @@ void main()
     // color = pow(color, vec3(1.0f / 2.2f)); // gamma correct
 
     glFragColor = vec4(color, 1.0f);
-    outEntity = 0;
 }

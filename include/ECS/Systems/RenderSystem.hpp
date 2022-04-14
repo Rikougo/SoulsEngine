@@ -34,6 +34,7 @@ namespace Elys {
         shared_ptr<Scene> mCurrentScene;
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
+        shared_ptr<Shader> mOutlineShader;
         shared_ptr<Framebuffer> mFramebuffer;
       public:
         RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer);

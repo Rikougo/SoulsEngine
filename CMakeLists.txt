@@ -17,21 +17,27 @@ set(
         src/Core/Window.cpp
         src/Core/Logger.cpp
         src/Core/LayerStack.cpp
-        src/ECS/EntityManager.cpp
-        src/Layers/ImGuiLayer.cpp
-        src/Layers/EditorLayer.cpp
-        src/Application.cpp
-        main.cpp
+        src/Core/Profiling.cpp
+        src/Core/Geometry.cpp
+        src/Core/Input.cpp
         src/ECS/Scene.cpp
         src/ECS/Node.cpp
+        src/GUI/GraphScene.cpp
+        src/ECS/EntityManager.cpp
+        src/ECS/Systems/RenderSystem.cpp
+        src/ECS/Systems/LightSystem.cpp
+        src/Layers/ImGuiLayer.cpp
+        src/Layers/EditorLayer.cpp
         src/Render/Shader.cpp
         src/Render/TrackBallCamera.cpp
         src/Render/Material.cpp
         src/Render/Mesh.cpp
         src/Render/AABB.cpp
-        src/Core/Profiling.cpp
-        src/Core/Geometry.cpp
-        src/ECS/Systems/RenderSystem.cpp src/Core/Input.cpp src/Render/Framebuffer.cpp src/GUI/GraphScene.cpp src/ECS/Systems/LightSystem.cpp)
+        src/Render/Framebuffer.cpp
+        src/Render/DataHolder.cpp
+        src/Application.cpp
+        main.cpp
+)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)
