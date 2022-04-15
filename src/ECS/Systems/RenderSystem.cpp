@@ -58,8 +58,11 @@ namespace Elys {
 
         auto frustum = mCamera->GetFrustum();
 
+        // Enable stencil writing to draw full shape on stencil buffer
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         for (auto id : mEntities) {
+            // Only keep draw right on hover/selected entities to avoid
+            // useless shape collapses
             glStencilMask(mCurrentScene->GetSelected() == id || mCurrentScene->GetHovered() == id ? 0xFF : 0x00);
 
             auto entity = Entity(mCurrentScene.get(), id);
@@ -133,8 +136,12 @@ namespace Elys {
             mOutlineShader->SetVec4("uOutlineColor", outlineColor);
 
             mesh.VAO()->Bind();
-            glDrawElements(GL_TRIANGLES, (GLsizei)mesh.VAO()->GetIndexBuffer()->Size(),
-                           GL_UNSIGNED_INT, nullptr);
+            glDrawElements(
+                GL_TRIANGLES,
+                (GLsizei)mesh.VAO()->GetIndexBuffer()->Size(),
+                GL_UNSIGNED_INT,
+                nullptr
+            );
             mesh.VAO()->Unbind();
         }
 
@@ -162,16 +169,6 @@ namespace Elys {
         } else {
             mCamera->EndCapture();
             // Input::SetCursorMode(Cursor::Normal);
-        }
-    }
-
-    void RenderSystem::SetViewportSize(glm::vec2 offset, glm::vec2 size) {
-        if (mCamera) {
-            mCamera->SetViewSize(size.x, size.y);
-        }
-
-        if (mFramebuffer) {
-            mFramebuffer->Resize(size.x, size.y);
         }
     }
 

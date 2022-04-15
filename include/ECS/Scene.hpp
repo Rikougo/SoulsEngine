@@ -30,6 +30,7 @@
 #include <ECS/SystemManager.hpp>
 
 using std::set;
+using std::unique_ptr;
 
 namespace Elys {
     class Entity;
@@ -52,11 +53,11 @@ namespace Elys {
         [[nodiscard]] int GetHovered() const { return mHovered; }
 
         template<typename T, typename ... Args> std::shared_ptr<T> RegisterSystem(Args&& ... args) {
-            return mSystemManager.RegisterSystem<T>(std::forward<Args>(args)...);
+            return mSystemManager->RegisterSystem<T>(std::forward<Args>(args)...);
         }
 
         template<typename T, typename ... Components> void SetSystemSignature() {
-            mSystemManager.SetSignature<T>(mComponentManager.GetSignature<Components...>());
+            mSystemManager->SetSignature<T>(mComponentManager->GetSignature<Components...>());
         }
 
         std::set<Entity>::iterator begin() { return mEntities.begin(); }
@@ -68,10 +69,9 @@ namespace Elys {
 
         int mSelected, mHovered;
 
-        ComponentManager mComponentManager;
-        EntityManager mEntityManager;
-        SystemManager mSystemManager;
-        // PhysicSystem mPhysicSystem;
+        unique_ptr<ComponentManager> mComponentManager;
+        unique_ptr<EntityManager> mEntityManager;
+        unique_ptr<SystemManager> mSystemManager;
 
         friend class Entity;
       public:
@@ -88,32 +88,32 @@ namespace Elys {
         ~Entity() = default;
 
         template<typename T> T& AddComponent(T value) const {
-            T& comp = mScene->mComponentManager.AddComponent(mID, value);
+            T& comp = mScene->mComponentManager->AddComponent(mID, value);
 
             // CHANGE SIGNATURE OF ENTITY AND UPDATE SYSTEMS
-            Signature newSignature = mScene->mEntityManager.GetSignature(mID);
-            newSignature.set(mScene->mComponentManager.GetComponentType<T>(), true);
-            mScene->mEntityManager.SetSignature(mID, newSignature);
-            mScene->mSystemManager.EntitySignatureChanged(mID, newSignature);
+            Signature newSignature = mScene->mEntityManager->GetSignature(mID);
+            newSignature.set(mScene->mComponentManager->GetComponentType<T>(), true);
+            mScene->mEntityManager->SetSignature(mID, newSignature);
+            mScene->mSystemManager->EntitySignatureChanged(mID, newSignature);
             return comp;
         }
 
         template<typename T> [[nodiscard]] T& GetComponent() const {
-            return mScene->mComponentManager.GetComponent<T>(mID);
+            return mScene->mComponentManager->GetComponent<T>(mID);
         }
 
         template<typename T> void RemoveComponent() const {
-            mScene->mComponentManager.RemoveComponent<T>(mID);
+            mScene->mComponentManager->RemoveComponent<T>(mID);
 
             // CHANGE SIGNATURE OF ENTITY AND UPDATE SYSTEMS
-            Signature newSignature = mScene->mEntityManager.GetSignature(mID);
-            newSignature.set(mScene->mComponentManager.GetComponentType<T>(), false);
-            mScene->mEntityManager.SetSignature(mID, newSignature);
-            mScene->mSystemManager.EntitySignatureChanged(mID, newSignature);
+            Signature newSignature = mScene->mEntityManager->GetSignature(mID);
+            newSignature.set(mScene->mComponentManager->GetComponentType<T>(), false);
+            mScene->mEntityManager->SetSignature(mID, newSignature);
+            mScene->mSystemManager->EntitySignatureChanged(mID, newSignature);
         }
 
         template<typename T> [[nodiscard]] bool HasComponent() const {
-            return mScene->mComponentManager.HasComponent<T>(mID);
+            return mScene->mComponentManager->HasComponent<T>(mID);
         }
 
         void SetParent(Entity &parent) {

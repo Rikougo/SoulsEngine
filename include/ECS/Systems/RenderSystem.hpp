@@ -69,7 +69,6 @@ namespace Elys {
             return *mCamera;
         }
 
-        void SetViewportSize(glm::vec2 offset, glm::vec2 size);
         bool OnKeyPressed(KeyPressedEvent &event);
 
         void SetLightning(bool enabled) { mLightning = enabled; }

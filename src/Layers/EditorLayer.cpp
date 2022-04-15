@@ -203,6 +203,8 @@ namespace Elys {
         });
 
         dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &event) {
+            if (event.GetMouseButton() != Mouse::ButtonMiddle) return false;
+
             auto [mx, my] = ImGui::GetMousePos();
             mx -= mViewport.offset.x; my -= mViewport.offset.y;
 
