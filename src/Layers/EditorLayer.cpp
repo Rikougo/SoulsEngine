@@ -33,6 +33,7 @@ namespace Elys {
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
         auto mesh = Mesh::Sphere();
+        auto earthTexture = Texture::FromPath("./assets/textures/8k_earth_daymap.jpg");
 
         for(int i = 0; i <= 5; i++) {
             auto line = mCurrentScene->CreateEntity("Line[" + std::to_string(i) + "]");
@@ -42,7 +43,10 @@ namespace Elys {
                 entity.GetComponent<Node>().SetPosition(2.0f * i - 6.0f, 2.0f * j - 6.0f, 0.0f);
                 entity.AddComponent<MeshRenderer>({
                     .mesh = mesh,
-                    .material = {.metallic = j * 0.2f, .roughness = i * 0.2f, .albedo = {1.0, 0.0, 0.0, 1.0}}
+                    .material = Material::FromTexture(earthTexture)
+                                    .SetMetallic(j * 0.2f)
+                                    .SetRoughness(i * 0.2f)
+                    // .material = {.metallic = j * 0.2f, .roughness = i * 0.2f, .albedo = {1.0, 0.0, 0.0, 1.0}}
                 });
             }
         }

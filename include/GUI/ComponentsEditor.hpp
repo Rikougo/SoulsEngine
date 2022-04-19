@@ -35,7 +35,7 @@ namespace Elys::GUI {
 
                 // --- NODE COMPONENT ---
                 // Shared by every entity
-                if (ImGui::TreeNode("Transform")) {
+                if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
                     auto &node = entity.GetComponent<Node>();
 
                     auto pos = node.LocalPosition();
@@ -64,21 +64,26 @@ namespace Elys::GUI {
                     node.SetRotation(glm::quat(rot * (static_cast<float>(M_PI) / 180.0f)));
 
                     ImGui::PopStyleVar();
-                    ImGui::TreePop();
+                    // ImGui::TreePop();
                 }
 
                 // --- MESH RENDERER ---
                 if (entity.HasComponent<MeshRenderer>()) {
-                    if (ImGui::TreeNode("Mesh Renderer")) {
+                    if (ImGui::CollapsingHeader("Mesh Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
                         auto &meshRenderer = entity.GetComponent<MeshRenderer>();
 
                         ImGui::ColorEdit4("Color", glm::value_ptr(meshRenderer.material.albedo), ImGuiColorEditFlags_NoInputs);
+
+                        if (meshRenderer.material.texture) {
+                            ImGui::SameLine();
+                            ImGui::Image(reinterpret_cast<void*>(meshRenderer.material.texture->ID()), ImVec2(40, 40));
+                        }
 
                         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
                         ImGui::DragFloat("Metallic", &meshRenderer.material.metallic, 0.05f, 0.0f, 1.0f);
                         ImGui::DragFloat("Roughness", &meshRenderer.material.roughness, 0.05f, 0.0f, 1.0f);
                         ImGui::PopStyleVar();
-                        ImGui::TreePop();
+                        // ImGui::TreePop();
                     }
                 }
 
@@ -90,19 +95,28 @@ namespace Elys::GUI {
             ImGui::PushID(label.c_str());
 
             auto tableFlags = ImGuiTableFlags_NoPadInnerX;
-            ImGui::BeginTable(label.c_str(), 4, tableFlags);
+            ImGui::BeginTable(label.c_str(), 7, tableFlags);
 
             ImGui::TableSetupColumn("one", ImGuiTableColumnFlags_WidthFixed, 100.0f); // Default to 100.0f
             ImGui::TableSetupColumn("two", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
-            ImGui::TableSetupColumn("three", ImGuiTableColumnFlags_WidthStretch);       // Default to auto
-            ImGui::TableSetupColumn("four", ImGuiTableColumnFlags_WidthStretch);        // Default to auto
+            ImGui::TableSetupColumn("three", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
+            ImGui::TableSetupColumn("four", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
+            ImGui::TableSetupColumn("five", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
+            ImGui::TableSetupColumn("six", ImGuiTableColumnFlags_WidthStretch);        // Default to auto
+            ImGui::TableSetupColumn("seven", ImGuiTableColumnFlags_WidthStretch);        // Default to auto
 
             ImGui::TableNextColumn();
             ImGui::Text("%s", label.c_str());
             ImGui::TableNextColumn();
+            ImGui::Text("X :");
+            ImGui::TableNextColumn();
             ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f");
             ImGui::TableNextColumn();
+            ImGui::Text("Y :");
+            ImGui::TableNextColumn();
             ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f");
+            ImGui::TableNextColumn();
+            ImGui::Text("Z :");
             ImGui::TableNextColumn();
             ImGui::DragFloat("##Z", &data[2], speed, 0.0f, 0.0f, "%0.2f");
 

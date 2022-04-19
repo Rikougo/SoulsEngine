@@ -13,22 +13,31 @@
 
 #include <Core/Logger.hpp>
 
+using glm::vec2;
 using glm::vec3;
 using glm::vec4;
 
 namespace Elys {
-    unsigned int GLTextureFromFile(const std::filesystem::path &path);
+    // Texture GLTextureFromFile(const std::filesystem::path &path);
 
-    struct Texture {
-        unsigned int id;
-        std::string path;
+    class Texture {
+      private:
+        unsigned int mId;
+        int mHeight, mWidth;
+        std::filesystem::path mPath;
+        bool mValid = false;
+      public:
+        Texture() {}
 
-        static Texture FromPath(const std::filesystem::path &path) {
-            return Texture {
-                .id = GLTextureFromFile(path),
-                .path = path.string()
-            };
-        }
+        Texture(unsigned int id, std::filesystem::path path, int width, int height) :
+            mId(id), mPath(std::move(path)), mWidth(width), mHeight(height), mValid(true) {}
+
+        bool Valid() { return mValid; }
+        unsigned int ID() const { return mId; }
+        std::filesystem::path GetPath() { return mPath; }
+        vec2 GetSize() const { return {mWidth, mHeight}; }
+
+        static Texture FromPath(const std::filesystem::path &path);
     };
 
     struct Material {

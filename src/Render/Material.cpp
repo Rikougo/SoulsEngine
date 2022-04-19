@@ -10,7 +10,7 @@
 #include <Core/Logger.hpp>
 
 namespace Elys {
-    unsigned int GLTextureFromFile(const std::filesystem::path &path) {
+    Texture Texture::FromPath(const std::filesystem::path &path) {
             stbi_set_flip_vertically_on_load(true);
 
             unsigned int textureID;
@@ -40,8 +40,10 @@ namespace Elys {
             } else {
                 ELYS_CORE_WARN("Texture failed to load at path : {0}", path.string());
                 stbi_image_free(data);
+
+                return {};
             }
 
-            return textureID;
+            return {textureID, path, width, height};
         }
 }

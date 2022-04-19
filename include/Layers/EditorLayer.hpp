@@ -35,6 +35,7 @@ namespace Elys {
     class EditorLayer : public Layer {
       public:
         EditorLayer() = default;
+        ~EditorLayer() = default;
         void OnAttach() override;
         void OnDetach() override;
 
