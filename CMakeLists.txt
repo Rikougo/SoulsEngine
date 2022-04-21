@@ -24,6 +24,7 @@ set(
         main.cpp
         src/ECS/Scene.cpp
         src/ECS/Node.cpp
+        src/ECS/Rigidbody.cpp
         src/Render/Shader.cpp
         src/Render/TrackBallCamera.cpp
         src/Render/Material.cpp

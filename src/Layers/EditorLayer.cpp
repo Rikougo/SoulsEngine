@@ -29,32 +29,32 @@ namespace Elys {
         mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
-        auto mesh = Mesh::Sphere();
-        auto material = Material::FromTexture(std::filesystem::path("./assets/textures/stars_milky_way.jpg"));
-        material.ambient = {1.0f, 1.0f, 1.0f};
+        // auto mesh = Mesh::Sphere();
+        // auto material = Material::FromTexture(std::filesystem::path("./assets/textures/stars_milky_way.jpg"));
+        // material.ambient = {1.0f, 1.0f, 1.0f};
 
-        auto skyRenderer = MeshRenderer{
-            .mesh = mesh,
-            .material = material
-        };
+        // auto skyRenderer = MeshRenderer{
+        //     .mesh = mesh,
+        //     .material = material
+        // };
 
-        auto sky = mCurrentScene->CreateEntity("Sky");
-        sky.GetComponent<Node>().SetScale({100.0f, 100.0f, 100.0f});
-        sky.AddComponent<MeshRenderer>(skyRenderer);
+        // auto sky = mCurrentScene->CreateEntity("Sky");
+        // sky.GetComponent<Node>().SetScale({100.0f, 100.0f, 100.0f});
+        // sky.AddComponent<MeshRenderer>(skyRenderer);
 
-        auto sun = mCurrentScene->CreateEntity("Sun");
-        sun.GetComponent<Node>().SetPosition({-2.0f, 0.0f, 0.0f});
-        sun.AddComponent<MeshRenderer>({
-            .mesh = mesh,
-            .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg"))
-        });
+        // auto sun = mCurrentScene->CreateEntity("Sun");
+        // sun.GetComponent<Node>().SetPosition({-2.0f, 0.0f, 0.0f});
+        // sun.AddComponent<MeshRenderer>({
+        //     .mesh = mesh,
+        //     .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg"))
+        // });
 
-        auto earth = mCurrentScene->CreateEntity("Earth");
-        earth.GetComponent<Node>().SetScale({0.35f, 0.35f, 0.35f});
-        earth.AddComponent<MeshRenderer>({
-            .mesh = mesh,
-            .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_earth_daymap.jpg"))
-        });
+        // auto earth = mCurrentScene->CreateEntity("Earth");
+        // earth.GetComponent<Node>().SetScale({0.35f, 0.35f, 0.35f});
+        // earth.AddComponent<MeshRenderer>({
+        //     .mesh = mesh,
+        //     .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_earth_daymap.jpg"))
+        // });
 
     }
 
