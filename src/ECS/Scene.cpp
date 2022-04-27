@@ -42,14 +42,28 @@ namespace Elys {
         mEntityManager->DestroyEntity(id);
     }
 
+    void Scene::PushDestroyQueue(Entity entity) { mDestroyQueue.insert(entity); }
+
+    void Scene::ProcessDestroyQueue() {
+        for(Entity e : mDestroyQueue) {
+            if (mEntities.contains(e)) DestroyEntity(e);
+        }
+
+        mDestroyQueue.clear();
+    }
+
     Entity Scene::EntityFromNode(const Node &component) {
         auto id = mComponentManager->GetEntity<Node>(component);
-        return Entity(this, id);
+        return {this, id};
     }
+
+    Entity Scene::EntityFromID(EntityID id) { return {this, id}; }
 
     /*void Scene::OnUpdate(float deltaTime) { }
 
     void Scene::OnRuntimeUpdate(float deltaTime) { }*/
+
+    bool Scene::SaveInFile(std::filesystem::path &path) { return false; }
 
     Scene Scene::FromFile(std::filesystem::path &path) {
         throw std::runtime_error("Scene::OnRuntimeUpdate : Not implemented yet.");

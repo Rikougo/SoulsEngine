@@ -43,8 +43,8 @@ namespace Elys {
         void OnRuntimeUpdate(float deltaTime); */
 
         Entity CreateEntity(std::string name = "Entity");
-        void DestroyEntity(Entity const &entity);
         Entity EntityFromNode(Node const &component);
+        Entity EntityFromID(EntityID id);
 
         void SetSelected(int id) { mSelected = id; }
         [[nodiscard]] int GetSelected() const { return mSelected; }
@@ -64,7 +64,13 @@ namespace Elys {
         std::set<Entity>::iterator end() { return mEntities.end(); }
         [[nodiscard]] std::set<Entity>::const_iterator begin() const {return mEntities.begin();}
         [[nodiscard]] std::set<Entity>::const_iterator end() const { return mEntities.end(); }
+
+        void PushDestroyQueue(Entity entity);
+        void ProcessDestroyQueue();
       private:
+        void DestroyEntity(Entity const &entity);
+      private:
+        std::set<Entity> mDestroyQueue;
         std::set<Entity> mEntities;
 
         int mSelected, mHovered;
@@ -75,6 +81,7 @@ namespace Elys {
 
         friend class Entity;
       public:
+        static bool SaveInFile(std::filesystem::path& path);
         static Scene FromFile(std::filesystem::path& path);
     };
 
