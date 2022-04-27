@@ -66,24 +66,47 @@ namespace Elys {
         }
     };
 
-    vec3 Node::InheritedPosition() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalPosition; }
-    vec3 Node::InheritedScale() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalScale; }
-    quat Node::InheritedRotation() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalRotation; }
+    vec3 Node::InheritedPosition() const {
+        if (!mGlobalUpdated)
+            UpdateTransform();
+        return mGlobalPosition;
+    }
+    vec3 Node::InheritedScale() const {
+        if (!mGlobalUpdated)
+            UpdateTransform();
+        return mGlobalScale;
+    }
+    quat Node::InheritedRotation() const {
+        if (!mGlobalUpdated)
+            UpdateTransform();
+        return mGlobalRotation;
+    }
     mat4 Node::InheritedTransform() const {
-        if (!mGlobalUpdated) UpdateTransform();
+        if (!mGlobalUpdated)
+            UpdateTransform();
 
         return mGlobalTransform;
+    }
+
+    bool Node::InheritedEnabled() const {
+        if (mParent) return mParent->LocalEnabled() && mLocalEnabled;
+        else return mLocalEnabled;
     }
 
     vec3 Node::LocalPosition() const { return mLocalPosition; }
     vec3 Node::LocalScale() const { return mLocalScale; }
     quat Node::LocalRotation() const { return mLocalRotation; }
-    mat4 Node::LocalTransform() const {
-        return mLocalTransform;
-    }
+    mat4 Node::LocalTransform() const { return mLocalTransform; }
+    bool Node::LocalEnabled() const { return mLocalEnabled; }
 
-    void Node::Move(vec3 translation) { mLocalPosition += translation; InvalidateNode(); }
-    void Node::Rotate(quat rotation) { mLocalRotation *= rotation; InvalidateNode(); }
+    void Node::Move(vec3 translation) {
+        mLocalPosition += translation;
+        InvalidateNode();
+    }
+    void Node::Rotate(quat rotation) {
+        mLocalRotation *= rotation;
+        InvalidateNode();
+    }
     void Node::Scale(vec3 scale) { mLocalScale *= scale; InvalidateNode(); }
 
     void Node::SetPosition(vec3 position) {
@@ -111,6 +134,8 @@ namespace Elys {
     }
     void Node::SetScale(float x, float y, float z) { SetScale(vec3(x, y, z)); }
     void Node::SetScale(float uniformScale) { SetScale(vec3(uniformScale, uniformScale, uniformScale)); }
+
+    void Node::SetEnabled(bool enabled) { mLocalEnabled = enabled; }
 
     void Node::InvalidateNode() const {
         for(auto child : mChildren) child->InvalidateNode();

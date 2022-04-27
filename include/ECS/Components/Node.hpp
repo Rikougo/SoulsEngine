@@ -42,10 +42,12 @@ namespace Elys {
         [[nodiscard]] vec3 InheritedScale() const;
         [[nodiscard]] quat InheritedRotation() const;
         [[nodiscard]] mat4 InheritedTransform() const;
+        [[nodiscard]] bool InheritedEnabled() const;
         [[nodiscard]] vec3 LocalPosition() const;
         [[nodiscard]] vec3 LocalScale() const;
         [[nodiscard]] quat LocalRotation() const;
         [[nodiscard]] mat4 LocalTransform() const;
+        [[nodiscard]] bool LocalEnabled() const;
 
         void Move(vec3 translation);
         void Rotate(quat rotation);
@@ -59,6 +61,7 @@ namespace Elys {
         void SetScale(vec3 scale);
         void SetScale(float x, float y, float z);
         void SetScale(float uniformScale);
+        void SetEnabled(bool enabled);
 
         /**
          * @brief Compare Node using pointer address
@@ -71,11 +74,11 @@ namespace Elys {
       private:
         void InvalidateNode() const;
         void UpdateTransform() const;
-
       private:
         Node* mParent = nullptr;
         vector<Node*> mChildren;
 
+        bool mLocalEnabled = true;
         vec3 mLocalPosition{0.0f, 0.0f, 0.0f};
         vec3 mLocalScale{1.0f, 1.0f, 1.0f};
         quat mLocalRotation{vec3(0.0f, 0.0f, 0.0f)};
