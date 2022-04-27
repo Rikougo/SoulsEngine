@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 
 #include <Core/Layer.hpp>
+#include <Core/AssetLoader.hpp>
 
 #include <ECS/Scene.hpp>
 #include <ECS/Components.hpp>
@@ -28,6 +29,7 @@
 
 #include <GUI/GraphScene.hpp>
 #include <GUI/ComponentsEditor.hpp>
+#include <GUI/ContentBrowser.hpp>
 
 using std::shared_ptr;
 
@@ -63,6 +65,7 @@ namespace Elys {
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
 
+        GUI::ContentBrowser mContentBrowser;
         GUI::GraphScene mGraphScene;
         GUI::ComponentsEditor mComponentsEditor;
     };

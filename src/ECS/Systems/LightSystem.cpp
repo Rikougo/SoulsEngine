@@ -37,10 +37,13 @@ namespace Elys {
             auto entity = Entity(mCurrentScene.get(), id);
 
             auto const &node = entity.GetComponent<Node>();
+            if (!node.InheritedEnabled()) continue;
+
             auto const &light = entity.GetComponent<Light>();
 
             mShader->SetVec3("uLights[" + std::to_string(lightIndex) + "].position", node.InheritedPosition());
             mShader->SetVec3("uLights[" + std::to_string(lightIndex) + "].color", light.color);
+            mShader->SetFloat("uLights[" + std::to_string(lightIndex) + "].intensity", light.intensity);
             // mShader->SetMat4("uModel", node.InheritedTransform());
 
             /*if (!LIGHT_MESH.IsInit()) {

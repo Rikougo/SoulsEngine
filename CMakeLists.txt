@@ -30,14 +30,13 @@ set(
         src/Layers/EditorLayer.cpp
         src/Render/Shader.cpp
         src/Render/TrackBallCamera.cpp
-        src/Render/Material.cpp
         src/Render/Mesh.cpp
         src/Render/AABB.cpp
         src/Render/Framebuffer.cpp
         src/Render/DataHolder.cpp
         src/Application.cpp
         main.cpp
-)
+        src/GUI/GUI.cpp src/GUI/ContentBrowser.cpp src/Core/AssetLoader.cpp src/Render/Texture.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)

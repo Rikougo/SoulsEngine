@@ -33,6 +33,7 @@ namespace Elys {
             ProcessInput();
         mFramebuffer->Bind();
 
+        glPolygonMode(GL_FRONT_AND_BACK , mWireframe ? GL_LINE : GL_FILL);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -61,13 +62,15 @@ namespace Elys {
         // Enable stencil writing to draw full shape on stencil buffer
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         for (auto id : mEntities) {
+            auto entity = Entity(mCurrentScene.get(), id);
+
+            auto const &node = entity.GetComponent<Node>();
+            if (!node.InheritedEnabled()) continue;
+
             // Only keep draw right on hover/selected entities to avoid
             // useless shape collapses
             glStencilMask(mCurrentScene->GetSelected() == id || mCurrentScene->GetHovered() == id ? 0xFF : 0x00);
 
-            auto entity = Entity(mCurrentScene.get(), id);
-
-            auto const &node = entity.GetComponent<Node>();
             auto model = node.InheritedTransform();
             auto const &renderer = entity.GetComponent<MeshRenderer>();
 
@@ -86,9 +89,26 @@ namespace Elys {
             mShader->SetBool("uMaterial.hasTexture", material.texture.has_value());
             if (material.texture) {
                 auto const &texture = material.texture;
-                glActiveTexture(GL_TEXTURE0);
-                mShader->SetInt("uTexture", GL_TEXTURE0);
+                mShader->SetInt("uTexture", 0);
+                glActiveTexture(GL_TEXTURE0 + 0);
                 glBindTexture(GL_TEXTURE_2D, texture->ID());
+
+            }
+
+            mShader->SetBool("uMaterial.hasNormalMap", material.normalMap.has_value() && material.useNormalMap);
+            if (material.normalMap && material.useNormalMap) {
+                auto const &normalMap = material.normalMap;
+                mShader->SetInt("uNormalMap", 1);
+                glActiveTexture(GL_TEXTURE0 + 1);
+                glBindTexture(GL_TEXTURE_2D, normalMap->ID());
+            }
+
+            mShader->SetBool("uHasHeightMap", material.heightMap.has_value());
+            if (material.heightMap) {
+                auto const &heightMap = material.heightMap;
+                mShader->SetInt("uHeightMap", 2);
+                glActiveTexture(GL_TEXTURE0 + 2);
+                glBindTexture(GL_TEXTURE_2D, heightMap->ID());
             }
 
             mShader->SetFloat("uMaterial.metallic", material.metallic);
@@ -98,6 +118,8 @@ namespace Elys {
             mShader->SetBool("uLightsOn", mLightning && !material.selfLight);
 
             mShader->SetInt("uEntity", static_cast<int>(id));
+
+            mShader->SetVec2("uTilingUV", material.tiling);
 
             mesh.VAO()->Bind();
             glDrawElements(GL_TRIANGLES, (GLsizei)mesh.VAO()->GetIndexBuffer()->Size(),
@@ -120,10 +142,12 @@ namespace Elys {
             if (id != mCurrentScene->GetSelected() && id != mCurrentScene->GetHovered()) continue;
 
             auto entity = Entity(mCurrentScene.get(), id);
+            if (!entity.GetComponent<Node>().InheritedEnabled()) continue;
             auto model = entity.GetComponent<Node>().InheritedTransform();
             auto const &renderer = entity.GetComponent<MeshRenderer>();
 
             auto &mesh = renderer.mesh;
+            auto &material = renderer.material;
 
             mOutlineShader->SetMat4("uModel", model);
             auto outlineScale = mat4{1.0};

@@ -5,24 +5,35 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 
 out vec2 vTexCoords;
+out vec3 vVertexNormal;
 out vec3 vFragNormal;
 out vec4 vWorldSpaceCoord;
 
-// TODO IMPLEMENT NORMAL MAP
-// uniform bool uHasNormalMap;
-// uniform sampler2D uNormalMap;
+uniform vec2 uTilingUV;
+uniform bool uHasHeightMap;
+uniform sampler2D uHeightMap;
 
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProjection;
 
-
 void main()
 {
-    vTexCoords = aTexCoords;
+    vec2 texCoords = aTexCoords * uTilingUV;
+    vTexCoords = texCoords;
 
+    vec3 position;
+
+    if (uHasHeightMap) {
+        vec4 heightValue = texture2D(uHeightMap, texCoords);
+        position = aPos + heightValue.r * 0.1f * aNormal;
+    } else {
+        position = aPos;
+    }
+
+    vVertexNormal = normalize(aNormal);
     vFragNormal = normalize(mat3(transpose(inverse(uModel))) * aNormal);
 
-    vWorldSpaceCoord = uModel * vec4(aPos, 1.0);
-    gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
+    vWorldSpaceCoord = uModel * vec4(position, 1.0);
+    gl_Position = uProjection * uView * uModel * vec4(position, 1.0);
 }

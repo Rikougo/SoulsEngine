@@ -32,35 +32,34 @@ namespace Elys {
         mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
-        auto mesh = Mesh::Sphere();
-        auto earthTexture = Texture::FromPath("./assets/textures/8k_earth_daymap.jpg");
+        auto sphereMesh = Mesh::Sphere();
+        auto cubeMesh = Mesh::Plane(64, 64);
 
-        for(int i = 0; i <= 5; i++) {
-            auto line = mCurrentScene->CreateEntity("Line[" + std::to_string(i) + "]");
-            for(int j = 0; j <= 5; j++) {
-                auto entity = mCurrentScene->CreateEntity("Sphere[" + std::to_string(j) + "]");
-                line.GetComponent<Node>().AddChild(&entity.GetComponent<Node>());
-                entity.GetComponent<Node>().SetPosition(2.0f * i - 6.0f, 2.0f * j - 6.0f, 0.0f);
-                entity.AddComponent<MeshRenderer>({
-                    .mesh = mesh,
-                    .material = Material::FromTexture(earthTexture)
-                                    .SetMetallic(j * 0.2f)
-                                    .SetRoughness(i * 0.2f)
-                    // .material = {.metallic = j * 0.2f, .roughness = i * 0.2f, .albedo = {1.0, 0.0, 0.0, 1.0}}
-                });
-            }
-        }
+        auto lava = mCurrentScene->CreateEntity("Lava");
+        lava.GetComponent<Node>().SetPosition(0.0f, 0.0f, 0.0f);
+        lava.AddComponent<MeshRenderer>({
+            .mesh = cubeMesh,
+            .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/lava/Lava_COLOR.jpg"))
+                            .SetNormalMap(AssetLoader::TextureFromPath("textures/lava/Lava_NORM.jpg"))
+        });
+
+        auto mud = mCurrentScene->CreateEntity("Mud");
+        mud.GetComponent<Node>().SetPosition(2.0f, 0.0f, 0.0f);
+        mud.AddComponent<MeshRenderer>({
+            .mesh = cubeMesh,
+            .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_basecolor.jpg"))
+                            .SetNormalMap(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_normal.jpg"))
+        });
 
         auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
         light.SetParent(center);
         light.GetComponent<Node>().SetPosition(0.0f, 0.0f, -10.0f);
         light.GetComponent<Node>().SetScale(0.1f);
-        light.AddComponent<Light>({.color = {200.0f, 200.0f, 200.0f}});
-        light.AddComponent<MeshRenderer>( {
-            .mesh = mesh,
-            .material = Material{.albedo = {1.0f, 1.0f, 1.0f, 1.0f}}.SetSelfLight(true)
-        });
+        light.AddComponent<Light>({.color = {1.0f, 1.0f, 1.0f}, .intensity = 200.0f});
+        light.AddComponent<MeshRenderer>(
+            {.mesh = sphereMesh,
+             .material = Material{.albedo = {1.0f, 1.0f, 1.0f, 1.0f}}.SetSelfLight(true)});
     }
 
     void EditorLayer::OnDetach() {
@@ -68,9 +67,13 @@ namespace Elys {
     }
 
     void EditorLayer::OnUpdate(float deltaTime) {
+        // mCurrentScene->ProcessDestroyQueue();
+
         // Framebuffer keep track of viewport size since color attachment is used by viewport for
         // the display. Camera should always be the same size of the Framebuffer.
-        if ((mFramebuffer->GetData().Width != mViewport.size.x || mFramebuffer->GetData().Height != mViewport.size.y) && (mViewport.size.x != 0 && mViewport.size.y != 0)) {
+        if ((mFramebuffer->GetData().Width != mViewport.size.x ||
+             mFramebuffer->GetData().Height != mViewport.size.y) &&
+            (mViewport.size.x != 0 && mViewport.size.y != 0)) {
             mFramebuffer->Resize(mViewport.size.x, mViewport.size.y);
             mCamera->SetViewSize(mViewport.size.x, mViewport.size.y);
         }
@@ -80,12 +83,11 @@ namespace Elys {
         if (mViewportHovered) mRenderSystem->AcceptEvents();
         mRenderSystem->Update(deltaTime);
 
-        // TODO Handle mouse position to determine which entity is hovered (use of mViewport and frame buffer entity attachment)
         if (mViewportHovered) {
             auto [mx, my] = ImGui::GetMousePos();
             mx -= mViewport.offset.x; my -= mViewport.offset.y;
 
-            auto entityID = mFramebuffer->GetEntityData(mx, mViewport.size.y - my);
+            auto entityID = mFramebuffer->GetEntityData((int)mx, (int)(mViewport.size.y - my));
             mCurrentScene->SetHovered(entityID);
         }
     }
@@ -164,8 +166,8 @@ namespace Elys {
             } ImGui::End();
 
             mGraphScene.OnImGUIRender(mCurrentScene);
-            mCurrentScene->SetSelected(mGraphScene.GetSelected().ID());
-            mComponentsEditor.OnImGUIRender(mGraphScene.GetSelected());
+            mComponentsEditor.OnImGUIRender(mCurrentScene->EntityFromID(mCurrentScene->GetSelected()));
+            mContentBrowser.OnImGUIRender();
 
             ImGui::ShowDemoWindow();
 
@@ -182,7 +184,7 @@ namespace Elys {
 
                 // Bind Framebuffer color texture to an ImGui image
                 unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID();
-                ImGui::Image(reinterpret_cast<void*>(textureID), viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+                ImGui::Image((ImTextureID)((size_t)textureID), viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
                 mViewportHovered = ImGui::IsWindowHovered();
 
@@ -201,7 +203,7 @@ namespace Elys {
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
         dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
-            mCamera->Zoom(event.GetYOffset());
+            mCamera->Zoom(event.GetYOffset() * 0.1f);
 
             return false;
         });
@@ -212,7 +214,7 @@ namespace Elys {
             auto [mx, my] = ImGui::GetMousePos();
             mx -= mViewport.offset.x; my -= mViewport.offset.y;
 
-            auto entityID = mFramebuffer->GetEntityData(mx, mViewport.size.y - my);
+            auto entityID = mFramebuffer->GetEntityData((int)mx, (int)(mViewport.size.y - my));
 
             mGraphScene.SetSelected(Entity(mCurrentScene.get(), entityID));
 

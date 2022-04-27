@@ -8,121 +8,221 @@
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <GUI/GUI.hpp>
+#include <GUI/ContentBrowser.hpp>
 #include <ECS/Scene.hpp>
 
 namespace Elys::GUI {
     class ComponentsEditor {
       public:
-        void OnImGUIRender(Entity &entity) {
+        void OnImGUIRender(Entity entity) {
             static bool componentsEditorOpen = true;
-            if (ImGui::Begin("Components Editor", &componentsEditorOpen, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::Begin("Components Editor", &componentsEditorOpen,
+                             ImGuiWindowFlags_AlwaysAutoResize)) {
                 if (!entity.IsValid()) {
                     ImGui::End();
                     return;
                 }
 
-                auto& tag = entity.GetComponent<Tag>().name;
+                auto &tag = entity.GetComponent<Tag>().name;
+                auto &node = entity.GetComponent<Node>();
 
                 ImGui::PushID(tag.c_str());
-
-                char buffer[256];
-                memset(buffer, 0, sizeof(buffer));
-                strncpy(buffer, tag.c_str(), sizeof(buffer));
-                if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
                 {
-                    tag = std::string(buffer);
-                }
 
-                // --- NODE COMPONENT ---
-                // Shared by every entity
-                if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-                    auto &node = entity.GetComponent<Node>();
+                    ImGui::BeginTable("Informations", 3);
 
-                    auto pos = node.LocalPosition();
-                    auto rot =
-                        eulerAngles(node.LocalRotation()) * (180.0f / static_cast<float>(M_PI));
-                    auto scale = node.LocalScale();
+                    ImGui::TableSetupColumn("enabled", ImGuiTableColumnFlags_WidthFixed,
+                                            15.0f); // Default to 100.0f
+                    ImGui::TableSetupColumn("name",
+                                            ImGuiTableColumnFlags_WidthStretch); // Default to auto
+                    ImGui::TableSetupColumn("add", ImGuiTableColumnFlags_WidthFixed,
+                                            15.0f); // Default to auto
 
-                    static bool uniformScale = true;
+                    ImGui::TableNextColumn();
+                    bool enabled = node.LocalEnabled();
+                    ImGui::Checkbox("##enabled", &enabled);
+                    if (node.LocalEnabled() ^ enabled)
+                        node.SetEnabled(enabled);
 
-                    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
-                    Vec3Editor("Position", pos);
-                    Vec3Editor("Rotation", rot, 1.0f);
-                    Vec3Editor("Scale", scale);
+                    ImGui::TableNextColumn();
+                    std::vector<char> cTagName(tag.c_str(), tag.c_str() + tag.size() + 1);
+                    if (ImGui::InputText("##Tag", cTagName.data(), cTagName.size())) {
+                        tag = std::string(cTagName.begin(), cTagName.end());
+                    }
 
-                    if (uniformScale) {
-                        for (uint8_t i = 0; i < 3; i++) {
-                            if (scale[i] != node.LocalScale()[i]) {
-                                node.SetScale(scale[i]);
-                                break;
-                            }
+                    ImGui::TableNextColumn();
+                    if (ImGui::Button("+")) {
+                    }
+
+                    ImGui::EndTable();
+
+                    ImGui::SameLine();
+
+                    // --- NODE COMPONENT ---
+                    // Shared by every entity
+                    if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+                        NodeEditor("##Transform", node);
+                    }
+
+                    // --- MESH RENDERER ---
+                    if (entity.HasComponent<MeshRenderer>()) {
+                        if (ImGui::CollapsingHeader("Mesh Renderer",
+                                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+                            MeshRenderEditor("##MeshRenderer", entity.GetComponent<MeshRenderer>());
                         }
-                    } else
-                        node.SetScale(scale);
+                    }
 
-                    node.SetPosition(pos);
-                    node.SetRotation(glm::quat(rot * (static_cast<float>(M_PI) / 180.0f)));
-
-                    ImGui::PopStyleVar();
-                    // ImGui::TreePop();
-                }
-
-                // --- MESH RENDERER ---
-                if (entity.HasComponent<MeshRenderer>()) {
-                    if (ImGui::CollapsingHeader("Mesh Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
-                        auto &meshRenderer = entity.GetComponent<MeshRenderer>();
-
-                        ImGui::ColorEdit4("Color", glm::value_ptr(meshRenderer.material.albedo), ImGuiColorEditFlags_NoInputs);
-
-                        if (meshRenderer.material.texture) {
-                            ImGui::SameLine();
-                            ImGui::Image(reinterpret_cast<void*>(meshRenderer.material.texture->ID()), ImVec2(40, 40));
+                    if (entity.HasComponent<Light>()) {
+                        if (ImGui::CollapsingHeader("Light Renderer",
+                                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+                            LightEditor("##LightRenderer", entity.GetComponent<Light>());
                         }
-
-                        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
-                        ImGui::DragFloat("Metallic", &meshRenderer.material.metallic, 0.05f, 0.0f, 1.0f);
-                        ImGui::DragFloat("Roughness", &meshRenderer.material.roughness, 0.05f, 0.0f, 1.0f);
-                        ImGui::PopStyleVar();
-                        // ImGui::TreePop();
                     }
                 }
-
                 ImGui::PopID();
-            } ImGui::End();
+            }
+            ImGui::End();
         };
 
-        void Vec3Editor(std::string const &label, glm::vec3 &data, float speed = 0.1f) {
-            ImGui::PushID(label.c_str());
+        void NodeEditor(std::string const &label, Node &node) {
+            auto pos = node.LocalPosition();
+            auto rot = eulerAngles(node.LocalRotation()) * (180.0f / static_cast<float>(M_PI));
+            auto scale = node.LocalScale();
+
+            static bool uniformScale = true;
 
             auto tableFlags = ImGuiTableFlags_NoPadInnerX;
-            ImGui::BeginTable(label.c_str(), 7, tableFlags);
+            ImGui::BeginTable(label.c_str(), 2, tableFlags);
 
-            ImGui::TableSetupColumn("one", ImGuiTableColumnFlags_WidthFixed, 100.0f); // Default to 100.0f
-            ImGui::TableSetupColumn("two", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
-            ImGui::TableSetupColumn("three", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
-            ImGui::TableSetupColumn("four", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
-            ImGui::TableSetupColumn("five", ImGuiTableColumnFlags_WidthStretch);         // Default to auto
-            ImGui::TableSetupColumn("six", ImGuiTableColumnFlags_WidthStretch);        // Default to auto
-            ImGui::TableSetupColumn("seven", ImGuiTableColumnFlags_WidthStretch);        // Default to auto
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed,
+                                    100.0f); // Default to 100.0f
+            ImGui::TableSetupColumn("widget",
+                                    ImGuiTableColumnFlags_WidthStretch); // Default to auto
 
             ImGui::TableNextColumn();
-            ImGui::Text("%s", label.c_str());
+            ImGui::Text("Position");
             ImGui::TableNextColumn();
-            ImGui::Text("X :");
+            SliderVec3("##Scale", pos);
             ImGui::TableNextColumn();
-            ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f");
+            ImGui::Text("Rotation");
             ImGui::TableNextColumn();
-            ImGui::Text("Y :");
+            SliderVec3("##Scale", rot);
             ImGui::TableNextColumn();
-            ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f");
+            ImGui::Text("Scale");
             ImGui::TableNextColumn();
-            ImGui::Text("Z :");
-            ImGui::TableNextColumn();
-            ImGui::DragFloat("##Z", &data[2], speed, 0.0f, 0.0f, "%0.2f");
+            SliderVec3("##Scale", scale);
 
             ImGui::EndTable();
 
-            ImGui::PopID();
+            if (uniformScale) {
+                for (uint8_t i = 0; i < 3; i++) {
+                    if (scale[i] != node.LocalScale()[i]) {
+                        node.SetScale(scale[i]);
+                        break;
+                    }
+                }
+            } else
+                node.SetScale(scale);
+
+            node.SetPosition(pos);
+            node.SetRotation(glm::quat(rot * (static_cast<float>(M_PI) / 180.0f)));
+        }
+
+        void MeshRenderEditor(std::string const &label, MeshRenderer &meshRenderer) {
+            auto tableFlags = ImGuiTableFlags_NoPadInnerX;
+            ImGui::BeginTable(label.c_str(), 3, tableFlags);
+
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed,
+                                    100.0f); // Default to 100.0f
+            ImGui::TableSetupColumn("widget",
+                                    ImGuiTableColumnFlags_WidthStretch); // Default to auto
+            ImGui::TableSetupColumn("widget_modifier", ImGuiTableColumnFlags_WidthFixed,
+                                    20.0f); // Default to auto
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Color");
+            ImGui::TableNextColumn();
+            auto &a = meshRenderer.material.albedo;
+            if (ImGui::ColorButton("MaterialAlbedo", ImVec4(a.r, a.g, a.b, a.a), 0,
+                                   ImVec2(ImGui::GetColumnWidth(), ImGui::GetFrameHeight())))
+                ImGui::OpenPopup("MaterialAlbedo");
+            if (ImGui::BeginPopup("MaterialAlbedo")) {
+                ImGui::ColorPicker4("##MaterialAlbedoPicker", glm::value_ptr(a),
+                                    ImGuiColorEditFlags_None, nullptr);
+                ImGui::EndPopup();
+            }
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
+            ImGui::Text("UV Tiling");
+            ImGui::TableNextColumn();
+            GUI::SliderVec2("##UVTiling", meshRenderer.material.tiling);
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Texture");
+            ImGui::TableNextColumn();
+            GUI::TextureInput(meshRenderer.material.texture);
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Normal map");
+            ImGui::TableNextColumn();
+            GUI::TextureInput(meshRenderer.material.normalMap);
+            ImGui::TableNextColumn();
+            ImGui::Checkbox("##NormalMap", &meshRenderer.material.useNormalMap);
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Height map");
+            ImGui::TableNextColumn();
+            GUI::TextureInput(meshRenderer.material.heightMap);
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Metallic");
+            ImGui::TableNextColumn();
+            ImGui::DragFloat("##Metallic", &meshRenderer.material.metallic, 0.05f, 0.0f, 1.0f);
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Roughness");
+            ImGui::TableNextColumn();
+            ImGui::DragFloat("##Roughness", &meshRenderer.material.roughness, 0.05f, 0.0f, 1.0f);
+            ImGui::TableNextRow();
+
+            ImGui::EndTable();
+        }
+
+        void LightEditor(std::string const &label, Light &light) {
+            auto tableFlags = ImGuiTableFlags_NoPadInnerX;
+            ImGui::BeginTable(label.c_str(), 2, tableFlags);
+
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed,
+                                    100.0f); // Default to 100.0f
+            ImGui::TableSetupColumn("widget",
+                                    ImGuiTableColumnFlags_WidthStretch); // Default to auto
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Color");
+            ImGui::TableNextColumn();
+            auto &lc = light.color;
+            if (ImGui::ColorButton("LightColor", ImVec4(lc.r, lc.g, lc.b, 1.0), 0,
+                                   ImVec2(ImGui::GetColumnWidth(), ImGui::GetFrameHeight())))
+                ImGui::OpenPopup("LightColor");
+            if (ImGui::BeginPopup("LightColor")) {
+                ImGui::ColorPicker3("##LightColorPicker", glm::value_ptr(lc),
+                                    ImGuiColorEditFlags_None);
+                ImGui::EndPopup();
+            }
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Intensity");
+            ImGui::TableNextColumn();
+            ImGui::DragFloat("##intensity", &light.intensity, 1.0f, 0.0f, 500.0f, "%0.1f");
+
+            ImGui::EndTable();
         }
     };
 }
