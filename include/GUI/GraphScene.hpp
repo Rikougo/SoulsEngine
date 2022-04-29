@@ -12,7 +12,7 @@
 namespace Elys::GUI {
     class GraphScene {
       public:
-        void OnImGUIRender(std::shared_ptr<Scene> &sceneRef);
+        void OnImGUIRender(std::shared_ptr<Scene> &sceneRef, bool *open);
 
         Entity& GetSelected() { return mSelected; };
         void SetSelected(Entity entity) { mSelected = entity; }

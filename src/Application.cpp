@@ -20,6 +20,8 @@ namespace Elys {
         mWindow = Window::Create(Window::WindowData(std::move(name)));
         mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
+        AssetLoader::Init();
+
         mImGUILayer = new ImGuiLayer();
         mLayerStack.PushOverlay(mImGUILayer);
         mLayerStack.PushLayer(new EditorLayer());

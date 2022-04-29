@@ -13,7 +13,6 @@
 
 #include <Core/Logger.hpp>
 
-#include <Core/AssetLoader.hpp>
 #include <Render/Texture.hpp>
 
 using glm::vec2;
@@ -24,14 +23,13 @@ namespace Elys {
     struct Material {
         float metallic = 0.0f;
         float roughness = 0.0f;
-        bool selfLight = false;
+        bool shaded = true;
 
         vec4 albedo{0.58f, 0.58f, 0.58f, 1.0f};
         std::optional<Texture> texture;
         std::optional<Texture> normalMap;
         std::optional<Texture> heightMap;
         vec2 tiling{1.0f, 1.0f};
-        bool useNormalMap = false;
 
         /** @brief
          *  Create Material texture, it does have default Ambient/Diffuse/Specular specs but have white opaque color.
@@ -45,15 +43,8 @@ namespace Elys {
             };
         }
 
-        /** @brief
-         *  Create Material texture, it does have default Ambient/Diffuse/Specular specs but have white opaque color.
-         */
-        static Material FromTexture(const std::filesystem::path &texturePath, vec4 a = {1.0f, 1.0f, 1.0f, 1.0f}, float roughness = 0.0f, float metallic = 0.0f) {
-            return FromTexture(AssetLoader::TextureFromPath(texturePath), a, roughness, metallic);
-        }
-
         Material& SetSelfLight(bool value) {
-            selfLight = value;
+            shaded = value;
             return *this;
         }
 

@@ -20,6 +20,7 @@ namespace Elys {
         std::filesystem::path mPath;
         bool mValid = false;
 
+        friend class AssetLoader;
       public:
         Texture() : mHeight(-1), mWidth(-1), mId(0), mPath("") {}
 

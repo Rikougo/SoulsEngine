@@ -100,25 +100,38 @@ namespace Elys::GUI {
         ImGui::PopID();
     }
 
-    void TextureInput(std::optional<Texture> &texture) {
+    void TextureInput(std::optional<Texture> &texture, char const* ID) {
+        ImGui::PushID(ID);
         std::string texPath = texture ? texture->GetName() : "None";
         ImGui::Selectable(texPath.c_str());
 
         if (ImGui::BeginPopupContextItem()) {
+            bool disabled = !texture;
+            if (disabled) {
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            }
+
             if (ImGui::Button("Reset texture")) {
                 texture.reset();
+            }
+
+            if (disabled) {
+                ImGui::PopItemFlag();
+                ImGui::PopStyleVar();
             }
 
             ImGui::EndPopup();
         }
 
         if (ImGui::BeginDragDropTarget()) {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_IMAGE")) {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(AssetLoader::DragDropType::FILE_IMAGE)) {
                 const auto *path = (const wchar_t *)payload->Data;
                 texture = AssetLoader::TextureFromPath(path);
             }
 
             ImGui::EndDragDropTarget();
         }
+        ImGui::PopID();
     }
 } // namespace Elys::GUI

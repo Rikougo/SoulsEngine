@@ -11,8 +11,6 @@ namespace Elys {
         mSystemManager = std::make_unique<SystemManager>();
 
         mComponentManager->RegisterComponent<Node>();
-        mComponentManager->RegisterComponent<Tag>();
-        mComponentManager->RegisterComponent<RigidBody>();
         mComponentManager->RegisterComponent<MeshRenderer>();
         mComponentManager->RegisterComponent<Light>();
     }
@@ -20,8 +18,7 @@ namespace Elys {
     Entity Scene::CreateEntity(std::string name) {
         auto newID = mEntityManager->CreateEntity();
         auto entity = Entity(this, newID);
-        entity.AddComponent(Tag{std::move(name)});
-        entity.AddComponent(Node{});
+        entity.AddComponent(Node{}).name = std::move(name);
 
         mEntities.insert(entity);
 
@@ -40,16 +37,6 @@ namespace Elys {
         mComponentManager->EntityDestroyed(id);
         mSystemManager->EntityDestroyed(id);
         mEntityManager->DestroyEntity(id);
-    }
-
-    void Scene::PushDestroyQueue(Entity entity) { mDestroyQueue.insert(entity); }
-
-    void Scene::ProcessDestroyQueue() {
-        for(Entity e : mDestroyQueue) {
-            if (mEntities.contains(e)) DestroyEntity(e);
-        }
-
-        mDestroyQueue.clear();
     }
 
     Entity Scene::EntityFromNode(const Node &component) {

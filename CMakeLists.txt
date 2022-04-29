@@ -49,6 +49,6 @@ if (MSVC)
 endif()
 
 target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_20)
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw OpenGL::GL IMGUI Glad)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw OpenGL::GL IMGUI Glad assimp)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE include/ libs/glfw/include/ libs/glad/include/ libs/glm/ libs/include/ libs/spdlog/include/)
 

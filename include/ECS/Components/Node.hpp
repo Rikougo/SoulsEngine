@@ -26,6 +26,8 @@ namespace Elys {
      */
     class Node {
       public:
+        std::string name = "Entity";
+      public:
         Node();
         // Node(Node &node);
         // Node(Node const &node);

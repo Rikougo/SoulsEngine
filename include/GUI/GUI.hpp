@@ -10,7 +10,9 @@
 
 #include <glm/glm.hpp>
 #include <imgui.h>
+#include <imgui_internal.h>
 
+#include <Core/AssetLoader.hpp>
 #include <Render/Material.hpp>
 
 namespace Elys::GUI {
@@ -28,7 +30,7 @@ namespace Elys::GUI {
     /// Draw a colorized Vec3 editor
     void SliderVec3(std::string const &label, glm::vec3 &data, float speed = 0.1f);
 
-    void TextureInput(std::optional<Texture> &texture);
+    void TextureInput(std::optional<Texture> &texture, const char* ID);
 } // namespace Elys::GUI
 
 #endif // ELYS_GUI_HPP

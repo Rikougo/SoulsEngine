@@ -9,7 +9,6 @@
 
 #include <ECS/System.hpp>
 #include <ECS/Scene.hpp>
-#include <ECS/Components.hpp>
 
 #include <Render/TrackBallCamera.hpp>
 #include <Render/Shader.hpp>

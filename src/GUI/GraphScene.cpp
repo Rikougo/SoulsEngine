@@ -5,12 +5,20 @@
 #include <GUI/GraphScene.hpp>
 
 namespace Elys::GUI {
-    void GraphScene::OnImGUIRender(std::shared_ptr<Scene> &sceneRef) {
-        if (ImGui::Begin("Graph scene")) {
+    void GraphScene::OnImGUIRender(std::shared_ptr<Scene> &sceneRef, bool *open) {
+        if (ImGui::Begin("Graph scene", open)) {
             for (auto entity : (*sceneRef)) {
                 if (!entity.Parent().IsValid()) {
                     DrawEntity(sceneRef, entity);
                 }
+            }
+
+            if (ImGui::BeginPopupContextWindow()) {
+                if (ImGui::MenuItem("Create entity")) {
+                    sceneRef->CreateEntity();
+                    ELYS_CORE_INFO("Create entity");
+                }
+                ImGui::EndPopup();
             }
         }
         ImGui::End();
@@ -25,21 +33,20 @@ namespace Elys::GUI {
             nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 
         bool node_open = ImGui::TreeNodeEx((void *)(intptr_t)entity.ID(), nodeFlags, "%s",
-                                           entity.GetComponent<Tag>().name.c_str());
+                                           entity.GetComponent<Node>().name.c_str());
 
-
-        /*if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::BeginPopupContextItem()) {
             if (ImGui::MenuItem("Create child")) {
                 auto child = sceneRef->CreateEntity();
                 child.SetParent(entity);
                 ELYS_CORE_INFO("Create child");
             }
-            if (ImGui::MenuItem("Delete")) {
+            /*if (ImGui::MenuItem("Delete")) {
                 sceneRef->PushDestroyQueue(entity);
                 ELYS_CORE_INFO("Delete entity");
-            }
+            }*/
             ImGui::EndPopup();
-        }*/
+        }
 
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             sceneRef->SetSelected(entity.ID());

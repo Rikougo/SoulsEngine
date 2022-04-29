@@ -10,24 +10,22 @@
 
 #include <GUI/GUI.hpp>
 #include <GUI/ContentBrowser.hpp>
+
 #include <ECS/Scene.hpp>
 
 namespace Elys::GUI {
     class ComponentsEditor {
       public:
-        void OnImGUIRender(Entity entity) {
-            static bool componentsEditorOpen = true;
-            if (ImGui::Begin("Components Editor", &componentsEditorOpen,
-                             ImGuiWindowFlags_AlwaysAutoResize)) {
+        void OnImGUIRender(Entity entity, bool* open) {
+            if (ImGui::Begin("Components Editor", open, ImGuiWindowFlags_AlwaysAutoResize)) {
                 if (!entity.IsValid()) {
                     ImGui::End();
                     return;
                 }
 
-                auto &tag = entity.GetComponent<Tag>().name;
                 auto &node = entity.GetComponent<Node>();
 
-                ImGui::PushID(tag.c_str());
+                ImGui::PushID(node.name.c_str());
                 {
 
                     ImGui::BeginTable("Informations", 3);
@@ -46,13 +44,27 @@ namespace Elys::GUI {
                         node.SetEnabled(enabled);
 
                     ImGui::TableNextColumn();
-                    std::vector<char> cTagName(tag.c_str(), tag.c_str() + tag.size() + 1);
+                    std::vector<char> cTagName(node.name.c_str(), node.name.c_str() + node.name.size() + 1);
                     if (ImGui::InputText("##Tag", cTagName.data(), cTagName.size())) {
-                        tag = std::string(cTagName.begin(), cTagName.end());
+                        node.name = std::string(cTagName.begin(), cTagName.end());
                     }
 
                     ImGui::TableNextColumn();
                     if (ImGui::Button("+")) {
+                        ImGui::OpenPopup("AddComponentPopup");
+                    }
+
+                    if (ImGui::BeginPopupContextItem("AddComponentPopup"))
+                    {
+                        if (ImGui::Selectable("MeshRenderer", false, entity.HasComponent<MeshRenderer>() ? ImGuiSelectableFlags_Disabled : 0)) {
+                            entity.AddComponent<MeshRenderer>({
+                                .mesh = AssetLoader::MeshesMap()["Cube"]
+                            });
+                        }
+                        if (ImGui::Selectable("Light", false, entity.HasComponent<Light>() ? ImGuiSelectableFlags_Disabled : 0)) {
+                            entity.AddComponent<Light>({});
+                        }
+                        ImGui::EndPopup();
                     }
 
                     ImGui::EndTable();
@@ -141,6 +153,28 @@ namespace Elys::GUI {
                                     20.0f); // Default to auto
 
             ImGui::TableNextColumn();
+            ImGui::Text("Mesh");
+            ImGui::TableNextColumn();
+            if (ImGui::BeginCombo("##MeshSelector", meshRenderer.mesh.Path().c_str(), 0))
+            {
+                auto meshes = AssetLoader::MeshesMap();
+                for (auto pair : meshes)
+                {
+                    const bool is_selected = (pair.first == meshRenderer.mesh.Path());
+                    if (ImGui::Selectable(pair.first.c_str(), is_selected)) {
+                        meshRenderer.mesh = pair.second;
+                    }
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+            // ImGui::Combo
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
             ImGui::Text("Color");
             ImGui::TableNextColumn();
             auto &a = meshRenderer.material.albedo;
@@ -163,21 +197,25 @@ namespace Elys::GUI {
             ImGui::TableNextColumn();
             ImGui::Text("Texture");
             ImGui::TableNextColumn();
-            GUI::TextureInput(meshRenderer.material.texture);
+            GUI::TextureInput(meshRenderer.material.texture, "Texture");
             ImGui::TableNextRow();
 
             ImGui::TableNextColumn();
             ImGui::Text("Normal map");
             ImGui::TableNextColumn();
-            GUI::TextureInput(meshRenderer.material.normalMap);
-            ImGui::TableNextColumn();
-            ImGui::Checkbox("##NormalMap", &meshRenderer.material.useNormalMap);
+            GUI::TextureInput(meshRenderer.material.normalMap, "Normalmap");
             ImGui::TableNextRow();
 
             ImGui::TableNextColumn();
             ImGui::Text("Height map");
             ImGui::TableNextColumn();
-            GUI::TextureInput(meshRenderer.material.heightMap);
+            GUI::TextureInput(meshRenderer.material.heightMap, "Heightmap");
+            ImGui::TableNextRow();
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Shaded");
+            ImGui::TableNextColumn();
+            ImGui::Checkbox("##Shaded", &meshRenderer.material.shaded);
             ImGui::TableNextRow();
 
             ImGui::TableNextColumn();

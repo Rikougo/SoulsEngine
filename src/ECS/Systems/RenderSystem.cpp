@@ -42,8 +42,7 @@ namespace Elys {
         glClearBufferiv(GL_COLOR, 1, clearEntityValue);
 
         if (!mShader || !mCamera) {
-            ELYS_CORE_ERROR("RenderSystem::Update : {0} not initialized (nullptr) !",
-                            mShader ? "Camera" : "Shader");
+            ELYS_CORE_ERROR("RenderSystem::Update : {0} not initialized (nullptr) !", mShader ? "Camera" : "Shader");
             mFramebuffer->Unbind();
             return;
         }
@@ -95,8 +94,8 @@ namespace Elys {
 
             }
 
-            mShader->SetBool("uMaterial.hasNormalMap", material.normalMap.has_value() && material.useNormalMap);
-            if (material.normalMap && material.useNormalMap) {
+            mShader->SetBool("uMaterial.hasNormalMap", material.normalMap.has_value());
+            if (material.normalMap) {
                 auto const &normalMap = material.normalMap;
                 mShader->SetInt("uNormalMap", 1);
                 glActiveTexture(GL_TEXTURE0 + 1);
@@ -115,7 +114,7 @@ namespace Elys {
             mShader->SetFloat("uMaterial.roughness", std::max(0.05f, material.roughness));
 
             mShader->SetMat4("uModel", model);
-            mShader->SetBool("uLightsOn", mLightning && !material.selfLight);
+            mShader->SetBool("uLightsOn", mLightning && material.shaded);
 
             mShader->SetInt("uEntity", static_cast<int>(id));
 
@@ -151,7 +150,7 @@ namespace Elys {
 
             mOutlineShader->SetMat4("uModel", model);
             auto outlineScale = mat4{1.0};
-            outlineScale = glm::scale(outlineScale, {1.04, 1.04, 1.04});
+            outlineScale = glm::scale(outlineScale, {1.01, 1.01, 1.01});
             mOutlineShader->SetMat4("uOutlineScale", outlineScale);
             glm::vec4 outlineColor =
                 (id == mCurrentScene->GetSelected()) ?
@@ -183,16 +182,11 @@ namespace Elys {
         if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
             auto mPos = Input::GetMousePosition();
             mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
-
-            // Input::SetCursorMode(Cursor::Disabled);
         } else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
             auto mPos = Input::GetMousePosition();
             mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonRight);
-
-            // Input::SetCursorMode(Cursor::Disabled);
         } else {
             mCamera->EndCapture();
-            // Input::SetCursorMode(Cursor::Normal);
         }
     }
 

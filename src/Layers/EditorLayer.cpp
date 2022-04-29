@@ -18,12 +18,14 @@ namespace Elys {
 
         mCurrentScene = std::make_shared<Scene>();
         mShader = std::make_shared<Shader>("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
-        // TODO Change TrackBallCamera by general Camera object and control it with an instance of CameraController object
         mCamera = std::make_shared<TrackBallCamera>();
         mCamera->SetViewSize(1280, 720);
+
         mFramebuffer = std::make_shared<Framebuffer>(FramebufferData{
             .Width = 1280,
-            .Height = 720
+            .Height = 720,
+            .Attachments = {{GL_RGB}, {GL_RED_INTEGER}},
+            .DepthAttachmentFormat = GL_DEPTH24_STENCIL8
         });
 
         mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
@@ -32,21 +34,16 @@ namespace Elys {
         mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
-        auto sphereMesh = Mesh::Sphere();
-        auto cubeMesh = Mesh::Plane(64, 64);
-
         auto lava = mCurrentScene->CreateEntity("Lava");
         lava.GetComponent<Node>().SetPosition(0.0f, 0.0f, 0.0f);
         lava.AddComponent<MeshRenderer>({
-            .mesh = cubeMesh,
-            .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/lava/Lava_COLOR.jpg"))
-                            .SetNormalMap(AssetLoader::TextureFromPath("textures/lava/Lava_NORM.jpg"))
+            .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
         });
 
         auto mud = mCurrentScene->CreateEntity("Mud");
         mud.GetComponent<Node>().SetPosition(2.0f, 0.0f, 0.0f);
         mud.AddComponent<MeshRenderer>({
-            .mesh = cubeMesh,
+            .mesh = AssetLoader::MeshesMap()["Cube"],
             .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_basecolor.jpg"))
                             .SetNormalMap(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_normal.jpg"))
         });
@@ -57,9 +54,10 @@ namespace Elys {
         light.GetComponent<Node>().SetPosition(0.0f, 0.0f, -10.0f);
         light.GetComponent<Node>().SetScale(0.1f);
         light.AddComponent<Light>({.color = {1.0f, 1.0f, 1.0f}, .intensity = 200.0f});
-        light.AddComponent<MeshRenderer>(
-            {.mesh = sphereMesh,
-             .material = Material{.albedo = {1.0f, 1.0f, 1.0f, 1.0f}}.SetSelfLight(true)});
+        light.AddComponent<MeshRenderer>({
+            .mesh = AssetLoader::MeshesMap()["Sphere"],
+            .material = Material{.albedo = {1.0f, 1.0f, 1.0f, 1.0f}}.SetSelfLight(true)
+        });
     }
 
     void EditorLayer::OnDetach() {
@@ -87,13 +85,13 @@ namespace Elys {
             auto [mx, my] = ImGui::GetMousePos();
             mx -= mViewport.offset.x; my -= mViewport.offset.y;
 
-            auto entityID = mFramebuffer->GetEntityData((int)mx, (int)(mViewport.size.y - my));
+            auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
             mCurrentScene->SetHovered(entityID);
         }
     }
 
     void EditorLayer::OnImGuiRender() {
-        static bool dockSpaceOpen = true;
+        static bool dockSpaceOpen = true, graphSceneOpen = true, componentsEditorOpen = true, contentBrowserOpen = true;
         static ImGuiDockNodeFlags dockSpaceFlags = ImGuiDockNodeFlags_None;
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 
@@ -132,48 +130,26 @@ namespace Elys {
             {
                 if (ImGui::BeginMenu("File"))
                 {
-                    if (ImGui::MenuItem("Exit")) {}
+                    if (ImGui::MenuItem("Exit", "Ctrl + Q")) Application::Get().Shutdown();
+                    if (ImGui::MenuItem("Save scene", "Ctrl + S")) AssetLoader::SerializeScene(mCurrentScene, "scene.escene");
 
                     ImGui::EndMenu();
                 }
             } ImGui::EndMenuBar();
 
-
-            if (ImGui::Begin("Debug & Stats")) {
-                static bool VSYNC = true;
-                static bool LIGHTNING = true;
-                bool tempVSYNC = VSYNC;
-                bool tempLightning = LIGHTNING;
-
-                ImGui::Checkbox("Vsync", &tempVSYNC);
-                if (tempVSYNC != VSYNC) {
-                    VSYNC = tempVSYNC;
-                    Application::Get().GetWindow().EnableVSync(VSYNC);
-                }
-
-                ImGui::Checkbox("Lightning", &tempLightning);
-                if (tempLightning != LIGHTNING) {
-                    LIGHTNING = tempLightning;
-                    mRenderSystem->SetLightning(LIGHTNING);
-                }
-
-                ImGui::Text("Framerate : %0.1f", Profile::Framerate);
-                ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
-                ImGui::Text("DrawnMesh : %d", Profile::DrawnMesh);
-
-                ImGui::Text("%0.3fx%0.3f", Input::GetMousePosition().x, Input::GetMousePosition().y);
-                ImGui::Text("%0.3fx%0.3f", mViewport.offset.x, mViewport.offset.y);
-            } ImGui::End();
-
-            mGraphScene.OnImGUIRender(mCurrentScene);
-            mComponentsEditor.OnImGUIRender(mCurrentScene->EntityFromID(mCurrentScene->GetSelected()));
-            mContentBrowser.OnImGUIRender();
+            mGraphScene.OnImGUIRender(mCurrentScene, nullptr);
+            mComponentsEditor.OnImGUIRender(mCurrentScene->EntityFromID(mCurrentScene->GetSelected()), nullptr);
+            mContentBrowser.OnImGUIRender(nullptr);
 
             ImGui::ShowDemoWindow();
 
             // Viewport: where the 3D scene is drawn
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
             if (ImGui::Begin("Viewport")) {
+                /*if (ImGui::BeginMenuBar()) {
+                    ImGui::Button("Play");
+                } ImGui::EndMenuBar();*/
+
                 auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportOffset = ImGui::GetWindowPos();
                 auto viewportSize = ImGui::GetContentRegionAvail();
@@ -183,13 +159,22 @@ namespace Elys {
                 mViewport.size = {viewportSize.x, viewportSize.y};
 
                 // Bind Framebuffer color texture to an ImGui image
-                unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID();
+                unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID(0);
                 ImGui::Image((ImTextureID)((size_t)textureID), viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
                 mViewportHovered = ImGui::IsWindowHovered();
 
                 // If viewport is not hovered, no need to let event goes further than GUI
                 Application::Get().GetImGUILayer().SetBlocking(!mViewportHovered);
+
+                if (ImGui::BeginDragDropTarget()) {
+                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(AssetLoader::DragDropType::FILE_SCENE)) {
+                        const auto *path = (const wchar_t *)payload->Data;
+                        ChangeScene(AssetLoader::SceneFromPath(path));
+                    }
+
+                    ImGui::EndDragDropTarget();
+                }
             } ImGui::End();
             ImGui::PopStyleVar();
         } else {
@@ -214,9 +199,9 @@ namespace Elys {
             auto [mx, my] = ImGui::GetMousePos();
             mx -= mViewport.offset.x; my -= mViewport.offset.y;
 
-            auto entityID = mFramebuffer->GetEntityData((int)mx, (int)(mViewport.size.y - my));
+            auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
 
-            mGraphScene.SetSelected(Entity(mCurrentScene.get(), entityID));
+            mCurrentScene->SetSelected(entityID);
 
             ELYS_CORE_INFO("Clicked entity {0} at [x: {1}, y: {2}]", entityID, mx, my);
 
@@ -226,12 +211,23 @@ namespace Elys {
 
     void EditorLayer::CreateScene() { mCurrentScene = std::make_shared<Scene>(); }
 
-    void EditorLayer::LoadScene(const std::filesystem::path &path) {}
-    void EditorLayer::SaveScene(const std::filesystem::path &path) {}
+    void EditorLayer::ChangeScene(shared_ptr<Scene> newScene) {
+        mCurrentScene = newScene;
+
+        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
+        mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
+
+        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
+        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
+    }
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
         if (event.GetKeyCode() == Key::Q && Input::IsKeyPressed(Key::LeftControl)) {
             Application::Get().Shutdown();
+        }
+
+        if (event.GetKeyCode() == Key::S && Input::IsKeyPressed(Key::LeftControl)) {
+            AssetLoader::SerializeScene(mCurrentScene, "scene.escene");
         }
 
         if (event.GetKeyCode() == Key::R && Input::IsKeyPressed(Key::LeftControl)) {

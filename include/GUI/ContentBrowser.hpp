@@ -19,13 +19,11 @@ namespace Elys::GUI {
     class ContentBrowser {
       public:
         ContentBrowser() : mCurrentPath(AssetLoader::gAssetPath) {
-            /*mFileIcon = Texture::FromPath(AssetLoader::gAssetPath / path("icons/file-icon.png"));
-            mFolderIcon = Texture::FromPath(AssetLoader::gAssetPath / path("icons/folder-icon.png"));*/
             mFileIcon = AssetLoader::TextureFromPath("icons/file-icon.png");
             mFolderIcon = AssetLoader::TextureFromPath("icons/folder-icon.png");
         }
 
-        void OnImGUIRender();
+        void OnImGUIRender(bool *open);
       private:
         Texture mFileIcon, mFolderIcon;
         path mCurrentPath;

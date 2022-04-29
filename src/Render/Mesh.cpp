@@ -11,83 +11,36 @@ namespace Elys {
         mVertices = other.mVertices;
         mIndices = other.mIndices;
         mVAO = other.mVAO;
+        mPath = other.mPath;
     }
     Mesh::Mesh(Mesh &other) {
         mVertices = other.mVertices;
         mIndices = other.mIndices;
         mVAO = other.mVAO;
+        mPath = other.mPath;
     }
 
-    Mesh Mesh::LoadOFF(std::filesystem::path &path, bool loadNormals) {
-        Mesh result{};
+    Mesh::Mesh(MeshPartial &partial) {
+        mVertices = partial.mVertices;
+        mIndices = partial.mIndices;
 
-        std::ifstream offFile(path);
+        ScaleToUnitAndCenter();
+        GenerateBuffers();
+    }
 
-        if (offFile.is_open()) {
-            std::string type;
-            uint64_t vAmount, tAmount, nAmount;
-            float min = std::numeric_limits<float>::max();
-            float max = std::numeric_limits<float>::min();
+    void Mesh::ScaleToUnitAndCenter() {
+        vec3 min{std::numeric_limits<float>::max()}, max{std::numeric_limits<float>::min()};
 
-            offFile >> type >> vAmount >> tAmount >> nAmount;
-            ELYS_CORE_INFO("Loading OFF mesh, vertices amount : {0}, shape amount : {1}", vAmount, tAmount);
-
-            result.mVertices.resize(vAmount);
-
-            // vertices info
-            for (uint64_t i = 0; i < vAmount; i++) {
-                float x, y, z;
-                offFile >> x >> y >> z;
-
-                // Update cube info
-                auto localMin = std::min({x, y, z});
-                auto localMax = std::max({x, y, z});
-
-                if (localMax > max) max = localMax;
-                if (localMin < min) min = localMin;
-
-                result.mVertices[i].position = {x, y, z};
-
-                if (loadNormals) {
-                    offFile >> x >> y >> z;
-                    result.mVertices[i].normal = {x, y, z};
-                } else {
-                    result.mVertices[i].normal = glm::normalize(vec3{x, y, z});
-                }
-            }
-
-            // triangles
-            for (uint64_t i = 0; i < tAmount; i++) {
-                uint32_t size;
-                offFile >> size;
-
-                float normalTrash;
-
-                if (size == 3) {
-                    uint32_t a, b, c;
-                    offFile >> a >> b >> c;
-
-                    result.mIndices.insert(result.mIndices.end(), {a, b, c});
-                } else if (size == 4) {
-                    uint32_t a, b, c, d;
-                    offFile >> a >> b >> c >> d;
-                    result.mIndices.insert(result.mIndices.end(), {a, b, c, a, c, d});
-                } else {
-                    ELYS_CORE_WARN("Can't handle shape input different than 3 or 4. {0}", size);
-                }
-
-                // triangle normals aren't used yet
-                if (loadNormals) offFile >> normalTrash >> normalTrash >> normalTrash;
-            }
-
-            result.GenerateBuffers();
-
-            offFile.close();
-
-            return result;
+        for(auto v : mVertices) {
+            auto p = v.position;
+            if (p.x < min.x) min.x = p.x; if (p.y < min.y) min.y = p.y; if (p.z < min.z) min.z = p.z;
+            if (p.x > max.x) max.x = p.x; if (p.y > max.y) max.y = p.y; if (p.z > max.z) max.z = p.z;
         }
 
-        throw std::runtime_error("Cant load model at " + path.string());
+        for(auto &v : mVertices) {
+            v.position -= min;
+            v.position = (v.position / glm::abs(max - min)) * 2.0f - 1.0f;
+        }
     }
 
     Mesh Mesh::Plane(uint16_t width, uint16_t height) {
@@ -120,6 +73,8 @@ namespace Elys {
         }
 
         result.GenerateBuffers();
+        std::stringstream path; path << "Plane" << width << "x" << height;
+        result.mPath = path.str();
 
         return result;
     }
@@ -181,6 +136,7 @@ namespace Elys {
         };
 
         result.GenerateBuffers();
+        result.mPath = "Cube";
 
         return result;
     }
@@ -211,6 +167,7 @@ namespace Elys {
         }
 
         result.GenerateBuffers();
+        result.mPath = "Sphere";
 
         return result;
     }
@@ -227,8 +184,5 @@ namespace Elys {
         mVAO->AddVertexBuffer(vertexBuffer);
         auto indexBuffer = std::make_shared<IndexBuffer>(&mIndices[0], mIndices.size());
         mVAO->SetIndexBuffer(indexBuffer);
-        ELYS_CORE_INFO("sizeof(Vertex) : {0} | layout stride : {1}", sizeof(Vertex), vertexLayout.GetStride());
-
-        ELYS_CORE_INFO("{0} {1} {2}", offsetof(Vertex, position), offsetof(Vertex, normal), offsetof(Vertex, texCoord));
     }
 } // namespace Elys

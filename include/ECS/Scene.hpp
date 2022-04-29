@@ -13,16 +13,12 @@
 
 #include <Core/Base.hpp>
 
-#include <Events/Event.hpp>
-#include <Events/KeyEvent.hpp>
-#include <Events/MouseEvent.hpp>
-#include <Events/ApplicationEvent.hpp>
+#include "Core/Event.hpp"
 
 // Components
 #include <ECS/Components/Node.hpp>
 #include <ECS/Components/Light.hpp>
 #include <ECS/Components/MeshRenderer.hpp>
-#include <ECS/Components.hpp>
 
 // Managers
 #include <ECS/ComponentManager.hpp>
@@ -38,9 +34,6 @@ namespace Elys {
     class Scene {
       public:
         Scene();
-
-        /* void OnUpdate(float deltaTime);
-        void OnRuntimeUpdate(float deltaTime); */
 
         Entity CreateEntity(std::string name = "Entity");
         Entity EntityFromNode(Node const &component);
@@ -58,19 +51,19 @@ namespace Elys {
 
         template<typename T, typename ... Components> void SetSystemSignature() {
             mSystemManager->SetSignature<T>(mComponentManager->GetSignature<Components...>());
+
+            for(auto entity : mEntities) {
+                mSystemManager->EntitySignatureChanged(entity.ID(), mEntityManager->GetSignature(entity.ID()));
+            }
         }
 
         std::set<Entity>::iterator begin() { return mEntities.begin(); }
         std::set<Entity>::iterator end() { return mEntities.end(); }
         [[nodiscard]] std::set<Entity>::const_iterator begin() const {return mEntities.begin();}
         [[nodiscard]] std::set<Entity>::const_iterator end() const { return mEntities.end(); }
-
-        void PushDestroyQueue(Entity entity);
-        void ProcessDestroyQueue();
       private:
         void DestroyEntity(Entity const &entity);
       private:
-        std::set<Entity> mDestroyQueue;
         std::set<Entity> mEntities;
 
         int mSelected, mHovered;
@@ -89,7 +82,6 @@ namespace Elys {
       public:
         Entity() = default;
         Entity(Scene* scene, EntityID id) : mScene(scene), mID(id) {};
-        // Entity(std::shared_ptr<Scene> &scene, EntityID id) : mScene(scene), mID(id) {};
         Entity(const Entity& other) = default;
 
         ~Entity() = default;

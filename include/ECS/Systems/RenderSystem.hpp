@@ -8,12 +8,10 @@
 #include <Core/Logger.hpp>
 #include <Core/Input.hpp>
 
-#include <Events/KeyEvent.hpp>
-#include <Events/MouseEvent.hpp>
+#include "Core/Event.hpp"
 
 #include <ECS/System.hpp>
 #include <ECS/Scene.hpp>
-#include <ECS/Components.hpp>
 
 #include <Render/Shader.hpp>
 #include <Render/Framebuffer.hpp>

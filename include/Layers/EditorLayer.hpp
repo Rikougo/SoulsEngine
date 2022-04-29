@@ -14,18 +14,13 @@
 #include <Core/AssetLoader.hpp>
 
 #include <ECS/Scene.hpp>
-#include <ECS/Components.hpp>
 #include <ECS/Systems/LightSystem.hpp>
 #include <ECS/Systems/RenderSystem.hpp>
 
-#include <Events/Event.hpp>
-#include <Events/KeyEvent.hpp>
-#include <Events/MouseEvent.hpp>
-#include <Events/ApplicationEvent.hpp>
+#include "Core/Event.hpp"
 
 #include <Render/Shader.hpp>
 #include <Render/TrackBallCamera.hpp>
-#include <Render/Mesh.hpp>
 
 #include <GUI/GraphScene.hpp>
 #include <GUI/ComponentsEditor.hpp>
@@ -48,8 +43,7 @@ namespace Elys {
         bool OnKeyPressed(KeyPressedEvent &event);
 
         void CreateScene();
-        void LoadScene(const std::filesystem::path& path);
-        void SaveScene(const std::filesystem::path& path);
+        void ChangeScene(shared_ptr<Scene> newScene);
       public:
         struct Viewport {
             glm::vec2 offset{0, 0}, size{0, 0};
@@ -61,6 +55,7 @@ namespace Elys {
 
         shared_ptr<LightSystem> mLightSystem;
         shared_ptr<RenderSystem> mRenderSystem;
+        shared_ptr<Framebuffer> mDepthbuffer;
         shared_ptr<Framebuffer> mFramebuffer;
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
