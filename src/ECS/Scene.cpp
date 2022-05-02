@@ -10,6 +10,7 @@ namespace Elys {
         mComponentManager.RegisterComponent<Tag>();
         mComponentManager.RegisterComponent<RigidBody>();
         mComponentManager.RegisterComponent<MeshRenderer>();
+        mComponentManager.RegisterComponent<AABB>();
     }
 
     Entity Scene::CreateEntity(std::string name) {

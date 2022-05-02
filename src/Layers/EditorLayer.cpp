@@ -28,7 +28,7 @@ namespace Elys {
         });
 
         mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
-        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
+        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node, AABB>();
 
         auto mesh = Mesh::Sphere();
         auto material = Material::FromTexture(std::filesystem::path("./assets/textures/stars_milky_way.jpg"));
@@ -42,6 +42,7 @@ namespace Elys {
         auto sky = mCurrentScene->CreateEntity("Sky");
         sky.GetComponent<Node>().SetScale({100.0f, 100.0f, 100.0f});
         sky.AddComponent<MeshRenderer>(skyRenderer);
+        sky.AddComponent<AABB>(AABB(mesh));
 
         auto sun = mCurrentScene->CreateEntity("Sun");
         sun.GetComponent<Node>().SetPosition({-2.0f, 0.0f, 0.0f});
@@ -49,6 +50,7 @@ namespace Elys {
             .mesh = mesh,
             .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg"))
         });
+        sun.AddComponent<AABB>(AABB(mesh));
 
         auto earth = mCurrentScene->CreateEntity("Earth");
         earth.GetComponent<Node>().SetScale({0.35f, 0.35f, 0.35f});
@@ -56,6 +58,7 @@ namespace Elys {
             .mesh = mesh,
             .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_earth_daymap.jpg"))
         });
+        earth.AddComponent<AABB>(AABB(mesh));
 
     }
 

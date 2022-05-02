@@ -17,14 +17,18 @@ using std::array;
 using glm::vec3;
 
 namespace Elys {
+    class Mesh;
+
     class AABB : public BoundingBox {
       public:
+        AABB() : lo(0), hi(0) {}
         AABB(float min, float max) : lo(min, min, min), hi(max, max, max) {}
         AABB(vec3 min, float size) : lo(min), hi(min + size) {}
         AABB(vec3 min, vec3 max) : lo(min), hi(max) {}
+        AABB(const Mesh& mesh);
         ~AABB() = default;
 
-        [[nodiscard]] array<vec3, 8> Vertices() const;
+        [[nodiscard]] std::vector<vec3> Vertices() const override;
 
         [[nodiscard]] bool IsInFrustum(Frustum frustum, mat4 transform) const override;
         [[nodiscard]] bool IsForwardPlan(const Geometry::Plan& plan) const;

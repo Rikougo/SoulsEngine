@@ -58,17 +58,7 @@ namespace Elys {
 
         [[nodiscard]] const BoundingBox& GetAABB() const {
             if (!mBoundingBox) {
-                float min = std::numeric_limits<float>::max();
-                float max = std::numeric_limits<float>::min();
-                for (auto v : mVertices) {
-                    auto localMin = std::min({v.position.x, v.position.y, v.position.z});
-                    auto localMax = std::max({v.position.x, v.position.y, v.position.z});
-
-                    if (localMax > max) max = localMax;
-                    if (localMin < min) min = localMin;
-                }
-
-                mBoundingBox = new AABB(min, max);
+                mBoundingBox = new AABB(*this);
             }
 
             return *mBoundingBox;

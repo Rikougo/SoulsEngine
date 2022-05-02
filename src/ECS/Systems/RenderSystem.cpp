@@ -6,7 +6,7 @@
 
 namespace Elys {
     RenderSystem::RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer) :
-        mCurrentScene(scene), mCamera(camera), mShader(shader), mFramebuffer(framebuffer) {}
+        mCurrentScene(scene), mCamera(camera), mShader(shader), mFramebuffer(framebuffer) { mLineShader = std::make_shared<Shader>("./shaders/simplevertex.glsl", "./shaders/simplefragment.glsl");}
 
     void RenderSystem::SetCamera(const TrackBallCamera &camera) { mCamera = std::make_unique<TrackBallCamera>(camera); }
 
@@ -84,6 +84,17 @@ namespace Elys {
             glBindVertexArray(0);
 
             Profile::DrawnMesh++;
+
+            if(boundingBox.ShouldDraw()) {
+                mLineShader->Use();
+                mLineShader->SetMat4("uProjection", mCamera->GetProjection());
+                mLineShader->SetMat4("uView", mCamera->GetView());
+                mLineShader->SetMat4("uModel", model);
+
+                boundingBox.Draw();
+                mShader->Use();
+
+            }
         }
 
         mFramebuffer->Unbind();

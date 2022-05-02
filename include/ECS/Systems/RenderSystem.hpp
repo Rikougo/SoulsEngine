@@ -36,6 +36,7 @@ namespace Elys {
 
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
+        shared_ptr<Shader> mLineShader;
 
         shared_ptr<Framebuffer> mFramebuffer;
       public:
