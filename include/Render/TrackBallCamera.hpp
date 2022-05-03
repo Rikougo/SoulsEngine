@@ -36,22 +36,18 @@ namespace Elys {
             mButtonType = button;
         }
 
-        enum Direction {UP, DOWN, LEFT, RIGHT, FRONT, BACK};
-
         void EndCapture() { mCapture = false; mNewCapture = true; }
 
         void Rotate(float deltaT, float deltaP);
-        void Translate(Direction direction, float speed=0.1f);
         void Zoom(float delta);
         void Pan(float deltaX, float deltaY);
         void MouseInput(float x, float y, MouseCode button) override;
 
-        [[nodiscard]] vec3 GetPosition() const override { return mPosition + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
+        [[nodiscard]] vec3 GetPosition() const override { return mTarget + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
         [[nodiscard]] vec2 GetRotation() const { return {mPhi, mTheta}; }
         [[nodiscard]] float GetUp() const { return mUp; }
         [[nodiscard]] float GetDistance() const { return mDistance; }
         [[nodiscard]] vec3 GetTarget() const { return mTarget; }
-
 
       private:
         void UpdateCameraData() const;
@@ -61,11 +57,6 @@ namespace Elys {
         mutable Frustum mFrustum;
         mutable mat4 mProjection{1.0f};
         mutable mat4 mView{1.0f};
-
-        vec3 mPosition{0.0f, 0.0f, 0.0f};
-        vec3 mDirection;
-        float mYaw = -90.0f;
-        float mPitch = 0.0f;
 
         float mTheta = 0.0f, mPhi = (float)M_PI / 2;
         float mUp = 1.0f;

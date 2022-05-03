@@ -9,9 +9,9 @@ sont utilisées et précisé [plus bas](#dependances) le tout en C++17. Le proje
 pour le moment, il n'est absolument pas une référence en l'état, si vous cherchez des ressources intéressantes concernant les 
 moteurs de jeux veuillez vous référer aux [références utilisées](#références-utilisées ).*
 
-## Exemple
+## Exemple (PBR)
 
-![Demo](./demo/V0_demo_solar_system.png)
+![Demo](./demo/V0_demo_PBR.png)
 
 ## Fonctionnalitées (complétées ou non)
 

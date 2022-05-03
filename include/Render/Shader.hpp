@@ -22,6 +22,9 @@ namespace Elys {
         // ------------------------------------------------------------------------
         Shader(const char *vertexPath, const char *fragmentPath,
                const char *geometryPath = nullptr);
+
+        void Reload(const char *vertexPath, const char *fragmentPath,
+               const char *geometryPath = nullptr);
         // activate the shader
         // ------------------------------------------------------------------------
         inline void Use() const { glUseProgram(mID); }

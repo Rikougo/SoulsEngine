@@ -7,9 +7,7 @@
 
 #include <Core/Layer.hpp>
 
-#include <Events/KeyEvent.hpp>
-#include <Events/MouseEvent.hpp>
-#include <Events/ApplicationEvent.hpp>
+#include "Core/Event.hpp"
 
 namespace Elys {
     class ImGuiLayer : public Layer {
@@ -22,6 +20,8 @@ namespace Elys {
         void OnDetach() override;
         void OnImGuiRender() override;
         void OnEvent(Event &event) override;
+      private:
+        void SetupTheme();
       private:
         bool mBlockingEvents = false;
     };

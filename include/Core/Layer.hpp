@@ -7,8 +7,7 @@
 
 #include <string>
 
-#include <Events/Event.hpp>
-#include <Events/KeyEvent.hpp>
+#include "Event.hpp"
 #include <utility>
 
 namespace Elys {

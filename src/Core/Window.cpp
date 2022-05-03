@@ -47,7 +47,9 @@ namespace Elys {
         ELYS_CORE_INFO("  - Version : {0}", glGetString(GL_VERSION));
 
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 
         glfwSetWindowUserPointer(mWindow, &mData);
 

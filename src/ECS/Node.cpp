@@ -19,10 +19,15 @@ namespace Elys {
             return;
         }
 
-        mParent = parent;
-
         if (mParent) {
+            mParent->RemoveChild(this);
+        }
+
+        if (parent) {
+            mParent = parent;
             mParent->AddChild(this);
+        } else {
+            mParent = nullptr;
         }
     }
     void Node::AddChild(Node *child) {
@@ -41,47 +46,67 @@ namespace Elys {
     }
     void Node::RemoveChild(Node *node) {
         auto it = std::find(mChildren.begin(), mChildren.end(), node);
-        if (it != mChildren.end()) mChildren.erase(it);
+        if (it != mChildren.end()) {
+            (*it)->mParent = nullptr;
+            mChildren.erase(it);
+        }
         else ELYS_CORE_WARN("Child not found.");
     }
 
     Node* Node::Parent() const { return mParent; }
     vector<Node *> Node::Children() const { return mChildren; }
 
-    vec3 Node::InheritedPosition() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalPosition; }
-    vec3 Node::InheritedScale() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalScale; }
-    quat Node::InheritedRotation() const { if (!mGlobalUpdated) UpdateTransform(); return mGlobalRotation; }
+    void Node::OnDelete() {
+        if (mParent) mParent->RemoveChild(this);
+
+        // set new parent the parent of deleted node
+        // no matter if it hasn't any parent (children will have no parent)
+        for (auto child : mChildren) {
+            child->SetParent(mParent);
+        }
+    };
+
+    vec3 Node::InheritedPosition() const {
+        if (!mGlobalUpdated)
+            UpdateTransform();
+        return mGlobalPosition;
+    }
+    vec3 Node::InheritedScale() const {
+        if (!mGlobalUpdated)
+            UpdateTransform();
+        return mGlobalScale;
+    }
+    quat Node::InheritedRotation() const {
+        if (!mGlobalUpdated)
+            UpdateTransform();
+        return mGlobalRotation;
+    }
     mat4 Node::InheritedTransform() const {
-        if (!mGlobalUpdated) UpdateTransform();
+        if (!mGlobalUpdated)
+            UpdateTransform();
 
-        mat4 model(1.0f);
+        return mGlobalTransform;
+    }
 
-        model = glm::translate(model, InheritedPosition());
-
-        model *= mat4_cast(InheritedRotation());
-
-        model = glm::scale(model, InheritedScale());
-
-        return model;
+    bool Node::InheritedEnabled() const {
+        if (mParent) return mParent->LocalEnabled() && mLocalEnabled;
+        else return mLocalEnabled;
     }
 
     vec3 Node::LocalPosition() const { return mLocalPosition; }
     vec3 Node::LocalScale() const { return mLocalScale; }
     quat Node::LocalRotation() const { return mLocalRotation; }
-    mat4 Node::LocalTransform() const {
-        mat4 model(1.0f);
+    mat4 Node::LocalTransform() const { return mLocalTransform; }
+    bool Node::LocalEnabled() const { return mLocalEnabled; }
 
-        model = glm::translate(model, LocalPosition());
-
-        model *= mat4_cast(LocalRotation());
-
-        model = glm::scale(model, LocalScale());
-
-        return model;
+    void Node::Move(vec3 translation) {
+        mLocalPosition += translation;
+        InvalidateNode();
     }
-
-    void Node::Move(vec3 translation) { mLocalPosition += translation; InvalidateNode(); }
-    void Node::Rotate(quat rotation) { mLocalRotation *= rotation; InvalidateNode(); }
+    void Node::Rotate(quat rotation) {
+        mLocalRotation *= rotation;
+        InvalidateNode();
+    }
     void Node::Scale(vec3 scale) { mLocalScale *= scale; InvalidateNode(); }
 
     void Node::SetPosition(vec3 position) {
@@ -110,6 +135,8 @@ namespace Elys {
     void Node::SetScale(float x, float y, float z) { SetScale(vec3(x, y, z)); }
     void Node::SetScale(float uniformScale) { SetScale(vec3(uniformScale, uniformScale, uniformScale)); }
 
+    void Node::SetEnabled(bool enabled) { mLocalEnabled = enabled; }
+
     void Node::InvalidateNode() const {
         for(auto child : mChildren) child->InvalidateNode();
 
@@ -128,6 +155,16 @@ namespace Elys {
             mGlobalRotation = mLocalRotation;
             mGlobalScale    = mLocalScale;
         }
+
+        mGlobalTransform = mat4(1.0f);
+        mGlobalTransform = glm::translate(mGlobalTransform, mGlobalPosition);
+        mGlobalTransform *= glm::mat4_cast(mGlobalRotation);
+        mGlobalTransform = glm::scale(mGlobalTransform, mGlobalScale);
+
+        mLocalTransform = mat4(1.0f);
+        mLocalTransform = glm::translate(mLocalTransform, mLocalPosition);
+        mLocalTransform *= glm::mat4_cast(mLocalRotation);
+        mLocalTransform = glm::translate(mLocalTransform, mLocalScale);
 
         mGlobalUpdated = true;
     }

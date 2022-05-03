@@ -5,14 +5,27 @@
 #ifndef ELYS_FRAMEBUFFER_HPP
 #define ELYS_FRAMEBUFFER_HPP
 
+#include <vector>
+
 #include <glm/glm.hpp>
+#include <glad/glad.h>
 
 #include <Core/Logger.hpp>
 
+using std::vector;
+
 namespace Elys {
+    struct FramebufferAttachmentSpec {
+        GLenum TextureFormat;
+    };
+
     struct FramebufferData {
         float Width;
         float Height;
+        int Sample = 1;
+
+        vector<FramebufferAttachmentSpec> Attachments;
+        GLenum DepthAttachmentFormat = 0;
     };
 
     class Framebuffer {
@@ -20,8 +33,10 @@ namespace Elys {
         Framebuffer(FramebufferData data);
         ~Framebuffer() = default;
 
-        [[nodiscard]] unsigned int GetColorTextureID() const { return mColorAttachmentID; }
+        [[nodiscard]] unsigned int GetColorTextureID(int layer = 0) const { return mColorAttachments[layer]; }
         [[nodiscard]] FramebufferData GetData() const { return mData; }
+
+        [[nodiscard]] int GetPixel(int x, int y, int layer = 0);
 
         void Bind() const;
         static void Unbind() ;
@@ -33,7 +48,8 @@ namespace Elys {
         void Update();
       private:
         unsigned int mBufferID;
-        unsigned int mColorAttachmentID;
+        vector<unsigned int> mColorAttachments;
+        unsigned int mEntityAttachmentID;
         unsigned int mDepthAttachmentID;
 
         FramebufferData mData;

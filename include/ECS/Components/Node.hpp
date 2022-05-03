@@ -20,12 +20,13 @@ using glm::quat;
 using std::vector;
 
 namespace Elys {
-    /// \Brief
-    ///     Node used as component. It stores parent pointer (if has parent) and Children pointers (if has any),
-    ///     on accessing Inherited information it will use parent as well.
-    /// \Todo
-    ///     Compute Inherited information on modification and cache it.
+    /**
+     * @brief
+     * Core component of all Entity, it is used to build graph hierarchy
+     */
     class Node {
+      public:
+        std::string name = "Entity";
       public:
         Node();
         // Node(Node &node);
@@ -37,24 +38,18 @@ namespace Elys {
         [[nodiscard]] Node* Parent() const;
         [[nodiscard]] vector<Node*> Children() const;
 
-        void OnDelete() {
-            if (mParent) mParent->RemoveChild(this);
-
-            // set new parent the parent of deleted node
-            // no matter if it hasn't any parent (children will have no parent)
-            for (auto child : mChildren) {
-                child->SetParent(mParent);
-            }
-        }
+        void OnDelete();
 
         [[nodiscard]] vec3 InheritedPosition() const;
         [[nodiscard]] vec3 InheritedScale() const;
         [[nodiscard]] quat InheritedRotation() const;
         [[nodiscard]] mat4 InheritedTransform() const;
+        [[nodiscard]] bool InheritedEnabled() const;
         [[nodiscard]] vec3 LocalPosition() const;
         [[nodiscard]] vec3 LocalScale() const;
         [[nodiscard]] quat LocalRotation() const;
         [[nodiscard]] mat4 LocalTransform() const;
+        [[nodiscard]] bool LocalEnabled() const;
 
         void Move(vec3 translation);
         void Rotate(quat rotation);
@@ -68,26 +63,34 @@ namespace Elys {
         void SetScale(vec3 scale);
         void SetScale(float x, float y, float z);
         void SetScale(float uniformScale);
+        void SetEnabled(bool enabled);
 
+        /**
+         * @brief Compare Node using pointer address
+         * @param other 
+         * @return
+         */
         bool operator==(const Node &other) {
-            return mParent == other.mParent && mChildren == other.mChildren;
+            return this == &other;
         }
       private:
         void InvalidateNode() const;
         void UpdateTransform() const;
-
       private:
         Node* mParent = nullptr;
         vector<Node*> mChildren;
 
+        bool mLocalEnabled = true;
         vec3 mLocalPosition{0.0f, 0.0f, 0.0f};
         vec3 mLocalScale{1.0f, 1.0f, 1.0f};
         quat mLocalRotation{vec3(0.0f, 0.0f, 0.0f)};
+        mutable mat4 mLocalTransform{1.0f};
 
         mutable vec3 mGlobalPosition{0.0f, 0.0f, 0.0f};
         mutable vec3 mGlobalScale{1.0f, 1.0f, 1.0f};
         mutable quat mGlobalRotation{vec3{0.0f, 0.0f, 0.0f}};
         mutable bool mGlobalUpdated = false;
+        mutable mat4 mGlobalTransform{1.0f};
     };
 }
 

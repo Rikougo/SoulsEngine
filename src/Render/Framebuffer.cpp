@@ -29,31 +29,51 @@ void Elys::Framebuffer::Unbind() {
 void Elys::Framebuffer::Update() {
     if (mBufferID) {
         glDeleteFramebuffers(1, &mBufferID);
-        glDeleteTextures(1, &mColorAttachmentID);
-        mColorAttachmentID = 0;
+        glDeleteTextures(mColorAttachments.size(), mColorAttachments.data());
         glDeleteTextures(1, &mDepthAttachmentID);
+
+        mColorAttachments.clear();
         mDepthAttachmentID = 0;
     }
 
     glGenFramebuffers(1, &mBufferID);
     glBindFramebuffer(GL_FRAMEBUFFER, mBufferID);
 
-    // COLOR ATTACHMENT
-    glGenTextures(1, &mColorAttachmentID);
-    glBindTexture(GL_TEXTURE_2D, mColorAttachmentID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mData.Width, mData.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    if (!mData.Attachments.empty()) {
+        mColorAttachments.resize(mData.Attachments.size());
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glGenTextures(mColorAttachments.size(), mColorAttachments.data());
+        for (size_t i = 0; i < mColorAttachments.size(); i++) {
+            glBindTexture(GL_TEXTURE_2D, mColorAttachments[i]);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorAttachmentID, 0);
+            switch (mData.Attachments[i].TextureFormat) {
+            case GL_RGB:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mData.Width, mData.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                break;
+            case GL_RED_INTEGER:
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, mData.Width, mData.Height, 0, GL_RED_INTEGER, GL_INT, nullptr);
+                break;
+            }
 
-    // DEPTH TEXTURE
-    glGenTextures(1, &mDepthAttachmentID);
-    glBindTexture(GL_TEXTURE_2D, mDepthAttachmentID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, mData.Width, mData.Height, 0,  GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
+                                   mColorAttachments[i], 0);
+        }
+    }
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, mDepthAttachmentID, 0);
+    if (mData.DepthAttachmentFormat != 0) {
+        // DEPTH TEXTURE
+        glGenTextures(1, &mDepthAttachmentID);
+        glBindTexture(GL_TEXTURE_2D, mDepthAttachmentID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, mData.Width, mData.Height, 0,
+                     GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+                               mDepthAttachmentID, 0);
+    }
+
+    glDrawBuffers(mColorAttachments.size(), mColorAttachments.data());
 
     switch (glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
     case GL_FRAMEBUFFER_UNDEFINED:
@@ -86,4 +106,13 @@ void Elys::Framebuffer::Update() {
     default:
         ELYS_CORE_WARN("Unhandled Framebuffer status.");
     }
+}
+
+int Elys::Framebuffer::GetPixel(int x, int y, int layer) {
+    Bind();
+    int pixelData;
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + layer);
+    glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+    Unbind();
+    return pixelData;
 }

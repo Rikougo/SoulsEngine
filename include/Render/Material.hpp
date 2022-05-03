@@ -13,49 +13,97 @@
 
 #include <Core/Logger.hpp>
 
+#include <Render/Texture.hpp>
+
+using glm::vec2;
 using glm::vec3;
 using glm::vec4;
 
 namespace Elys {
-    unsigned int GLTextureFromFile(const std::filesystem::path &path);
-
-    struct Texture {
-        unsigned int id;
-        std::string path;
-
-        static Texture FromPath(const std::filesystem::path &path) {
-            return Texture {
-                .id = GLTextureFromFile(path),
-                .path = path.string()
-            };
-        }
-
-        static Texture* PtrFromPath(const std::filesystem::path &path) {
-            return new Texture {
-                .id = GLTextureFromFile(path),
-                .path = path.string()
-            };
-        }
-    };
-
     struct Material {
-        vec3 ambient{0.0f, 0.0f, 0.0f};
-        vec3 diffuse{1.0f, 1.0f, 1.0f};
-        vec3 specular{0.0f, 0.0f, 0.0f};
+        float metallic = 0.0f;
+        float roughness = 0.0f;
+        bool shaded = true;
 
-        Texture *texture = nullptr;
-        vec4 color{0.58f, 0.58f, 0.58f, 1.0f};
-        Texture *normalMap = nullptr;
+        vec4 albedo{0.58f, 0.58f, 0.58f, 1.0f};
+        std::optional<Texture> texture;
+        std::optional<Texture> normalMap;
+        std::optional<Texture> heightMap;
+        vec2 tiling{1.0f, 1.0f};
 
-        static Material FromTexture(const Texture &texture) {
+        /** @brief
+         *  Create Material texture, it does have default Ambient/Diffuse/Specular specs but have white opaque color.
+         */
+        static Material FromTexture(const Texture &texture, vec4 a = {1.0f, 1.0f, 1.0f, 1.0f}, float roughness = 0.0f, float metallic = 0.0f) {
             return {
-                .texture = new Texture(texture),
-                .color = {0.0f, 0.0f, 0.0f, 0.0f}
+                .metallic = metallic,
+                .roughness = roughness,
+                .albedo = a,
+                .texture = texture,
             };
         }
 
-        static Material FromTexture(const std::filesystem::path &texturePath) {
-            return FromTexture(Texture::FromPath(texturePath));
+        Material& SetSelfLight(bool value) {
+            shaded = value;
+            return *this;
+        }
+
+        Material& SetNormalMap(const Texture& value) {
+            if (!value.Valid()) return *this;
+            normalMap = value;
+            return *this;
+        }
+
+        Material& ResetNormalMap() {
+            normalMap.reset();
+            return *this;
+        }
+
+        Material& SetTexture(const Texture &value) {
+            if (!value.Valid()) return *this;
+            texture = value;
+            return *this;
+        }
+
+        Material& ResetTexture() {
+            texture.reset();
+            return *this;
+        }
+
+        Material& SetHeightMap(const Texture &value) {
+            if (!value.Valid()) return *this;
+            heightMap = value;
+            return *this;
+        }
+
+        Material& ResetHeightMap() {
+            heightMap.reset();
+            return *this;
+        }
+
+        Material& SetAlbedo(float x, float y, float z, float w = 1.0f) {
+            albedo = {x, y, z, w};
+            return *this;
+        }
+
+        Material& SetAlbedo(const vec4 &value) {
+            albedo = value;
+            return *this;
+        }
+
+        Material& SetMetallic(float value) {
+            metallic = value;
+            return *this;
+        }
+
+        Material& SetRoughness(float value) {
+            roughness = value;
+            return *this;
+        }
+
+        Material& SetTiling(vec2 value) {
+            tiling = value;
+            return *this;
         }
     };
 }

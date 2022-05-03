@@ -12,6 +12,8 @@
 
 #include <Core/Profiling.hpp>
 #include <Core/Geometry.hpp>
+
+#include <Render/DataHolder.hpp>
 #include <Render/Camera.hpp>
 
 using std::array;
@@ -29,20 +31,22 @@ namespace Elys {
         AABB(const Mesh& mesh);
         ~AABB() = default;
 
+        [[nodiscard]] bool Collapse(AABB const &other) const;
         [[nodiscard]] bool IsInFrustum(Frustum frustum, glm::mat4 transform) const;
         [[nodiscard]] bool IsForwardPlan(const Geometry::Plan& plan) const;
 
-        [[nodiscard]] void Draw() const;
+        [[nodiscard]] std::shared_ptr<VertexArray> VAO() const { return mVAO; }
+        [[nodiscard]] std::vector<vec3> Vertices() const { return mVertices; }
 
-        [[nodiscard]] unsigned int VAO() const { return mVAO; }
-        [[nodiscard]] bool ShouldDraw() const { return mShouldDraw; }
+        void Update(glm::mat4 transform, Mesh const &mesh);
       private:
-        void GenerateBuffers();
+        void UpdateBuffers() const;
       private:
-        unsigned int mVAO, mVBO;
+        mutable std::shared_ptr<VertexArray> mVAO;
+        mutable std::shared_ptr<VertexBuffer> mVBO;
         std::vector<glm::vec3> mVertices;
-        bool mShouldDraw = true;
-        vec3 hi, lo;
+        glm::mat4 mTransform{}; // transform cache
+        vec3 hi{}, lo{};
     };
 }
 

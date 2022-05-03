@@ -17,21 +17,26 @@ set(
         src/Core/Window.cpp
         src/Core/Logger.cpp
         src/Core/LayerStack.cpp
-        src/ECS/EntityManager.cpp
-        src/Layers/ImGuiLayer.cpp
-        src/Layers/EditorLayer.cpp
-        src/Application.cpp
-        main.cpp
-        src/ECS/Scene.cpp
-        src/ECS/Node.cpp
-        src/Render/Shader.cpp
-        src/Render/TrackBallCamera.cpp
-        src/Render/Material.cpp
-        src/Render/Mesh.cpp
-        src/Render/AABB.cpp
         src/Core/Profiling.cpp
         src/Core/Geometry.cpp
-        src/ECS/Systems/RenderSystem.cpp src/Core/Input.cpp src/Render/Framebuffer.cpp src/GUI/GraphScene.cpp)
+        src/Core/Input.cpp
+        src/ECS/Scene.cpp
+        src/ECS/Node.cpp
+        src/GUI/GraphScene.cpp
+        src/ECS/EntityManager.cpp
+        src/ECS/Systems/RenderSystem.cpp
+        src/ECS/Systems/LightSystem.cpp
+        src/Layers/ImGuiLayer.cpp
+        src/Layers/EditorLayer.cpp
+        src/Render/Shader.cpp
+        src/Render/TrackBallCamera.cpp
+        src/Render/Mesh.cpp
+        src/Render/AABB.cpp
+        src/Render/Framebuffer.cpp
+        src/Render/DataHolder.cpp
+        src/Application.cpp
+        main.cpp
+        src/GUI/GUI.cpp src/GUI/ContentBrowser.cpp src/Core/AssetLoader.cpp src/Render/Texture.cpp src/ECS/Systems/PhysicSystem.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)
@@ -44,6 +49,6 @@ if (MSVC)
 endif()
 
 target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_20)
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw OpenGL::GL IMGUI Glad)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw OpenGL::GL IMGUI Glad assimp)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE include/ libs/glfw/include/ libs/glad/include/ libs/glm/ libs/include/ libs/spdlog/include/)
 

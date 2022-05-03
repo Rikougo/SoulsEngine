@@ -11,22 +11,21 @@
 #include <glm/glm.hpp>
 
 #include <Core/Layer.hpp>
+#include <Core/AssetLoader.hpp>
 
 #include <ECS/Scene.hpp>
-#include <ECS/Components.hpp>
+#include <ECS/Systems/LightSystem.hpp>
 #include <ECS/Systems/RenderSystem.hpp>
+#include <ECS/Systems/PhysicSystem.hpp>
 
-#include <Events/Event.hpp>
-#include <Events/KeyEvent.hpp>
-#include <Events/MouseEvent.hpp>
-#include <Events/ApplicationEvent.hpp>
+#include <Core/Event.hpp>
 
 #include <Render/Shader.hpp>
 #include <Render/TrackBallCamera.hpp>
-#include <Render/Mesh.hpp>
 
 #include <GUI/GraphScene.hpp>
 #include <GUI/ComponentsEditor.hpp>
+#include <GUI/ContentBrowser.hpp>
 
 using std::shared_ptr;
 
@@ -34,6 +33,7 @@ namespace Elys {
     class EditorLayer : public Layer {
       public:
         EditorLayer() = default;
+        ~EditorLayer() = default;
         void OnAttach() override;
         void OnDetach() override;
 
@@ -44,8 +44,7 @@ namespace Elys {
         bool OnKeyPressed(KeyPressedEvent &event);
 
         void CreateScene();
-        void LoadScene(const std::filesystem::path& path);
-        void SaveScene(const std::filesystem::path& path);
+        void ChangeScene(shared_ptr<Scene> newScene);
       public:
         struct Viewport {
             glm::vec2 offset{0, 0}, size{0, 0};
@@ -55,11 +54,15 @@ namespace Elys {
         bool mViewportHovered = false;
         shared_ptr<Scene> mCurrentScene;
 
+        shared_ptr<LightSystem> mLightSystem;
         shared_ptr<RenderSystem> mRenderSystem;
+        shared_ptr<PhysicSystem> mPhysicSystem;
+        shared_ptr<Framebuffer> mDepthbuffer;
         shared_ptr<Framebuffer> mFramebuffer;
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
 
+        GUI::ContentBrowser mContentBrowser;
         GUI::GraphScene mGraphScene;
         GUI::ComponentsEditor mComponentsEditor;
     };

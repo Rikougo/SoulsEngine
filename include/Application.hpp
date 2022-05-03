@@ -12,8 +12,9 @@
 #include <Core/Profiling.hpp>
 #include <Core/Window.hpp>
 #include <Core/LayerStack.hpp>
+#include <Core/AssetLoader.hpp>
 
-#include <Events/Event.hpp>
+#include "Core/Event.hpp"
 
 #include <Layers/ImGuiLayer.hpp>
 #include <Layers/EditorLayer.hpp>

@@ -12,10 +12,14 @@
 namespace Elys::GUI {
     class GraphScene {
       public:
-        void OnImGUIRender(std::shared_ptr<Scene> &sceneRef);
+        void OnImGUIRender(std::shared_ptr<Scene> &sceneRef, bool *open);
 
         Entity& GetSelected() { return mSelected; };
+        void SetSelected(Entity entity) { mSelected = entity; }
       private:
+        void DrawEntity(std::shared_ptr<Scene> &sceneRef, Entity &entity);
+      private:
+        ImGuiTreeNodeFlags BaseNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
         Entity mSelected;
     };
 }

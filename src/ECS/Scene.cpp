@@ -6,21 +6,22 @@
 
 namespace Elys {
     Scene::Scene() {
-        mComponentManager.RegisterComponent<Node>();
-        mComponentManager.RegisterComponent<Tag>();
-        mComponentManager.RegisterComponent<RigidBody>();
-        mComponentManager.RegisterComponent<MeshRenderer>();
-        mComponentManager.RegisterComponent<AABB>();
+        mEntityManager = std::make_unique<EntityManager>();
+        mComponentManager = std::make_unique<ComponentManager>();
+        mSystemManager = std::make_unique<SystemManager>();
+
+        mComponentManager->RegisterComponent<Node>();
+        mComponentManager->RegisterComponent<MeshRenderer>();
+        mComponentManager->RegisterComponent<Light>();
+        mComponentManager->RegisterComponent<AABB>();
     }
 
     Entity Scene::CreateEntity(std::string name) {
-        auto newID = mEntityManager.CreateEntity();
+        auto newID = mEntityManager->CreateEntity();
         auto entity = Entity(this, newID);
-        entity.AddComponent(Tag{std::move(name)});
-        entity.AddComponent(Node{});
+        entity.AddComponent(Node{}).name = std::move(name);
 
         mEntities.insert(entity);
-
 
         ELYS_CORE_INFO("Created entity {0}", newID);
         return entity;
@@ -34,19 +35,23 @@ namespace Elys {
         entity.GetComponent<Node>().OnDelete();
         mEntities.erase(entity);
 
-        mComponentManager.EntityDestroyed(id);
-        mSystemManager.EntityDestroyed(id);
-        mEntityManager.DestroyEntity(id);
+        mComponentManager->EntityDestroyed(id);
+        mSystemManager->EntityDestroyed(id);
+        mEntityManager->DestroyEntity(id);
     }
 
     Entity Scene::EntityFromNode(const Node &component) {
-        auto id = mComponentManager.GetEntity<Node>(component);
-        return Entity(this, id);
+        auto id = mComponentManager->GetEntity<Node>(component);
+        return {this, id};
     }
 
-    void Scene::OnUpdate(float deltaTime) { }
+    Entity Scene::EntityFromID(EntityID id) { return {this, id}; }
 
-    void Scene::OnRuntimeUpdate(float deltaTime) { }
+    /*void Scene::OnUpdate(float deltaTime) { }
+
+    void Scene::OnRuntimeUpdate(float deltaTime) { }*/
+
+    bool Scene::SaveInFile(std::filesystem::path &path) { return false; }
 
     Scene Scene::FromFile(std::filesystem::path &path) {
         throw std::runtime_error("Scene::OnRuntimeUpdate : Not implemented yet.");

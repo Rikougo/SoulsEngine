@@ -10,92 +10,37 @@ namespace Elys {
     Mesh::Mesh(const Mesh &other) {
         mVertices = other.mVertices;
         mIndices = other.mIndices;
-
-        GenerateBuffers();
+        mVAO = other.mVAO;
+        mPath = other.mPath;
     }
     Mesh::Mesh(Mesh &other) {
         mVertices = other.mVertices;
         mIndices = other.mIndices;
-
-        mInitialized = other.mInitialized;
-
-        if (mInitialized) {
-            mVAO = other.mVAO;
-            mVBO = other.mVBO;
-            mEBO = other.mEBO;
-        }
+        mVAO = other.mVAO;
+        mPath = other.mPath;
     }
 
-    Mesh Mesh::LoadOFF(std::filesystem::path &path, bool loadNormals) {
-        Mesh result{};
+    Mesh::Mesh(MeshPartial &partial) {
+        mVertices = partial.mVertices;
+        mIndices = partial.mIndices;
 
-        std::ifstream offFile(path);
+        ScaleToUnitAndCenter();
+        GenerateBuffers();
+    }
 
-        if (offFile.is_open()) {
-            std::string type;
-            uint64_t vAmount, tAmount, nAmount;
-            float min = std::numeric_limits<float>::max();
-            float max = std::numeric_limits<float>::min();
+    void Mesh::ScaleToUnitAndCenter() {
+        vec3 min{std::numeric_limits<float>::max()}, max{std::numeric_limits<float>::min()};
 
-            offFile >> type >> vAmount >> tAmount >> nAmount;
-            ELYS_CORE_INFO("Loading OFF mesh, vertices amount : {0}, shape amount : {1}", vAmount, tAmount);
-
-            result.mVertices.resize(vAmount);
-
-            // vertices info
-            for (uint64_t i = 0; i < vAmount; i++) {
-                float x, y, z;
-                offFile >> x >> y >> z;
-
-                // Update cube info
-                auto localMin = std::min({x, y, z});
-                auto localMax = std::max({x, y, z});
-
-                if (localMax > max) max = localMax;
-                if (localMin < min) min = localMin;
-
-                result.mVertices[i].position = {x, y, z};
-
-                if (loadNormals) {
-                    offFile >> x >> y >> z;
-                    result.mVertices[i].normal = {x, y, z};
-                } else {
-                    result.mVertices[i].normal = glm::normalize(vec3{x, y, z});
-                }
-            }
-
-            // triangles
-            for (uint64_t i = 0; i < tAmount; i++) {
-                uint32_t size;
-                offFile >> size;
-
-                float normalTrash;
-
-                if (size == 3) {
-                    uint32_t a, b, c;
-                    offFile >> a >> b >> c;
-
-                    result.mIndices.insert(result.mIndices.end(), {a, b, c});
-                } else if (size == 4) {
-                    uint32_t a, b, c, d;
-                    offFile >> a >> b >> c >> d;
-                    result.mIndices.insert(result.mIndices.end(), {a, b, c, a, c, d});
-                } else {
-                    ELYS_CORE_WARN("Can't handle shape input different than 3 or 4. {0}", size);
-                }
-
-                // triangle normals aren't used yet
-                if (loadNormals) offFile >> normalTrash >> normalTrash >> normalTrash;
-            }
-
-            result.GenerateBuffers();
-
-            offFile.close();
-
-            return result;
+        for(auto v : mVertices) {
+            auto p = v.position;
+            if (p.x < min.x) min.x = p.x; if (p.y < min.y) min.y = p.y; if (p.z < min.z) min.z = p.z;
+            if (p.x > max.x) max.x = p.x; if (p.y > max.y) max.y = p.y; if (p.z > max.z) max.z = p.z;
         }
 
-        throw std::runtime_error("Cant load model at " + path.string());
+        for(auto &v : mVertices) {
+            v.position -= min;
+            v.position = (v.position / glm::abs(max - min)) * 2.0f - 1.0f;
+        }
     }
 
     Mesh Mesh::Plane(uint16_t width, uint16_t height) {
@@ -128,6 +73,8 @@ namespace Elys {
         }
 
         result.GenerateBuffers();
+        std::stringstream path; path << "Plane" << width << "x" << height;
+        result.mPath = path.str();
 
         return result;
     }
@@ -189,6 +136,7 @@ namespace Elys {
         };
 
         result.GenerateBuffers();
+        result.mPath = "Cube";
 
         return result;
     }
@@ -219,45 +167,22 @@ namespace Elys {
         }
 
         result.GenerateBuffers();
+        result.mPath = "Sphere";
 
         return result;
     }
 
     void Mesh::GenerateBuffers() {
-        glGenVertexArrays(1, &mVAO);
-        glGenBuffers(1, &mVBO);
-        glGenBuffers(1, &mEBO);
-
-        glBindVertexArray(mVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-
-        glBufferData(
-            GL_ARRAY_BUFFER,                                             // BUFFER TYPE
-            static_cast<GLsizeiptr>(mVertices.size() * sizeof(Vertex)),  // BUFFER SIZE
-            &mVertices[0],                                               // BUFFER ADDRESS
-            GL_STATIC_DRAW                                               // USAGE
-        );
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
-        glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER,                                     // BUFFER TYPE
-            static_cast<GLsizeiptr>(mIndices.size() * sizeof(uint32_t)), // BUFFER SIZE
-            &mIndices[0],                                                // BUFFER ADDRESS
-            GL_STATIC_DRAW                                               // USAGE
-        );
-
-        // SET UP VERTEX ARRAY LAYOUT
-        // vertex positions
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
-        // vertex normals
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal));
-        // vertex texture coords
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, texCoord));
-
-        // unbind VAO
-        glBindVertexArray(0);
+        mVAO = std::make_shared<VertexArray>();
+        auto vertexBuffer = std::make_shared<VertexBuffer>((void*)&mVertices[0], mVertices.size() * sizeof(Vertex));
+        BufferLayout vertexLayout{
+            {"position", sizeof(vec3), 3, GL_FLOAT},
+            {"normal", sizeof(vec3), 3, GL_FLOAT},
+            {"texCoord", sizeof(vec2), 2, GL_FLOAT}
+        };
+        vertexBuffer->SetLayout(vertexLayout);
+        mVAO->AddVertexBuffer(vertexBuffer);
+        auto indexBuffer = std::make_shared<IndexBuffer>(&mIndices[0], mIndices.size());
+        mVAO->SetIndexBuffer(indexBuffer);
     }
 } // namespace Elys

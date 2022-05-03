@@ -4,6 +4,9 @@ add_subdirectory(${GLFW_DIR})
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 add_library(IMGUI STATIC)
 
+set(ASSIMP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp)
+add_subdirectory(${ASSIMP_DIR})
+
 target_sources( IMGUI
                 PRIVATE
                     ${IMGUI_DIR}/imgui_demo.cpp

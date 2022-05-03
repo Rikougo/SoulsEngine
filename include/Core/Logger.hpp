@@ -24,8 +24,16 @@ namespace Elys {
     };
 } // namespace Elys
 
+#define DEBUG 1
+
+#if DEBUG
 #define ELYS_CORE_TRACE(...)    SPDLOG_LOGGER_TRACE(::Elys::Log::GetCoreLogger(), __VA_ARGS__)
 #define ELYS_CORE_INFO(...)     ::Elys::Log::GetCoreLogger()->info(__VA_ARGS__)
+#else
+#define ELYS_CORE_TRACE(...)
+#define ELYS_CORE_INFO(...)
+#endif
+
 #define ELYS_CORE_WARN(...)     ::Elys::Log::GetCoreLogger()->warn(__VA_ARGS__)
 #define ELYS_CORE_ERROR(...)    ::Elys::Log::GetCoreLogger()->error(__VA_ARGS__)
 #define ELYS_CORE_FATAL(...)    ::Elys::Log::GetCoreLogger()->critical(__VA_ARGS__)

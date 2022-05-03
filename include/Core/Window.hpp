@@ -13,10 +13,7 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 
-#include <Events/ApplicationEvent.hpp>
-#include <Events/Event.hpp>
-#include <Events/KeyEvent.hpp>
-#include <Events/MouseEvent.hpp>
+#include "Event.hpp"
 
 #include <Core/Logger.hpp>
 #include <utility>

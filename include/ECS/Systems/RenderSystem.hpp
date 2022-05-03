@@ -11,8 +11,7 @@
 #include <Core/Logger.hpp>
 #include <Core/Input.hpp>
 
-#include <Events/KeyEvent.hpp>
-#include <Events/MouseEvent.hpp>
+#include <Core/Event.hpp>
 
 #include <ECS/System.hpp>
 #include <ECS/Scene.hpp>
@@ -33,9 +32,11 @@ namespace Elys {
         bool mFrustumCulling = false;
         bool mDebugMode = false;
         bool mWireframe = false;
+        bool mLightning = true;
 
         shared_ptr<TrackBallCamera> mCamera;
         shared_ptr<Shader> mShader;
+        shared_ptr<Shader> mOutlineShader;
         shared_ptr<Shader> mLineShader;
 
         shared_ptr<Framebuffer> mFramebuffer;
