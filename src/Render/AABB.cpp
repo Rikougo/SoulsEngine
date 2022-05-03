@@ -5,6 +5,8 @@
 #include <Render/AABB.hpp>
 #include <Render/Mesh.hpp>
 
+#include <glad/glad.h>
+
 namespace Elys {
     // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
 
@@ -22,6 +24,48 @@ namespace Elys {
             if(v.position.y > hi.y) hi.y = v.position.y;
             if(v.position.z > hi.z) hi.z = v.position.z;
         }
+
+
+        mVertices = {
+            // FRONT
+            lo,
+            vec3(hi.x, lo.y, lo.z),
+
+            vec3(hi.x, lo.y, lo.z),
+            vec3(hi.x, hi.y, lo.z),
+
+            vec3(hi.x, hi.y, lo.z),
+            vec3(lo.x, hi.y, lo.z),
+
+            vec3(lo.x, hi.y, lo.z),
+            lo,
+
+            // SIDE
+            lo,
+            vec3(lo.x, lo.y, hi.z),
+
+            vec3(hi.x, lo.y, lo.z),
+            vec3(hi.x, lo.y, hi.z),
+
+            vec3(hi.x, hi.y, lo.z),
+            hi,
+
+            vec3(lo.x, hi.y, lo.z),
+            vec3(lo.x, hi.y, hi.z),
+
+            // BACK
+            vec3(hi.x, lo.y, hi.z),
+            vec3(lo.x, lo.y, hi.z),
+
+            vec3(lo.x, lo.y, hi.z),
+            vec3(lo.x, hi.y, hi.z),
+
+            vec3(lo.x, hi.y, hi.z),
+            hi,
+
+            hi,
+            vec3(hi.x, lo.y, hi.z)
+        };
         GenerateBuffers();
     }
 
@@ -45,21 +89,32 @@ namespace Elys {
         float signedDistance = plan.GetSignedDistance(center);
         return -r <= signedDistance;
     }
-    vector<vec3> AABB::Vertices() const {
-        return {
-            lo,
-            vec3(hi.x, lo.y, lo.z),
-            vec3(hi.x, lo.y, lo.z),
-            vec3(hi.x, hi.y, lo.z),
-            vec3(hi.x, hi.y, lo.z),
-            vec3(lo.x, hi.y, lo.z),
-            vec3(lo.x, hi.y, lo.z),
-            vec3(lo.x, lo.y, hi.z),
-            vec3(lo.x, lo.y, hi.z),
-            vec3(hi.x, lo.y, hi.z),
-            vec3(hi.x, lo.y, hi.z),
-            hi,
-            vec3(lo.x, hi.y, hi.z)
-        };
+
+    void AABB::GenerateBuffers() {
+        glGenVertexArrays(1, &mVAO);
+        glGenBuffers(1, &mVBO);
+
+        glBindVertexArray(mVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+
+        glBufferData(
+            GL_ARRAY_BUFFER,                                             // BUFFER TYPE
+            static_cast<GLsizeiptr>(mVertices.size() * sizeof(vec3)),    // BUFFER SIZE
+            &mVertices[0],                                               // BUFFER ADDRESS
+            GL_STATIC_DRAW                                               // USAGE
+        );
+
+        // SET UP VERTEX ARRAY LAYOUT
+        // vertex positions
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void *)0);
+
+        // unbind VAO
+        glBindVertexArray(0);
+    }
+    void AABB::Draw() const {
+        glBindVertexArray(mVAO);
+        glDrawArrays(GL_LINE_STRIP, 0,  mVertices.size());
+        glBindVertexArray(0);
     }
 }

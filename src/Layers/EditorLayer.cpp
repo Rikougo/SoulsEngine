@@ -39,7 +39,7 @@ namespace Elys {
             .material = material
         };
 
-        auto sky = mCurrentScene->CreateEntity("Sky");
+        /*auto sky = mCurrentScene->CreateEntity("Sky");
         sky.GetComponent<Node>().SetScale({100.0f, 100.0f, 100.0f});
         sky.AddComponent<MeshRenderer>(skyRenderer);
         sky.AddComponent<AABB>(AABB(mesh));
@@ -50,7 +50,7 @@ namespace Elys {
             .mesh = mesh,
             .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_sun.jpg"))
         });
-        sun.AddComponent<AABB>(AABB(mesh));
+        sun.AddComponent<AABB>(AABB(mesh));*/
 
         auto earth = mCurrentScene->CreateEntity("Earth");
         earth.GetComponent<Node>().SetScale({0.35f, 0.35f, 0.35f});
@@ -59,7 +59,6 @@ namespace Elys {
             .material = Material::FromTexture(std::filesystem::path("./assets/textures/8k_earth_daymap.jpg"))
         });
         earth.AddComponent<AABB>(AABB(mesh));
-
     }
 
     void EditorLayer::OnDetach() {

@@ -51,11 +51,9 @@ namespace Elys {
             auto model = node.InheritedTransform();
             auto const &mesh = entity.GetComponent<MeshRenderer>();
 
-            auto const &boundingBox = mesh.mesh.GetAABB();
-
-            if (mFrustumCulling && !boundingBox.IsInFrustum(frustum, model)) {
+            /*if (mFrustumCulling && !boundingBox.IsInFrustum(frustum, model)) {
                 continue;
-            }
+            }*/
 
             // DRAWING MESH
             auto mat = mesh.material;
@@ -85,15 +83,18 @@ namespace Elys {
 
             Profile::DrawnMesh++;
 
-            if(boundingBox.ShouldDraw()) {
-                mLineShader->Use();
-                mLineShader->SetMat4("uProjection", mCamera->GetProjection());
-                mLineShader->SetMat4("uView", mCamera->GetView());
-                mLineShader->SetMat4("uModel", model);
+            if (entity.HasComponent<AABB>()) {
+                auto boundingBox = entity.GetComponent<AABB>();
+                if(boundingBox.ShouldDraw()) {
+                    mLineShader->Use();
+                    mLineShader->SetMat4("uProjection", mCamera->GetProjection());
+                    mLineShader->SetMat4("uView", mCamera->GetView());
+                    mLineShader->SetMat4("uModel", model);
 
-                boundingBox.Draw();
-                mShader->Use();
+                    boundingBox.Draw();
+                    mShader->Use();
 
+                }
             }
         }
 

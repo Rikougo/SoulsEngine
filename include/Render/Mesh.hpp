@@ -56,7 +56,7 @@ namespace Elys {
         [[nodiscard]] const vector<Vertex>& Vertices() const { return mVertices; }
         [[nodiscard]] const vector<uint32_t>& Indices() const { return mIndices; }
 
-        [[nodiscard]] const BoundingBox& GetAABB() const {
+        [[nodiscard]] const AABB& GetAABB() const {
             if (!mBoundingBox) {
                 mBoundingBox = new AABB(*this);
             }
@@ -72,7 +72,7 @@ namespace Elys {
         vector<uint32_t> mIndices;
         bool mInitialized = false;
 
-        mutable BoundingBox* mBoundingBox = nullptr;
+        mutable AABB* mBoundingBox = nullptr;
     };
 } // namespace Elys
 

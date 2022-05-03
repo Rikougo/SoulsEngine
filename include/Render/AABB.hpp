@@ -11,7 +11,8 @@
 #include <glm/glm.hpp>
 
 #include <Core/Profiling.hpp>
-#include <Render/BoundingBox.hpp>
+#include <Core/Geometry.hpp>
+#include <Render/Camera.hpp>
 
 using std::array;
 using glm::vec3;
@@ -19,7 +20,7 @@ using glm::vec3;
 namespace Elys {
     class Mesh;
 
-    class AABB : public BoundingBox {
+    class AABB {
       public:
         AABB() : lo(0), hi(0) {}
         AABB(float min, float max) : lo(min, min, min), hi(max, max, max) {}
@@ -28,11 +29,19 @@ namespace Elys {
         AABB(const Mesh& mesh);
         ~AABB() = default;
 
-        [[nodiscard]] std::vector<vec3> Vertices() const override;
-
-        [[nodiscard]] bool IsInFrustum(Frustum frustum, mat4 transform) const override;
+        [[nodiscard]] bool IsInFrustum(Frustum frustum, glm::mat4 transform) const;
         [[nodiscard]] bool IsForwardPlan(const Geometry::Plan& plan) const;
+
+        [[nodiscard]] void Draw() const;
+
+        [[nodiscard]] unsigned int VAO() const { return mVAO; }
+        [[nodiscard]] bool ShouldDraw() const { return mShouldDraw; }
       private:
+        void GenerateBuffers();
+      private:
+        unsigned int mVAO, mVBO;
+        std::vector<glm::vec3> mVertices;
+        bool mShouldDraw = true;
         vec3 hi, lo;
     };
 }
