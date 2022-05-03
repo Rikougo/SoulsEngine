@@ -39,11 +39,14 @@ namespace Elys {
         [[nodiscard]] std::vector<vec3> Vertices() const { return mVertices; }
 
         void Update(glm::mat4 transform, Mesh const &mesh);
+        void SetCollided(bool value) { mCollided = value; }
+        [[nodiscard]] bool IsCollided() { return mCollided; }
       private:
         void UpdateBuffers() const;
       private:
         mutable std::shared_ptr<VertexArray> mVAO;
         mutable std::shared_ptr<VertexBuffer> mVBO;
+        bool mCollided = false;
         std::vector<glm::vec3> mVertices;
         glm::mat4 mTransform{}; // transform cache
         vec3 hi{}, lo{};

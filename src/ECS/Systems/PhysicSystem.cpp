@@ -10,6 +10,7 @@ namespace Elys {
             auto entity = mCurrentScene->EntityFromID(id);
 
             auto &aabb = entity.GetComponent<AABB>();
+            aabb.SetCollided(false);
 
             for(auto otherID : mEntities) {
                 if (otherID == id) continue;
@@ -19,6 +20,7 @@ namespace Elys {
 
                 if (aabb.Collapse(otherAABB)) {
                     ELYS_CORE_INFO("Colliding : {0} x {1}", entity.GetComponent<Node>().name, other.GetComponent<Node>().name);
+                    aabb.SetCollided(true);
                 }
             }
         }

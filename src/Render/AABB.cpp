@@ -114,45 +114,48 @@ namespace Elys {
         }
         ELYS_CORE_INFO("Update AABB : {0} {1} {2}", hi.x, hi.y, hi.z);
 
+        auto vLO = lo - vec3(0.001f);
+        auto vHI = hi + vec3(0.001f);
+
         mVertices = {
             // FRONT
-            lo,
-            vec3(hi.x, lo.y, lo.z),
+            vLO,
+            vec3(vHI.x, vLO.y, vLO.z),
 
-            vec3(hi.x, lo.y, lo.z),
-            vec3(hi.x, hi.y, lo.z),
+            vec3(vHI.x, vLO.y, vLO.z),
+            vec3(vHI.x, vHI.y, vLO.z),
 
-            vec3(hi.x, hi.y, lo.z),
-            vec3(lo.x, hi.y, lo.z),
+            vec3(vHI.x, vHI.y, vLO.z),
+            vec3(vLO.x, vHI.y, vLO.z),
 
-            vec3(lo.x, hi.y, lo.z),
-            lo,
+            vec3(vLO.x, vHI.y, vLO.z),
+            vLO,
 
             // SIDE
-            lo,
-            vec3(lo.x, lo.y, hi.z),
+            vLO,
+            vec3(vLO.x, vLO.y, vHI.z),
 
-            vec3(hi.x, lo.y, lo.z),
-            vec3(hi.x, lo.y, hi.z),
+            vec3(vHI.x, vLO.y, vLO.z),
+            vec3(vHI.x, vLO.y, vHI.z),
 
-            vec3(hi.x, hi.y, lo.z),
-            hi,
+            vec3(vHI.x, vHI.y, vLO.z),
+            vHI,
 
-            vec3(lo.x, hi.y, lo.z),
-            vec3(lo.x, hi.y, hi.z),
+            vec3(vLO.x, vHI.y, vLO.z),
+            vec3(vLO.x, vHI.y, vHI.z),
 
             // BACK
-            vec3(hi.x, lo.y, hi.z),
-            vec3(lo.x, lo.y, hi.z),
+            vec3(vHI.x, vLO.y, vHI.z),
+            vec3(vLO.x, vLO.y, vHI.z),
 
-            vec3(lo.x, lo.y, hi.z),
-            vec3(lo.x, hi.y, hi.z),
+            vec3(vLO.x, vLO.y, vHI.z),
+            vec3(vLO.x, vHI.y, vHI.z),
 
-            vec3(lo.x, hi.y, hi.z),
-            hi,
+            vec3(vLO.x, vHI.y, vHI.z),
+            vHI,
 
-            hi,
-            vec3(hi.x, lo.y, hi.z)
+            vHI,
+            vec3(vHI.x, vLO.y, vHI.z)
         };
 
         mVAO.reset();

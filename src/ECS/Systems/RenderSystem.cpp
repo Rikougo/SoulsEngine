@@ -91,6 +91,7 @@ namespace Elys {
             mLineShader->SetMat4("uProjection", mCamera->GetProjection());
             mLineShader->SetMat4("uView", mCamera->GetView());
             mLineShader->SetMat4("uModel", model);
+            mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? vec3{1.0f, 0.0f, 0.0f} : vec3{0.0f, 1.0f, 0.0f});
 
             aabb.VAO()->Bind();
             glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
