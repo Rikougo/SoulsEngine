@@ -19,6 +19,7 @@ namespace Elys {
         mCurrentScene = std::make_shared<Scene>();
         mShader = std::make_shared<Shader>("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
         mCamera = std::make_shared<TrackBallCamera>();
+        mCamera->Rotate(0,0);
         mCamera->SetViewSize(1280, 720);
 
         mFramebuffer = std::make_shared<Framebuffer>(FramebufferData{

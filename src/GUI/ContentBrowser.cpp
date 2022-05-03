@@ -36,9 +36,9 @@ namespace Elys::GUI {
 
                 if (path.has_extension() && AssetLoader::gExtensionToDragType.contains(path.extension().string())) {
                     if (ImGui::BeginDragDropSource()) {
-                        const wchar_t *itemPath = relativePath.c_str();
+                        const char* itemPath = relativePath.c_str();
                         const char* dragData = AssetLoader::gExtensionToDragType.at(path.extension().string());
-                        ImGui::SetDragDropPayload(dragData, itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t));
+                        ImGui::SetDragDropPayload(dragData, itemPath, ((relativePath.string().size()) + 1) * sizeof(char));
                         ImGui::Text("%ls", itemPath);
                         ImGui::EndDragDropSource();
                     }

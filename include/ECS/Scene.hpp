@@ -66,7 +66,7 @@ namespace Elys {
       private:
         std::set<EntityID> mEntities;
 
-        int mSelected, mHovered;
+        int mSelected {MAX_ENTITIES}, mHovered {MAX_ENTITIES};
 
         unique_ptr<ComponentManager> mComponentManager;
         unique_ptr<EntityManager> mEntityManager;
