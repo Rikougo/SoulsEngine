@@ -21,7 +21,7 @@ namespace Elys {
         auto entity = Entity(this, newID);
         entity.AddComponent(Node{}).name = std::move(name);
 
-        mEntities.insert(entity);
+        mEntities.insert(newID);
 
         ELYS_CORE_INFO("Created entity {0}", newID);
         return entity;
@@ -33,7 +33,7 @@ namespace Elys {
         EntityID id = entity.ID();
 
         entity.GetComponent<Node>().OnDelete();
-        mEntities.erase(entity);
+        mEntities.erase(id);
 
         mComponentManager->EntityDestroyed(id);
         mSystemManager->EntityDestroyed(id);

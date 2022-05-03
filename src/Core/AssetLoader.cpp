@@ -87,8 +87,8 @@ namespace Elys {
         std::ofstream sceneOutput(gAssetPath / path);
 
         if (sceneOutput.is_open()) {
-            for(auto entity : (*scene)) {
-                sceneOutput << ComponentSerializer::SerializeEntity(entity) << std::endl;
+            for(auto entityID : (*scene)) {
+                sceneOutput << ComponentSerializer::SerializeEntity(scene->EntityFromID(entityID)) << std::endl;
             }
         } else {
             ELYS_CORE_ERROR("Couldn't open {}", path.string());

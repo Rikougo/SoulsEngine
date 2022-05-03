@@ -52,19 +52,19 @@ namespace Elys {
         template<typename T, typename ... Components> void SetSystemSignature() {
             mSystemManager->SetSignature<T>(mComponentManager->GetSignature<Components...>());
 
-            for(auto entity : mEntities) {
-                mSystemManager->EntitySignatureChanged(entity.ID(), mEntityManager->GetSignature(entity.ID()));
+            for(auto entityID : mEntities) {
+                mSystemManager->EntitySignatureChanged(entityID, mEntityManager->GetSignature(entityID));
             }
         }
 
-        std::set<Entity>::iterator begin() { return mEntities.begin(); }
-        std::set<Entity>::iterator end() { return mEntities.end(); }
-        [[nodiscard]] std::set<Entity>::const_iterator begin() const {return mEntities.begin();}
-        [[nodiscard]] std::set<Entity>::const_iterator end() const { return mEntities.end(); }
+        std::set<EntityID>::iterator begin() { return mEntities.begin(); }
+        std::set<EntityID>::iterator end() { return mEntities.end(); }
+        [[nodiscard]] std::set<EntityID>::const_iterator begin() const {return mEntities.begin();}
+        [[nodiscard]] std::set<EntityID>::const_iterator end() const { return mEntities.end(); }
       private:
         void DestroyEntity(Entity const &entity);
       private:
-        std::set<Entity> mEntities;
+        std::set<EntityID> mEntities;
 
         int mSelected, mHovered;
 

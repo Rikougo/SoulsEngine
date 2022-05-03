@@ -7,7 +7,8 @@
 namespace Elys::GUI {
     void GraphScene::OnImGUIRender(std::shared_ptr<Scene> &sceneRef, bool *open) {
         if (ImGui::Begin("Graph scene", open)) {
-            for (auto entity : (*sceneRef)) {
+            for (auto entityID : (*sceneRef)) {
+                auto entity = sceneRef->EntityFromID(entityID);
                 if (!entity.Parent().IsValid()) {
                     DrawEntity(sceneRef, entity);
                 }
