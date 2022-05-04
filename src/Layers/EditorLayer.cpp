@@ -38,8 +38,20 @@ namespace Elys {
         mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
         mCurrentScene->SetSystemSignature<PhysicSystem, RigidBody, Node>();
 
+        auto ground = mCurrentScene->CreateEntity("Ground");
+        ground.GetComponent<Node>().SetPosition(0.0f, -2.0f, 0.0f);
+        ground.GetComponent<Node>().SetScale(50);
+        ground.AddComponent<MeshRenderer>({
+            .mesh = AssetLoader::MeshesMap()["Plane32x32"],
+            .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_basecolor.jpg"))
+                            .SetNormalMap(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_normal.jpg"))
+        });
+        ground.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Plane32x32")));
+        ground.GetComponent<RigidBody>().DisableGravity();
+
+
         auto lava = mCurrentScene->CreateEntity("Lava");
-        lava.GetComponent<Node>().SetPosition(0.0f, 0.0f, 0.0f);
+        lava.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);
         lava.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
         });
@@ -59,7 +71,7 @@ namespace Elys {
         auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
         light.SetParent(center);
-        light.GetComponent<Node>().SetPosition(0.0f, 0.0f, -10.0f);
+        light.GetComponent<Node>().SetPosition(0.0f, 3.0f, 0.0f);
         light.GetComponent<Node>().SetScale(0.1f);
         light.AddComponent<Light>({.color = {1.0f, 1.0f, 1.0f}, .intensity = 200.0f});
         light.AddComponent<MeshRenderer>({

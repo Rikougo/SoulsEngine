@@ -9,7 +9,12 @@ namespace Elys {
         for(auto id : mEntities) {
             auto entity = mCurrentScene->EntityFromID(id);
 
-            auto aabb = entity.GetComponent<RigidBody>().GetAABB();
+            // PHYSICS
+            auto& node = entity.GetComponent<Node>();
+            auto& rbody = entity.GetComponent<RigidBody>();
+            auto aabb = rbody.GetAABB();
+
+
             aabb->SetCollided(false);
 
             for(auto otherID : mEntities) {
@@ -19,10 +24,12 @@ namespace Elys {
                 auto otheraabb = other.GetComponent<RigidBody>().GetAABB();
 
                 if (aabb->Collapse(otheraabb)) {
-                    ELYS_CORE_INFO("Colliding : {0} x {1}", entity.GetComponent<Node>().name, other.GetComponent<Node>().name);
                     aabb->SetCollided(true);
                 }
             }
+
+            rbody.Update(deltaTime);
+            node.Move(rbody.Velocity());
         }
     }
 }

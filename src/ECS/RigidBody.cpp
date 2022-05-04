@@ -10,9 +10,10 @@ Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) {
 
 void Elys::RigidBody::Update(float deltaTime) {
 
-	float gravity = sqrt(2 * mGravity);
+    mVelocity = {0,0,0};
+    if(mUseGravity && !mBoundingBox->IsCollided()) {
+        float gravity = sqrt(2 * mGravity);
 
-	mVelocity.x = 0.f * deltaTime;
-	mVelocity.y = -gravity * deltaTime;
-	mVelocity.z = 0.f * deltaTime;
+        mVelocity = {0,-gravity * deltaTime,0};
+    }
 }
