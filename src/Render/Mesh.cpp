@@ -181,7 +181,7 @@ namespace Elys {
             {"texCoord", sizeof(vec2), 2, GL_FLOAT}
         };
         vertexBuffer->SetLayout(vertexLayout);
-        mVAO->AddVertexBuffer(vertexBuffer);
+        mVAO->SetVertexBuffer(vertexBuffer);
         auto indexBuffer = std::make_shared<IndexBuffer>(&mIndices[0], mIndices.size());
         mVAO->SetIndexBuffer(indexBuffer);
     }

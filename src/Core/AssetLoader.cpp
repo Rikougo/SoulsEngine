@@ -173,6 +173,20 @@ namespace Elys {
     }
 
     template<>
+    Player ComponentSerializer::ParseComponent<Player>(std::unordered_map<string, string> raw) {
+        Player result;
+
+        result.speed = raw.contains("Speed") ? std::stof(raw["Speed"]) : 5.0f;
+
+        return result;
+    }
+
+    template<>
+    AABB ComponentSerializer::ParseComponent<AABB>(std::unordered_map<string, string> raw) {
+        return {};
+    }
+
+    template<>
     string ComponentSerializer::SerializeComponent<MeshRenderer>(MeshRenderer data) {
         std::stringstream ss;
 
@@ -185,6 +199,20 @@ namespace Elys {
         if (data.material.heightMap) ss << "+HeightMap=" << data.material.heightMap->GetPath().string();
 
         ss << "+Metallic=" << std::to_string(data.material.metallic) << "+Roughness=" << std::to_string(data.material.roughness);
+
+        return ss.str();
+    }
+
+    template<>
+    string ComponentSerializer::SerializeComponent<AABB>(AABB data) {
+        return "AABB";
+    }
+
+    template<>
+    string ComponentSerializer::SerializeComponent<Player>(Player data) {
+        std::stringstream ss;
+
+        ss << "Player+Speed=" << data.speed;
 
         return ss.str();
     }
@@ -244,6 +272,14 @@ namespace Elys {
                 Light component = ParseComponent<Light>(rawComponentsValue);
                 entity.AddComponent(component);
             }
+            else if (componentType == "AABB") {
+                AABB component = ParseComponent<AABB>(rawComponentsValue);
+                entity.AddComponent(component);
+            }
+            else if (componentType == "Player") {
+                Player component = ParseComponent<Player>(rawComponentsValue);
+                entity.AddComponent(component);
+            }
             else { ELYS_CORE_WARN("Unknown component type attached to {}[{}] : {}", name, ID, componentType); }
         }
 
@@ -261,6 +297,8 @@ namespace Elys {
 
         if (entity.HasComponent<MeshRenderer>()) ss << SerializeComponent(entity.GetComponent<MeshRenderer>()) << ";";
         if (entity.HasComponent<Light>()) ss << SerializeComponent(entity.GetComponent<Light>()) << ";";
+        if (entity.HasComponent<Player>()) ss << SerializeComponent(entity.GetComponent<Player>()) << ";";
+        if (entity.HasComponent<AABB>()) ss << SerializeComponent(entity.GetComponent<AABB>()) << ";";
 
         return ss.str();
     }

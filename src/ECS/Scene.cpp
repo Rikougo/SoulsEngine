@@ -14,6 +14,7 @@ namespace Elys {
         mComponentManager->RegisterComponent<MeshRenderer>();
         mComponentManager->RegisterComponent<Light>();
         mComponentManager->RegisterComponent<AABB>();
+        mComponentManager->RegisterComponent<Player>();
     }
 
     Entity Scene::CreateEntity(std::string name) {

@@ -61,8 +61,17 @@ namespace Elys::GUI {
                                 .mesh = AssetLoader::MeshesMap()["Cube"]
                             });
                         }
+
                         if (ImGui::Selectable("Light", false, entity.HasComponent<Light>() ? ImGuiSelectableFlags_Disabled : 0)) {
                             entity.AddComponent<Light>({});
+                        }
+
+                        if (ImGui::Selectable("AABB", false, entity.HasComponent<AABB>() ? ImGuiSelectableFlags_Disabled : 0)) {
+                            entity.AddComponent<AABB>({});
+                        }
+
+                        if (ImGui::Selectable("Player", false, entity.HasComponent<Player>() ? ImGuiSelectableFlags_Disabled : 0)) {
+                            entity.AddComponent<Player>({});
                         }
                         ImGui::EndPopup();
                     }
@@ -79,16 +88,26 @@ namespace Elys::GUI {
 
                     // --- MESH RENDERER ---
                     if (entity.HasComponent<MeshRenderer>()) {
-                        if (ImGui::CollapsingHeader("Mesh Renderer",
-                                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+                        if (ImGui::CollapsingHeader("Mesh Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
                             MeshRenderEditor("##MeshRenderer", entity.GetComponent<MeshRenderer>());
                         }
                     }
 
                     if (entity.HasComponent<Light>()) {
-                        if (ImGui::CollapsingHeader("Light Renderer",
-                                                    ImGuiTreeNodeFlags_DefaultOpen)) {
-                            LightEditor("##LightRenderer", entity.GetComponent<Light>());
+                        if (ImGui::CollapsingHeader("Light Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
+                            LightEditor("##Light", entity.GetComponent<Light>());
+                        }
+                    }
+
+                    if (entity.HasComponent<AABB>()) {
+                        if (ImGui::CollapsingHeader("AABB", ImGuiTreeNodeFlags_DefaultOpen)) {
+                            AABBEditor("##AABB", entity.GetComponent<AABB>());
+                        }
+                    }
+
+                    if (entity.HasComponent<Player>()) {
+                        if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
+                            PlayerEditor("##Player", entity.GetComponent<Player>());
                         }
                     }
                 }
@@ -259,6 +278,36 @@ namespace Elys::GUI {
             ImGui::Text("Intensity");
             ImGui::TableNextColumn();
             ImGui::DragFloat("##intensity", &light.intensity, 1.0f, 0.0f, 500.0f, "%0.1f");
+
+            ImGui::EndTable();
+        }
+
+        void AABBEditor(std::string const &label, AABB &aabb) {
+            auto tableFlags = ImGuiTableFlags_NoPadInnerX;
+            ImGui::BeginTable(label.c_str(), 2, tableFlags);
+
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 100.0f); // Default to 100.0f
+            ImGui::TableSetupColumn("widget", ImGuiTableColumnFlags_WidthStretch); // Default to auto
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Collided");
+            ImGui::TableNextColumn();
+            ImGui::Text(aabb.IsCollided() ? "True" : "False");
+
+            ImGui::EndTable();
+        }
+
+        void PlayerEditor(std::string const &label, Player &player) {
+            auto tableFlags = ImGuiTableFlags_NoPadInnerX;
+            ImGui::BeginTable(label.c_str(), 2, tableFlags);
+
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 100.0f); // Default to 100.0f
+            ImGui::TableSetupColumn("widget", ImGuiTableColumnFlags_WidthStretch); // Default to auto
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Speed");
+            ImGui::TableNextColumn();
+            ImGui::DragFloat("##speed", &player.speed, 0.1f, 0.0f, 20.0f, "%0.1f");
 
             ImGui::EndTable();
         }

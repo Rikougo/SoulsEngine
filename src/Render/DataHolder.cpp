@@ -43,7 +43,7 @@ namespace Elys {
     }
     uint32_t IndexBuffer::Size() { return mSize; }
 
-    VertexArray::VertexArray() : mVertexIndex(0), mVertexBuffers(0) {
+    VertexArray::VertexArray() : mVertexIndex(0) {
         glGenVertexArrays(1, &mID);
     }
     VertexArray::~VertexArray() {
@@ -51,12 +51,13 @@ namespace Elys {
     }
     void VertexArray::Bind() const { glBindVertexArray(mID); }
     void VertexArray::Unbind() const { glBindVertexArray(0); }
-    void VertexArray::AddVertexBuffer(shared_ptr<VertexBuffer> &buffer) {
+
+    void VertexArray::SetVertexBuffer(shared_ptr<VertexBuffer> &buffer) {
         Bind();
         buffer->Bind();
 
         const auto& layout = buffer->GetLayout();
-        mVertexBuffers.push_back(buffer);
+        mVertexBuffer = buffer;
         for(const auto &element : layout) {
             glEnableVertexAttribArray(mVertexIndex);
             glVertexAttribPointer(
@@ -68,26 +69,6 @@ namespace Elys {
                 (void*)element.offset
             );
             mVertexIndex++;
-        }
-    }
-
-    void VertexArray::UpdateVertexBuffer() {
-        Bind();
-        for(auto buffer : mVertexBuffers) {
-            buffer->Bind();
-            auto layout = buffer->GetLayout();
-            for(const auto &element : layout) {
-                glEnableVertexAttribArray(mVertexIndex);
-                glVertexAttribPointer(
-                    mVertexIndex,
-                    element.size,
-                    element.glType,
-                    element.normalize ? GL_TRUE : GL_FALSE,
-                    layout.GetStride(),
-                    (void*)element.offset
-                );
-                mVertexIndex++;
-            }
         }
     }
 

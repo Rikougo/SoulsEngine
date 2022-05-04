@@ -114,17 +114,17 @@ namespace Elys {
         void Bind() const;
         void Unbind() const;
 
-        void AddVertexBuffer(shared_ptr<VertexBuffer> &buffer);
+        void SetVertexBuffer(shared_ptr<VertexBuffer> &buffer);
         void UpdateVertexBuffer();
         void SetIndexBuffer(shared_ptr<IndexBuffer> &buffer);
 
-        [[nodiscard]] const vector<shared_ptr<VertexBuffer>>& GetVertexBuffers() const { return mVertexBuffers; }
+        [[nodiscard]] const shared_ptr<VertexBuffer>& GetVertexBuffer() const { return mVertexBuffer; }
         [[nodiscard]] const shared_ptr<IndexBuffer>& GetIndexBuffer() const { return mIndexBuffer; }
       private:
         uint32_t mID;
         uint32_t mVertexIndex = 0;
 
-        vector<shared_ptr<VertexBuffer>> mVertexBuffers;
+        shared_ptr<VertexBuffer> mVertexBuffer;
         shared_ptr<IndexBuffer> mIndexBuffer;
     };
 }

@@ -19,6 +19,7 @@
 #include <ECS/Components/Node.hpp>
 #include <ECS/Components/Light.hpp>
 #include <ECS/Components/MeshRenderer.hpp>
+#include <ECS/Components/Player.hpp>
 
 // Managers
 #include <ECS/ComponentManager.hpp>

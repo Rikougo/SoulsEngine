@@ -18,8 +18,12 @@ namespace Elys {
 
         mCurrentScene = std::make_shared<Scene>();
         mShader = std::make_shared<Shader>("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
-        mCamera = std::make_shared<TrackBallCamera>();
-        mCamera->SetViewSize(1280, 720);
+        mEditorCamera = std::make_shared<TrackBallCamera>();
+        mEditorCamera->SetViewSize(1280, 720);
+
+        mPlayerCamera = std::make_shared<TrackBallCamera>();
+        mPlayerCamera->SetViewSize(1280, 720);
+        mPlayerCamera->Rotate(0.0f, -0.5f);
 
         mFramebuffer = std::make_shared<Framebuffer>(FramebufferData{
             .Width = 1280,
@@ -28,14 +32,17 @@ namespace Elys {
             .DepthAttachmentFormat = GL_DEPTH24_STENCIL8
         });
 
-        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
+        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
 
-        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
-        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, AABB, Node>();
+        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
+        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
         mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
         mCurrentScene->SetSystemSignature<PhysicSystem, AABB, Node>();
+
+        mPlayerSystem = mCurrentScene->RegisterSystem<PlayerSystem>(mCurrentScene, mPlayerCamera);
+        mCurrentScene->SetSystemSignature<PlayerSystem, Player, Node>();
 
         auto lava = mCurrentScene->CreateEntity("Lava");
         lava.GetComponent<Node>().SetPosition(0.0f, 0.0f, 0.0f);
@@ -44,6 +51,7 @@ namespace Elys {
         });
         lava.AddComponent<AABB>(
             AABB(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
+        lava.AddComponent<Player>({});
 
         auto mud = mCurrentScene->CreateEntity("Mud");
         mud.GetComponent<Node>().SetPosition(2.0f, 0.0f, 0.0f);
@@ -79,21 +87,37 @@ namespace Elys {
              mFramebuffer->GetData().Height != mViewport.size.y) &&
             (mViewport.size.x != 0 && mViewport.size.y != 0)) {
             mFramebuffer->Resize(mViewport.size.x, mViewport.size.y);
-            mCamera->SetViewSize(mViewport.size.x, mViewport.size.y);
+            mEditorCamera->SetViewSize(mViewport.size.x, mViewport.size.y);
+            mPlayerCamera->SetViewSize(mViewport.size.x, mViewport.size.y);
         }
 
         // ORDER HERE IS IMPORTANT
+        if (mCurrentState == EditorState::PLAYING) mPlayerSystem->Update(deltaTime);
         mPhysicSystem->Update(deltaTime);
         mLightSystem->Update(deltaTime);
-        if (mViewportHovered) mRenderSystem->AcceptEvents();
         mRenderSystem->Update(deltaTime);
 
-        if (mViewportHovered) {
+        if (mViewportHovered && mCurrentState == EditorState::EDITING) {
             auto [mx, my] = ImGui::GetMousePos();
             mx -= mViewport.offset.x; my -= mViewport.offset.y;
 
             auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
             mCurrentScene->SetHovered(entityID);
+
+            if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
+                auto mPos = Input::GetMousePosition();
+                mEditorCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
+
+                // Input::SetCursorMode(Cursor::Disabled);
+            } else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
+                auto mPos = Input::GetMousePosition();
+                mEditorCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonRight);
+
+                // Input::SetCursorMode(Cursor::Disabled);
+            } else {
+                mEditorCamera->EndCapture();
+                // Input::SetCursorMode(Cursor::Normal);
+            }
         }
     }
 
@@ -219,27 +243,30 @@ namespace Elys {
         EventDispatcher dispatcher(event);
 
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
-        dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
-        dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
-            mCamera->Zoom(event.GetYOffset() * 0.1f);
 
-            return false;
-        });
+        if (mCurrentState == EditorState::EDITING) {
+            dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
+            dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
+              mEditorCamera->Zoom(event.GetYOffset() * 0.1f);
 
-        dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &event) {
-            if (event.GetMouseButton() != Mouse::ButtonMiddle) return false;
+              return false;
+            });
 
-            auto [mx, my] = ImGui::GetMousePos();
-            mx -= mViewport.offset.x; my -= mViewport.offset.y;
+            dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &event) {
+              if (event.GetMouseButton() != Mouse::ButtonMiddle) return false;
 
-            auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
+              auto [mx, my] = ImGui::GetMousePos();
+              mx -= mViewport.offset.x; my -= mViewport.offset.y;
 
-            mCurrentScene->SetSelected(entityID);
+              auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
 
-            ELYS_CORE_INFO("Clicked entity {0} at [x: {1}, y: {2}]", entityID, mx, my);
+              mCurrentScene->SetSelected(entityID);
 
-            return false;
-        });
+              ELYS_CORE_INFO("Clicked entity {0} at [x: {1}, y: {2}]", entityID, mx, my);
+
+              return false;
+            });
+        }
     }
 
     void EditorLayer::CreateScene() { mCurrentScene = std::make_shared<Scene>(); }
@@ -247,15 +274,34 @@ namespace Elys {
     void EditorLayer::ChangeScene(shared_ptr<Scene> newScene) {
         mCurrentScene = newScene;
 
-        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
+        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
 
-        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
+        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
+
+        mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
+        mCurrentScene->SetSystemSignature<PhysicSystem, AABB, Node>();
+
+        mPlayerSystem = mCurrentScene->RegisterSystem<PlayerSystem>(mCurrentScene, mPlayerCamera);
+        mCurrentScene->SetSystemSignature<PlayerSystem, Player, Node>();
     }
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
-        if (event.GetKeyCode() == Key::Q && Input::IsKeyPressed(Key::LeftControl)) {
+        if (event.GetKeyCode() == Key::P && Input::IsKeyPressed(Key::LeftControl)) {
+            mCurrentState = (mCurrentState == EditorState::EDITING) ? EditorState::PLAYING : EditorState::EDITING;
+
+            switch (mCurrentState) {
+                case EditorState::EDITING:
+                    mRenderSystem->SetCamera(mEditorCamera);
+                    break;
+                case EditorState::PLAYING:
+                    mRenderSystem->SetCamera(mPlayerCamera);
+                    break;
+            }
+        }
+
+        if (event.GetKeyCode() == Key::A && Input::IsKeyPressed(Key::LeftControl)) {
             Application::Get().Shutdown();
         }
 

@@ -42,6 +42,7 @@ namespace Elys {
         void Zoom(float delta);
         void Pan(float deltaX, float deltaY);
         void MouseInput(float x, float y, MouseCode button) override;
+        void SetTarget(glm::vec3 newTarget) { mTarget = newTarget; mDirty = true; }
 
         [[nodiscard]] vec3 GetPosition() const override { return mTarget + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
         [[nodiscard]] vec2 GetRotation() const { return {mPhi, mTheta}; }
@@ -58,7 +59,7 @@ namespace Elys {
         mutable mat4 mProjection{1.0f};
         mutable mat4 mView{1.0f};
 
-        float mTheta = 0.0f, mPhi = (float)M_PI / 2;
+        float mTheta = M_PI, mPhi = (float)M_PI / 2;
         float mUp = 1.0f;
         float mDistance = 5.0f;
         vec3 mTarget{0.0f, 0.0f, 0.0f};

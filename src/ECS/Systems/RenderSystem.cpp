@@ -16,8 +16,8 @@ namespace Elys {
                                                "./shaders/simplefragment.glsl");
     }
 
-    void RenderSystem::SetCamera(const TrackBallCamera &camera) {
-        mCamera = std::make_unique<TrackBallCamera>(camera);
+    void RenderSystem::SetCamera(std::shared_ptr<TrackBallCamera>& camera) {
+        mCamera = camera;
     }
 
     void RenderSystem::SetScene(shared_ptr<Scene> &sceneRef) {
@@ -31,8 +31,6 @@ namespace Elys {
     }
 
     void RenderSystem::Update(float deltaTime) {
-        if (mProcessInputs)
-            ProcessInput();
         mFramebuffer->Bind();
 
         glPolygonMode(GL_FRONT_AND_BACK, mWireframe ? GL_LINE : GL_FILL);
@@ -82,21 +80,23 @@ namespace Elys {
             auto &mesh = renderer.mesh;
             auto &material = renderer.material;
 
-            auto &aabb = entity.GetComponent<AABB>();
-            if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
-                continue;
-            }
-            aabb.Update(model, mesh);
-            mLineShader->Use();
-            mLineShader->SetMat4("uProjection", mCamera->GetProjection());
-            mLineShader->SetMat4("uView", mCamera->GetView());
-            mLineShader->SetMat4("uModel", model);
-            mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? vec3{1.0f, 0.0f, 0.0f} : vec3{0.0f, 1.0f, 0.0f});
+            if (entity.HasComponent<AABB>()) {
+                auto &aabb = entity.GetComponent<AABB>();
+                if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
+                    continue;
+                }
+                aabb.Update(model, mesh);
+                mLineShader->Use();
+                mLineShader->SetMat4("uProjection", mCamera->GetProjection());
+                mLineShader->SetMat4("uView", mCamera->GetView());
+                mLineShader->SetMat4("uModel", model);
+                mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? vec3{1.0f, 0.0f, 0.0f} : vec3{0.0f, 1.0f, 0.0f});
 
-            aabb.VAO()->Bind();
-            glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
-            aabb.VAO()->Unbind();
-            mShader->Use();
+                aabb.VAO()->Bind();
+                glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
+                aabb.VAO()->Unbind();
+                mShader->Use();
+            }
 
             // drawing on stencil mask
             // DRAWING MESH
@@ -188,24 +188,6 @@ namespace Elys {
         glEnable(GL_DEPTH_TEST);
 
         mFramebuffer->Unbind();
-        mProcessInputs = false;
-    }
-
-    void RenderSystem::ProcessInput() {
-        if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
-            auto mPos = Input::GetMousePosition();
-            mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
-
-            // Input::SetCursorMode(Cursor::Disabled);
-        } else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
-            auto mPos = Input::GetMousePosition();
-            mCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonRight);
-
-            // Input::SetCursorMode(Cursor::Disabled);
-        } else {
-            mCamera->EndCapture();
-            // Input::SetCursorMode(Cursor::Normal);
-        }
     }
 
     void RenderSystem::SetViewportSize(glm::vec2 offset, glm::vec2 size) {

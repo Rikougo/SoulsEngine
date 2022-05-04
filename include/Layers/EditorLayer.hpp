@@ -17,6 +17,7 @@
 #include <ECS/Systems/LightSystem.hpp>
 #include <ECS/Systems/RenderSystem.hpp>
 #include <ECS/Systems/PhysicSystem.hpp>
+#include <ECS/Systems/PlayerSystem.hpp>
 
 #include <Core/Event.hpp>
 
@@ -30,6 +31,11 @@
 using std::shared_ptr;
 
 namespace Elys {
+    enum class EditorState {
+        EDITING,
+        PLAYING
+    };
+
     class EditorLayer : public Layer {
       public:
         EditorLayer() = default;
@@ -50,16 +56,21 @@ namespace Elys {
             glm::vec2 offset{0, 0}, size{0, 0};
         };
       private:
+        EditorState mCurrentState{EditorState::EDITING};
         Viewport mViewport;
         bool mViewportHovered = false;
         shared_ptr<Scene> mCurrentScene;
 
+        // --- SYSTEMS --- //
         shared_ptr<LightSystem> mLightSystem;
         shared_ptr<RenderSystem> mRenderSystem;
         shared_ptr<PhysicSystem> mPhysicSystem;
+        shared_ptr<PlayerSystem> mPlayerSystem;
+
         shared_ptr<Framebuffer> mDepthbuffer;
         shared_ptr<Framebuffer> mFramebuffer;
-        shared_ptr<TrackBallCamera> mCamera;
+        shared_ptr<TrackBallCamera> mEditorCamera;
+        shared_ptr<TrackBallCamera> mPlayerCamera;
         shared_ptr<Shader> mShader;
 
         GUI::ContentBrowser mContentBrowser;

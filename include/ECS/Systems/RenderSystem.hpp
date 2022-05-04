@@ -28,7 +28,6 @@ namespace Elys {
       private:
         shared_ptr<Scene> mCurrentScene;
 
-        bool mProcessInputs = false;
         bool mFrustumCulling = false;
         bool mDebugMode = false;
         bool mWireframe = false;
@@ -45,10 +44,8 @@ namespace Elys {
 
         ~RenderSystem() = default;
 
-        void SetCamera(const TrackBallCamera& camera);
+        void SetCamera(std::shared_ptr<TrackBallCamera>& camera);
         void SetScene(shared_ptr<Scene> &sceneRef);
-
-        void AcceptEvents() { mProcessInputs = true;}
         void Update(float deltaTime) override;
 
         [[nodiscard]] const Camera& MainCamera() const {
@@ -65,11 +62,9 @@ namespace Elys {
 
         void SetViewportSize(glm::vec2 offset, glm::vec2 size);
         bool OnKeyPressed(KeyPressedEvent &event);
-        bool OnMouseScroll(MouseScrolledEvent &event);
+        // bool OnMouseScroll(MouseScrolledEvent &event);
 
         std::shared_ptr<Framebuffer> GetFramebuffer() { return mFramebuffer; }
-      private:
-        void ProcessInput();
     };
 }
 

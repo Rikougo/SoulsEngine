@@ -89,8 +89,8 @@ namespace Elys {
     }
 
     void AABB::UpdateBuffers() const {
-        mVBO->SetData(mVertices.data(), mVertices.size(), GL_DYNAMIC_DRAW);
-        mVAO->UpdateVertexBuffer();
+        /*mVBO->SetData(mVertices.data(), mVertices.size(), GL_DYNAMIC_DRAW);
+        mVAO->UpdateVertexBuffer();*/
     }
 
     void AABB::Update(glm::mat4 transform, Mesh const &mesh) {
@@ -164,7 +164,7 @@ namespace Elys {
         mVBO = std::make_shared<VertexBuffer>((void*)&mVertices[0], mVertices.size() * sizeof(Vertex), GL_DYNAMIC_DRAW);
         BufferLayout vertexLayout{ {"position", sizeof(vec3), 3, GL_FLOAT} };
         mVBO->SetLayout(vertexLayout);
-        mVAO->AddVertexBuffer(mVBO);
+        mVAO->SetVertexBuffer(mVBO);
     }
 
     bool AABB::Collapse(const AABB &other) const {
