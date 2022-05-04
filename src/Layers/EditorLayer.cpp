@@ -33,18 +33,18 @@ namespace Elys {
         mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
 
         mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mCamera, mShader, mFramebuffer);
-        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, AABB, Node>();
+        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, RigidBody, Node>();
 
         mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
-        mCurrentScene->SetSystemSignature<PhysicSystem, AABB, Node>();
+        mCurrentScene->SetSystemSignature<PhysicSystem, RigidBody, Node>();
 
         auto lava = mCurrentScene->CreateEntity("Lava");
         lava.GetComponent<Node>().SetPosition(0.0f, 0.0f, 0.0f);
         lava.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
         });
-        lava.AddComponent<AABB>(
-            AABB(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
+        lava.AddComponent<RigidBody>(
+            RigidBody(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
 
         auto mud = mCurrentScene->CreateEntity("Mud");
         mud.GetComponent<Node>().SetPosition(2.0f, 0.0f, 0.0f);
@@ -53,7 +53,7 @@ namespace Elys {
             .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_basecolor.jpg"))
                             .SetNormalMap(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_normal.jpg"))
         });
-        mud.AddComponent<AABB>(AABB(AssetLoader::MeshFromPath("Cube")));
+        mud.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Cube")));
 
         auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");

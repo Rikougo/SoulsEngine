@@ -167,9 +167,10 @@ namespace Elys {
         mVAO->AddVertexBuffer(mVBO);
     }
 
-    bool AABB::Collapse(const AABB &other) const {
-        return (lo.x <= other.hi.x && hi.x >= other.lo.x) &&
-               (lo.y <= other.hi.y && hi.y >= other.lo.y) &&
-               (lo.z <= other.hi.z && hi.z >= other.lo.z);
+    bool AABB::Collapse(const AABB *other) const {
+        ELYS_CORE_INFO("Collapse AABB : {0} {1} {2} - Other {3} {4} {5}", hi.x, hi.y, hi.z, other->hi.x, other->hi.y, other->hi.z);
+        return (lo.x <= other->hi.x && hi.x >= other->lo.x) &&
+               (lo.y <= other->hi.y && hi.y >= other->lo.y) &&
+               (lo.z <= other->hi.z && hi.z >= other->lo.z);
     }
 }

@@ -31,7 +31,7 @@ namespace Elys {
         AABB(const Mesh& mesh);
         ~AABB() = default;
 
-        [[nodiscard]] bool Collapse(AABB const &other) const;
+        [[nodiscard]] bool Collapse(AABB const *other) const;
         [[nodiscard]] bool IsInFrustum(Frustum frustum, glm::mat4 transform) const;
         [[nodiscard]] bool IsForwardPlan(const Geometry::Plan& plan) const;
 

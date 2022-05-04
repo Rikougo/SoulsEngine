@@ -82,20 +82,22 @@ namespace Elys {
             auto &mesh = renderer.mesh;
             auto &material = renderer.material;
 
-            auto &aabb = entity.GetComponent<AABB>();
-            if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
+            auto &RBody = entity.GetComponent<RigidBody>();
+
+            auto aabb = RBody.GetAABB();
+            if (mFrustumCulling && !aabb->IsInFrustum(frustum, model)) {
                 continue;
             }
-            aabb.Update(model, mesh);
+            aabb->Update(model, mesh);
             mLineShader->Use();
             mLineShader->SetMat4("uProjection", mCamera->GetProjection());
             mLineShader->SetMat4("uView", mCamera->GetView());
             mLineShader->SetMat4("uModel", model);
-            mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? vec3{1.0f, 0.0f, 0.0f} : vec3{0.0f, 1.0f, 0.0f});
+            mLineShader->SetVec3("uLineColor", aabb->IsCollided() ? vec3{1.0f, 0.0f, 0.0f} : vec3{0.0f, 1.0f, 0.0f});
 
-            aabb.VAO()->Bind();
-            glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
-            aabb.VAO()->Unbind();
+            aabb->VAO()->Bind();
+            glDrawArrays(GL_LINES, 0, (GLsizei)aabb->Vertices().size());
+            aabb->VAO()->Unbind();
             mShader->Use();
 
             // drawing on stencil mask
