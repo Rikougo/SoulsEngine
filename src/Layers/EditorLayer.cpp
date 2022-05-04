@@ -51,7 +51,7 @@ namespace Elys {
 
 
         auto lava = mCurrentScene->CreateEntity("Lava");
-        lava.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);
+        lava.GetComponent<Node>().SetPosition(-1.0f, 20.0f, 0.0f);
         lava.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
         });
@@ -71,7 +71,7 @@ namespace Elys {
         auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
         light.SetParent(center);
-        light.GetComponent<Node>().SetPosition(0.0f, 3.0f, 0.0f);
+        light.GetComponent<Node>().SetPosition(0.0f, 5.0f, 0.0f);
         light.GetComponent<Node>().SetScale(0.1f);
         light.AddComponent<Light>({.color = {1.0f, 1.0f, 1.0f}, .intensity = 200.0f});
         light.AddComponent<MeshRenderer>({

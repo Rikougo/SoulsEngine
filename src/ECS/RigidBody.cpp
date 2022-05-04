@@ -10,10 +10,18 @@ Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) {
 
 void Elys::RigidBody::Update(float deltaTime) {
 
-    mVelocity = {0,0,0};
-    if(mUseGravity && !mBoundingBox->IsCollided()) {
-        float gravity = sqrt(2 * mGravity);
-
-        mVelocity = {0,-gravity * deltaTime,0};
+    if(mBoundingBox->IsCollided())
+        mVelocity = {0,0,0};
+    else {
+        // GRAVITY
+        ApplyForce(mMass * vec3 {0,-mGravity,0}, deltaTime);
+        // Force Normal
+        // Get Hit Point
+        // W * cos(alpha)
     }
+
+    ELYS_CORE_INFO("Velocity: {0}", mVelocity.y);
+}
+void Elys::RigidBody::ApplyForce(vec3 force, float dt) {
+    mVelocity += force * dt;
 }

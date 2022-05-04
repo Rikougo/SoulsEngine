@@ -21,11 +21,13 @@ namespace Elys {
         void DisableGravity() { mUseGravity = false; };
 
         void Update(float deltaTime);
+        void ApplyForce(vec3 force, float dt);
 
       private:
         AABB* mBoundingBox;
         bool mUseGravity = true;
-        float mGravity = 9.81;
+        float mMass = 0.05f;
+        float mGravity = 9.81f;
         vec3 mVelocity {0,0,0};
     };
 }
