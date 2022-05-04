@@ -14,11 +14,19 @@ namespace Elys {
         RigidBody(const Mesh& mesh);
 
         [[nodiscard]] AABB* GetAABB() { return mBoundingBox; };
-        void Update();
+        [[nodiscard]] const glm::vec3& Velocity() { return mVelocity; };
+        [[nodiscard]] const bool UseGravity() { return mUseGravity; };
+
+        void EnableGravity() { mUseGravity = true; };
+        void DisableGravity() { mUseGravity = false; };
+
+        void Update(float deltaTime);
 
       private:
         AABB* mBoundingBox;
+        bool mUseGravity = true;
         float mGravity = 9.81;
+        glm::vec3 mVelocity;
     };
 }
 

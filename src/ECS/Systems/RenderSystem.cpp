@@ -35,6 +35,21 @@ namespace Elys {
             ProcessInput();
         mFramebuffer->Bind();
 
+        // PHYSICS
+        for(auto id : mEntities) {
+
+            auto entity = Entity(mCurrentScene.get(),id);
+            auto& node = entity.GetComponent<Node>();
+            auto& rigidbody = entity.GetComponent<RigidBody>();
+
+            if(rigidbody.UseGravity()) {
+
+                rigidbody.Update(deltaTime);
+
+                node.Move(rigidbody.Velocity());
+            }
+        }
+
         glPolygonMode(GL_FRONT_AND_BACK, mWireframe ? GL_LINE : GL_FILL);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

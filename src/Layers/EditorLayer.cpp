@@ -54,6 +54,7 @@ namespace Elys {
                             .SetNormalMap(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_normal.jpg"))
         });
         mud.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Cube")));
+        mud.GetComponent<RigidBody>().DisableGravity();
 
         auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
