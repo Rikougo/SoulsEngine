@@ -14,7 +14,8 @@ void Elys::RigidBody::Update(float deltaTime) {
         mVelocity = {0,0,0};
     else {
         // GRAVITY
-        ApplyForce(mMass * vec3 {0,-mGravity,0}, deltaTime);
+        if(mUseGravity)
+            ApplyForce(mMass * vec3 {0,-mGravity,0}, deltaTime);
         // Force Normal
         // Get Hit Point
         // W * cos(alpha)
