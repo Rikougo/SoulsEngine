@@ -26,6 +26,7 @@ namespace Elys {
       private:
         AABB* mBoundingBox;
         bool mUseGravity = true;
+        bool mBounce = true;
         float mMass = 0.05f;
         float mGravity = 9.81f;
         vec3 mVelocity {0,0,0};
