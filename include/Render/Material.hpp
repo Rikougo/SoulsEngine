@@ -105,6 +105,10 @@ namespace Elys {
             tiling = value;
             return *this;
         }
+
+        [[nodiscard]] std::string TexturePath() const { return texture ? texture->GetPath().string() : "None"; }
+        [[nodiscard]] std::string NormalMapPath() const { return normalMap ? normalMap->GetPath().string() : "None"; }
+        [[nodiscard]] std::string HeightMapPath() const { return heightMap ? heightMap->GetPath().string() : "None"; }
     };
 }
 

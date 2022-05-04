@@ -65,6 +65,10 @@ namespace Elys {
         // bool OnMouseScroll(MouseScrolledEvent &event);
 
         std::shared_ptr<Framebuffer> GetFramebuffer() { return mFramebuffer; }
+
+        void ToggleDebugMode();
+        void SetDebugMode(bool value);
+        [[nodiscard]] bool IsDebugMode() { return mDebugMode; };
     };
 }
 

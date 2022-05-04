@@ -66,8 +66,8 @@ namespace Elys::GUI {
                             entity.AddComponent<Light>({});
                         }
 
-                        if (ImGui::Selectable("AABB", false, entity.HasComponent<AABB>() ? ImGuiSelectableFlags_Disabled : 0)) {
-                            entity.AddComponent<AABB>({});
+                        if (ImGui::Selectable("RigidBody", false, entity.HasComponent<RigidBody>() ? ImGuiSelectableFlags_Disabled : 0)) {
+                            entity.AddComponent<RigidBody>({});
                         }
 
                         if (ImGui::Selectable("Player", false, entity.HasComponent<Player>() ? ImGuiSelectableFlags_Disabled : 0)) {
@@ -99,9 +99,9 @@ namespace Elys::GUI {
                         }
                     }
 
-                    if (entity.HasComponent<AABB>()) {
-                        if (ImGui::CollapsingHeader("AABB", ImGuiTreeNodeFlags_DefaultOpen)) {
-                            AABBEditor("##AABB", entity.GetComponent<AABB>());
+                    if (entity.HasComponent<RigidBody>()) {
+                        if (ImGui::CollapsingHeader("RigidBody", ImGuiTreeNodeFlags_DefaultOpen)) {
+                            RigidBodyEditor("##RigidBody", entity.GetComponent<RigidBody>());
                         }
                     }
 
@@ -282,7 +282,7 @@ namespace Elys::GUI {
             ImGui::EndTable();
         }
 
-        void AABBEditor(std::string const &label, AABB &aabb) {
+        void RigidBodyEditor(std::string const &label, RigidBody &rBody) {
             auto tableFlags = ImGuiTableFlags_NoPadInnerX;
             ImGui::BeginTable(label.c_str(), 2, tableFlags);
 
@@ -292,7 +292,8 @@ namespace Elys::GUI {
             ImGui::TableNextColumn();
             ImGui::Text("Collided");
             ImGui::TableNextColumn();
-            ImGui::Text(aabb.IsCollided() ? "True" : "False");
+            auto v = rBody.Velocity();
+            ImGui::Text("[%0.2f,%0.2f]", v.x, v.y);
 
             ImGui::EndTable();
         }

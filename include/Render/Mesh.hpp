@@ -18,7 +18,6 @@
 #include <Core/Base.hpp>
 
 #include <Render/DataHolder.hpp>
-#include <Render/AABB.hpp>
 
 using glm::vec2;
 using glm::vec3;
@@ -63,40 +62,29 @@ namespace Elys {
         Mesh() = default;
         Mesh(const Mesh& other); // want to copy mesh data and generate new buffer
         Mesh(Mesh& other); // want to copy mesh data and keep same buffer, may be deleted later since it is unsafe
-        Mesh(MeshPartial& partial);
+        explicit Mesh(MeshPartial& partial);
 
-        static Mesh LoadOFF(std::filesystem::path &path, bool loadNormals = true);
         static Mesh Plane(uint16_t width = 32, uint16_t height = 32);
         static Mesh Cube();
         static Mesh Sphere(uint16_t slice = 32, uint16_t stack = 32);
 
-        [[nodiscard]] const shared_ptr<VertexArray>& VAO() const { return mVAO; }
+        [[nodiscard]] const std::shared_ptr<VertexArray>& VAO() const { return mVAO; }
         [[nodiscard]] size_t IndicesSize() const { return mIndices.size(); }
         [[nodiscard]] bool IsInit() const { return mInitialized; }
         [[nodiscard]] const vector<Vertex>& Vertices() const { return mVertices; }
         [[nodiscard]] const vector<uint32_t>& Indices() const { return mIndices; }
-        [[nodiscard]] const string Path() const { return mPath; }
-
-        [[nodiscard]] const AABB & GetAABB() const {
-            if (!mBoundingBox) {
-                mBoundingBox = new AABB(*this);
-            }
-
-            return *mBoundingBox;
-        }
+        [[nodiscard]] std::string Path() const { return mPath; }
       private:
         void ScaleToUnitAndCenter();
         void GenerateBuffers();
 
       private:
-        shared_ptr<VertexArray> mVAO;
+        std::shared_ptr<VertexArray> mVAO;
 
-        vector<Vertex> mVertices;
-        vector<uint32_t> mIndices;
+        std::vector<Vertex> mVertices;
+        std::vector<uint32_t> mIndices;
         bool mInitialized = false;
-        string mPath;
-
-        mutable AABB * mBoundingBox = nullptr;
+        std::string mPath;
 
         friend class AssetLoader;
     };

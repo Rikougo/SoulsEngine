@@ -11,6 +11,7 @@
 #include <Application.hpp>
 
 #include <GUI/ProfileDisplay.hpp>
+#include <utility>
 
 namespace Elys {
     void EditorLayer::OnAttach() {
@@ -32,25 +33,26 @@ namespace Elys {
             .DepthAttachmentFormat = GL_DEPTH24_STENCIL8
         });
 
-        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
-        mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
+        InitSystems();
 
-        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
-        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
-
-        mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
-        mCurrentScene->SetSystemSignature<PhysicSystem, AABB, Node>();
-
-        mPlayerSystem = mCurrentScene->RegisterSystem<PlayerSystem>(mCurrentScene, mPlayerCamera);
-        mCurrentScene->SetSystemSignature<PlayerSystem, Player, Node>();
+        auto ground = mCurrentScene->CreateEntity("Ground");
+        ground.GetComponent<Node>().SetPosition(0.0f, -2.0f, 0.0f);
+        ground.GetComponent<Node>().SetScale(50);
+        ground.AddComponent<MeshRenderer>({
+            .mesh = AssetLoader::MeshesMap()["Plane32x32"],
+            .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_basecolor.jpg"))
+                            .SetNormalMap(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_normal.jpg"))
+        });
+        ground.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Plane32x32")));
+        ground.GetComponent<RigidBody>().SetUseGravity(false);
 
         auto lava = mCurrentScene->CreateEntity("Lava");
-        lava.GetComponent<Node>().SetPosition(0.0f, 0.0f, 0.0f);
+        lava.GetComponent<Node>().SetPosition(-1.0f, 20.0f, 0.0f);
         lava.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
         });
-        lava.AddComponent<AABB>(
-            AABB(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
+        lava.AddComponent<RigidBody>(
+            RigidBody(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
         lava.AddComponent<Player>({});
 
         auto mud = mCurrentScene->CreateEntity("Mud");
@@ -60,12 +62,13 @@ namespace Elys {
             .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_basecolor.jpg"))
                             .SetNormalMap(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_normal.jpg"))
         });
-        mud.AddComponent<AABB>(AABB(AssetLoader::MeshFromPath("Cube")));
+        mud.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Cube")));
+        mud.GetComponent<RigidBody>().SetUseGravity(false);
 
         auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
         light.SetParent(center);
-        light.GetComponent<Node>().SetPosition(0.0f, 0.0f, -10.0f);
+        light.GetComponent<Node>().SetPosition(0.0f, 5.0f, 0.0f);
         light.GetComponent<Node>().SetScale(0.1f);
         light.AddComponent<Light>({.color = {1.0f, 1.0f, 1.0f}, .intensity = 200.0f});
         light.AddComponent<MeshRenderer>({
@@ -75,6 +78,15 @@ namespace Elys {
     }
 
     void EditorLayer::OnDetach() {
+        mLightSystem.reset();
+        mRenderSystem.reset();
+        mPhysicSystem.reset();
+        mPlayerCamera.reset();
+
+        mFramebuffer.reset();
+        mEditorCamera.reset();
+        mPlayerCamera.reset();
+        mShader.reset();
         mCurrentScene.reset();
     }
 
@@ -92,7 +104,9 @@ namespace Elys {
         }
 
         // ORDER HERE IS IMPORTANT
-        if (mCurrentState == EditorState::PLAYING) mPlayerSystem->Update(deltaTime);
+        if (mCurrentState == EditorState::PLAYING) {
+            mPlayerSystem->Update(deltaTime);
+        }
         mPhysicSystem->Update(deltaTime);
         mLightSystem->Update(deltaTime);
         mRenderSystem->Update(deltaTime);
@@ -122,7 +136,7 @@ namespace Elys {
     }
 
     void EditorLayer::OnImGuiRender() {
-        static bool dockSpaceOpen = true, graphSceneOpen = true, componentsEditorOpen = true, contentBrowserOpen = true;
+        static bool dockSpaceOpen = true;
         static ImGuiDockNodeFlags dockSpaceFlags = ImGuiDockNodeFlags_None;
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 
@@ -163,6 +177,8 @@ namespace Elys {
                 {
                     if (ImGui::MenuItem("Exit", "Ctrl + Q")) Application::Get().Shutdown();
                     if (ImGui::MenuItem("Save scene", "Ctrl + S")) AssetLoader::SerializeScene(mCurrentScene, "scene.escene");
+                    if (ImGui::MenuItem("Reload shader", "Ctrl + R")) mShader->Reload("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
+                    if (ImGui::MenuItem("Toggle playmode", "Ctrl + P")) TogglePlayMode();
 
                     ImGui::EndMenu();
                 }
@@ -176,21 +192,13 @@ namespace Elys {
 
             if (ImGui::Begin("Debug & Stats")) {
                 static bool VSYNC = true;
-                static bool LIGHTNING = true;
                 bool tempVSYNC = VSYNC;
-                bool tempLightning = LIGHTNING;
 
                 ImGui::Checkbox("Vsync", &tempVSYNC);
                 if (tempVSYNC != VSYNC) {
                     VSYNC = tempVSYNC;
                     Application::Get().GetWindow().EnableVSync(VSYNC);
                 }
-
-                /*ImGui::Checkbox("Lightning", &tempLightning);
-                if (tempLightning != LIGHTNING) {
-                    LIGHTNING = tempLightning;
-                    mRenderSystem->SetLightning(LIGHTNING);
-                }*/
 
                 ImGui::Text("Framerate : %0.1f", Profile::Framerate);
                 ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
@@ -272,33 +280,15 @@ namespace Elys {
     void EditorLayer::CreateScene() { mCurrentScene = std::make_shared<Scene>(); }
 
     void EditorLayer::ChangeScene(shared_ptr<Scene> newScene) {
-        mCurrentScene = newScene;
+        mCurrentScene = std::move(newScene);
 
-        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
-        mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
-
-        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
-        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
-
-        mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
-        mCurrentScene->SetSystemSignature<PhysicSystem, AABB, Node>();
-
-        mPlayerSystem = mCurrentScene->RegisterSystem<PlayerSystem>(mCurrentScene, mPlayerCamera);
-        mCurrentScene->SetSystemSignature<PlayerSystem, Player, Node>();
+        InitSystems();
     }
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
+        // --- APPLICATION INTERACTION --- //
         if (event.GetKeyCode() == Key::P && Input::IsKeyPressed(Key::LeftControl)) {
-            mCurrentState = (mCurrentState == EditorState::EDITING) ? EditorState::PLAYING : EditorState::EDITING;
-
-            switch (mCurrentState) {
-                case EditorState::EDITING:
-                    mRenderSystem->SetCamera(mEditorCamera);
-                    break;
-                case EditorState::PLAYING:
-                    mRenderSystem->SetCamera(mPlayerCamera);
-                    break;
-            }
+            TogglePlayMode();
         }
 
         if (event.GetKeyCode() == Key::A && Input::IsKeyPressed(Key::LeftControl)) {
@@ -313,6 +303,37 @@ namespace Elys {
             mShader->Reload("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
         }
 
+        if (event.GetKeyCode() == Key::D && Input::IsKeyPressed(Key::LeftControl)) {
+            mRenderSystem->ToggleDebugMode();
+        }
+
         return false;
+    }
+
+    void EditorLayer::InitSystems() {
+        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
+        mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
+
+        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
+        mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
+
+        mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
+        mCurrentScene->SetSystemSignature<PhysicSystem, RigidBody, MeshRenderer, Node>();
+
+        mPlayerSystem = mCurrentScene->RegisterSystem<PlayerSystem>(mCurrentScene, mPlayerCamera);
+        mCurrentScene->SetSystemSignature<PlayerSystem, Player, Node>();
+    }
+
+    void EditorLayer::TogglePlayMode() {
+        mCurrentState = (mCurrentState == EditorState::EDITING) ? EditorState::PLAYING : EditorState::EDITING;
+
+        switch (mCurrentState) {
+        case EditorState::EDITING:
+            mRenderSystem->SetCamera(mEditorCamera);
+            break;
+        case EditorState::PLAYING:
+            mRenderSystem->SetCamera(mPlayerCamera);
+            break;
+        }
     }
 } // namespace Elys

@@ -60,8 +60,8 @@ namespace Elys {
         static Entity LoadEntity(const string& raw, shared_ptr<Scene> &sceneRef);
         static string SerializeEntity(Entity entity);
       private:
-        template<typename T> static string SerializeComponent(T data);
-        template<typename T> static T ParseComponent(std::unordered_map<string, string> raw);
+        template<typename T> static string SerializeComponent(T const &data);
+        template<typename T> static T ParseComponent(std::unordered_map<string, string> const &raw);
       private:
         static glm::vec2 ParseVec2(std::string raw);
         static glm::vec3 ParseVec3(std::string raw);

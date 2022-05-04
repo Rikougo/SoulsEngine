@@ -28,8 +28,6 @@
 #include <GUI/ComponentsEditor.hpp>
 #include <GUI/ContentBrowser.hpp>
 
-using std::shared_ptr;
-
 namespace Elys {
     enum class EditorState {
         EDITING,
@@ -38,8 +36,9 @@ namespace Elys {
 
     class EditorLayer : public Layer {
       public:
+        // --- LIFE CYCLE METHODS --- //
         EditorLayer() = default;
-        ~EditorLayer() = default;
+        ~EditorLayer() override = default;
         void OnAttach() override;
         void OnDetach() override;
 
@@ -50,7 +49,11 @@ namespace Elys {
         bool OnKeyPressed(KeyPressedEvent &event);
 
         void CreateScene();
-        void ChangeScene(shared_ptr<Scene> newScene);
+        void ChangeScene(std::shared_ptr<Scene> newScene);
+
+        void InitSystems();
+
+        void TogglePlayMode();
       public:
         struct Viewport {
             glm::vec2 offset{0, 0}, size{0, 0};
@@ -59,23 +62,23 @@ namespace Elys {
         EditorState mCurrentState{EditorState::EDITING};
         Viewport mViewport;
         bool mViewportHovered = false;
-        shared_ptr<Scene> mCurrentScene;
+        std::shared_ptr<Scene> mCurrentScene;
 
         // --- SYSTEMS --- //
-        shared_ptr<LightSystem> mLightSystem;
-        shared_ptr<RenderSystem> mRenderSystem;
-        shared_ptr<PhysicSystem> mPhysicSystem;
-        shared_ptr<PlayerSystem> mPlayerSystem;
+        std::shared_ptr<LightSystem> mLightSystem;
+        std::shared_ptr<RenderSystem> mRenderSystem;
+        std::shared_ptr<PhysicSystem> mPhysicSystem;
+        std::shared_ptr<PlayerSystem> mPlayerSystem;
 
-        shared_ptr<Framebuffer> mDepthbuffer;
-        shared_ptr<Framebuffer> mFramebuffer;
-        shared_ptr<TrackBallCamera> mEditorCamera;
-        shared_ptr<TrackBallCamera> mPlayerCamera;
-        shared_ptr<Shader> mShader;
+        // --- DISPLAY STUFF --- //
+        std::shared_ptr<Framebuffer> mFramebuffer;
+        std::shared_ptr<TrackBallCamera> mEditorCamera;
+        std::shared_ptr<TrackBallCamera> mPlayerCamera;
+        std::shared_ptr<Shader> mShader;
 
-        GUI::ContentBrowser mContentBrowser;
-        GUI::GraphScene mGraphScene;
-        GUI::ComponentsEditor mComponentsEditor;
+        GUI::ContentBrowser mContentBrowser{};
+        GUI::GraphScene mGraphScene{};
+        GUI::ComponentsEditor mComponentsEditor{};
     };
 }
 

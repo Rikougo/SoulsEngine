@@ -3,13 +3,15 @@
 //
 
 #include <Render/AABB.hpp>
-#include <Render/Mesh.hpp>
 
 #include <glad/glad.h>
 
 namespace Elys {
+    AABB::AABB() : lo(0), hi(0) {}
+    AABB::AABB(float min, float max) : lo(min), hi(max) {}
+    AABB::AABB(vec3 min, float size) : lo(min), hi(min + size) {}
+    AABB::AABB(vec3 min, vec3 max) : lo(min), hi(max) {}
     // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
-
     AABB::AABB(const Mesh& mesh) {
         lo = vec3(std::numeric_limits<float>::max());
         hi = vec3(std::numeric_limits<float>::min());
@@ -25,6 +27,21 @@ namespace Elys {
             if(v.position.z > hi.z) hi.z = v.position.z;
         }
 
+        InitBuffers();
+    }
+
+    void AABB::InitBuffers() {
+        UpdateVertices();
+
+        mVAO.reset();
+        mVAO = std::make_shared<VertexArray>();
+        auto vbo = std::make_shared<VertexBuffer>((void*)mVertices.data(), mVertices.size() * sizeof(vec3), GL_DYNAMIC_DRAW);
+        BufferLayout vertexLayout{ {"position", sizeof(vec3), 3, GL_FLOAT} };
+        vbo->SetLayout(vertexLayout);
+        mVAO->SetVertexBuffer(vbo);
+    }
+
+    void AABB::UpdateVertices() {
         mVertices = {
             // FRONT
             lo,
@@ -88,13 +105,7 @@ namespace Elys {
         return -r <= signedDistance;
     }
 
-    void AABB::UpdateBuffers() const {
-        /*mVBO->SetData(mVertices.data(), mVertices.size(), GL_DYNAMIC_DRAW);
-        mVAO->UpdateVertexBuffer();*/
-    }
-
     void AABB::Update(glm::mat4 transform, Mesh const &mesh) {
-        bool test = transform == mTransform;
         if (transform == mTransform) return;
 
         lo = vec3(std::numeric_limits<float>::max());
@@ -112,59 +123,23 @@ namespace Elys {
             if(v.y > hi.y) hi.y = v.y;
             if(v.z > hi.z) hi.z = v.z;
         }
-        ELYS_CORE_INFO("Update AABB : {0} {1} {2}", hi.x, hi.y, hi.z);
 
-        auto vLO = lo - vec3(0.001f);
-        auto vHI = hi + vec3(0.001f);
+        // small extend (only used for drawing)
+        // auto vLO = lo - vec3(0.001f);
+        // auto vHI = hi + vec3(0.001f);
 
-        mVertices = {
-            // FRONT
-            vLO,
-            vec3(vHI.x, vLO.y, vLO.z),
+        /*if (mVAO) {
+            UpdateVertices();
 
-            vec3(vHI.x, vLO.y, vLO.z),
-            vec3(vHI.x, vHI.y, vLO.z),
-
-            vec3(vHI.x, vHI.y, vLO.z),
-            vec3(vLO.x, vHI.y, vLO.z),
-
-            vec3(vLO.x, vHI.y, vLO.z),
-            vLO,
-
-            // SIDE
-            vLO,
-            vec3(vLO.x, vLO.y, vHI.z),
-
-            vec3(vHI.x, vLO.y, vLO.z),
-            vec3(vHI.x, vLO.y, vHI.z),
-
-            vec3(vHI.x, vHI.y, vLO.z),
-            vHI,
-
-            vec3(vLO.x, vHI.y, vLO.z),
-            vec3(vLO.x, vHI.y, vHI.z),
-
-            // BACK
-            vec3(vHI.x, vLO.y, vHI.z),
-            vec3(vLO.x, vLO.y, vHI.z),
-
-            vec3(vLO.x, vLO.y, vHI.z),
-            vec3(vLO.x, vHI.y, vHI.z),
-
-            vec3(vLO.x, vHI.y, vHI.z),
-            vHI,
-
-            vHI,
-            vec3(vHI.x, vLO.y, vHI.z)
-        };
-
-        mVAO.reset();
-        mVBO.reset();
-        mVAO = std::make_shared<VertexArray>();
-        mVBO = std::make_shared<VertexBuffer>((void*)&mVertices[0], mVertices.size() * sizeof(Vertex), GL_DYNAMIC_DRAW);
-        BufferLayout vertexLayout{ {"position", sizeof(vec3), 3, GL_FLOAT} };
-        mVBO->SetLayout(vertexLayout);
-        mVAO->SetVertexBuffer(mVBO);
+            // TODO : Improve the way to replace VAO data.
+            auto vbo = std::make_shared<VertexBuffer>((void*)mVertices.data(), mVertices.size() * sizeof(vec3), GL_DYNAMIC_DRAW);
+            BufferLayout vertexLayout{ {"position", sizeof(vec3), 3, GL_FLOAT} };
+            vbo->SetLayout(vertexLayout);
+            mVAO->SetVertexBuffer(vbo);
+        } else {
+            InitBuffers();
+        }*/
+        InitBuffers();
     }
 
     bool AABB::Collapse(const AABB &other) const {

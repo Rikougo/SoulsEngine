@@ -80,12 +80,13 @@ namespace Elys {
             auto &mesh = renderer.mesh;
             auto &material = renderer.material;
 
-            if (entity.HasComponent<AABB>()) {
-                auto &aabb = entity.GetComponent<AABB>();
+            if (mDebugMode && entity.HasComponent<RigidBody>()) {
+                auto &RBody = entity.GetComponent<RigidBody>();
+
+                auto const &aabb = RBody.GetAABB();
                 if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
                     continue;
                 }
-                aabb.Update(model, mesh);
                 mLineShader->Use();
                 mLineShader->SetMat4("uProjection", mCamera->GetProjection());
                 mLineShader->SetMat4("uView", mCamera->GetView());
@@ -210,4 +211,6 @@ namespace Elys {
 
         return false;
     }
+    void RenderSystem::ToggleDebugMode() { mDebugMode = !mDebugMode; }
+    void RenderSystem::SetDebugMode(bool value) { mDebugMode = value; }
 } // namespace Elys

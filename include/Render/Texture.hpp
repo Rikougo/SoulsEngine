@@ -35,7 +35,7 @@ namespace Elys {
 
         bool Valid() const { return mValid; }
         [[nodiscard]] unsigned int ID() const { return mId; }
-        std::filesystem::path GetPath() { return mPath; }
+        std::filesystem::path GetPath() const { return mPath; }
         [[nodiscard]] std::string GetName() { return mPath.filename().string(); }
         [[nodiscard]] vec2 GetSize() const { return {mWidth, mHeight}; }
 

@@ -9,20 +9,29 @@ namespace Elys {
         for(auto id : mEntities) {
             auto entity = mCurrentScene->EntityFromID(id);
 
-            auto &aabb = entity.GetComponent<AABB>();
+            // PHYSICS
+            auto& node = entity.GetComponent<Node>();
+            auto& rBody = entity.GetComponent<RigidBody>();
+            auto& aabb = rBody.GetAABB();
+            auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
+
+            aabb.Update(node.InheritedTransform(), mesh);
+
             aabb.SetCollided(false);
 
             for(auto otherID : mEntities) {
                 if (otherID == id) continue;
 
                 auto other = mCurrentScene->EntityFromID(otherID);
-                auto &otherAABB = other.GetComponent<AABB>();
+                auto const &otherAABB = other.GetComponent<RigidBody>().GetAABB();
 
                 if (aabb.Collapse(otherAABB)) {
-                    ELYS_CORE_INFO("Colliding : {0} x {1}", entity.GetComponent<Node>().name, other.GetComponent<Node>().name);
                     aabb.SetCollided(true);
                 }
             }
+
+            rBody.Update(deltaTime);
+            node.Move(rBody.Velocity());
         }
     }
 }

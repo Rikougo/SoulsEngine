@@ -52,7 +52,7 @@ namespace Elys {
     void VertexArray::Bind() const { glBindVertexArray(mID); }
     void VertexArray::Unbind() const { glBindVertexArray(0); }
 
-    void VertexArray::SetVertexBuffer(shared_ptr<VertexBuffer> &buffer) {
+    void VertexArray::SetVertexBuffer(std::shared_ptr<VertexBuffer> &buffer) {
         Bind();
         buffer->Bind();
 
@@ -72,7 +72,7 @@ namespace Elys {
         }
     }
 
-    void VertexArray::SetIndexBuffer(shared_ptr<IndexBuffer> &buffer) {
+    void VertexArray::SetIndexBuffer(std::shared_ptr<IndexBuffer> &buffer) {
         Bind();
         buffer->Bind();
 

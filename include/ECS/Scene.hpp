@@ -19,6 +19,7 @@
 #include <ECS/Components/Node.hpp>
 #include <ECS/Components/Light.hpp>
 #include <ECS/Components/MeshRenderer.hpp>
+#include <ECS/Components/RigidBody.hpp>
 #include <ECS/Components/Player.hpp>
 
 // Managers
@@ -67,7 +68,7 @@ namespace Elys {
       private:
         std::set<EntityID> mEntities;
 
-        int mSelected, mHovered;
+        int mSelected {MAX_ENTITIES}, mHovered {MAX_ENTITIES};
 
         unique_ptr<ComponentManager> mComponentManager;
         unique_ptr<EntityManager> mEntityManager;

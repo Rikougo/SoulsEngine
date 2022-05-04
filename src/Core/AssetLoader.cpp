@@ -146,57 +146,57 @@ namespace Elys {
     }
 
     template <>
-    MeshRenderer ComponentSerializer::ParseComponent<MeshRenderer>(std::unordered_map<string, string> raw) {
+    MeshRenderer ComponentSerializer::ParseComponent<MeshRenderer>(std::unordered_map<string, string> const &raw) {
         MeshRenderer result;
 
-        result.mesh = AssetLoader::MeshFromPath(raw.contains("Mesh") ? raw["Mesh"] : "Cube");
-        if (raw.contains("UVTiling")) result.material.tiling     = ParseVec2(raw["UVTiling"]);
-        if (raw.contains("Texture")) result.material.texture     = AssetLoader::TextureFromPath(raw["Texture"]);
-        if (raw.contains("NormalMap")) result.material.normalMap = AssetLoader::TextureFromPath(raw["NormalMap"]);
-        if (raw.contains("HeightMap")) result.material.heightMap = AssetLoader::TextureFromPath(raw["HeightMap"]);
-        if (raw.contains("Metallic")) result.material.metallic   = std::stof(raw["Metallic"]);
-        if (raw.contains("Roughness")) result.material.roughness = std::stof(raw["Roughness"]);
-        if (raw.contains("Color")) result.material.albedo        = ParseVec4(raw["Color"]);
+        result.mesh = AssetLoader::MeshFromPath(raw.contains("Mesh") ? raw.at("Mesh") : "Cube");
+        if (raw.contains("UVTiling")) result.material.tiling     = ParseVec2(raw.at("UVTiling"));
+        if (raw.contains("Texture")) result.material.texture     = AssetLoader::TextureFromPath(raw.at("Texture"));
+        if (raw.contains("NormalMap")) result.material.normalMap = AssetLoader::TextureFromPath(raw.at("NormalMap"));
+        if (raw.contains("HeightMap")) result.material.heightMap = AssetLoader::TextureFromPath(raw.at("HeightMap"));
+        if (raw.contains("Metallic")) result.material.metallic   = std::stof(raw.at("Metallic"));
+        if (raw.contains("Roughness")) result.material.roughness = std::stof(raw.at("Roughness"));
+        if (raw.contains("Color")) result.material.albedo        = ParseVec4(raw.at("Color"));
         if (raw.contains("Unshaded")) result.material.shaded     = false;
 
         return result;
     }
 
     template<>
-    Light ComponentSerializer::ParseComponent<Light>(std::unordered_map<string, string> raw) {
+    Light ComponentSerializer::ParseComponent<Light>(std::unordered_map<string, string> const &raw) {
         Light result;
 
-        result.intensity = raw.contains("Intensity") ? std::stof(raw["Intensity"]) : 200.0f;
-        if (raw.contains("Color")) result.color = ParseVec3(raw["Color"]);
+        result.intensity = raw.contains("Intensity") ? std::stof(raw.at("Intensity")) : 200.0f;
+        if (raw.contains("Color")) result.color = ParseVec3(raw.at("Color"));
 
         return result;
     }
 
     template<>
-    Player ComponentSerializer::ParseComponent<Player>(std::unordered_map<string, string> raw) {
+    Player ComponentSerializer::ParseComponent<Player>(std::unordered_map<string, string> const &raw) {
         Player result;
 
-        result.speed = raw.contains("Speed") ? std::stof(raw["Speed"]) : 5.0f;
+        result.speed = raw.contains("Speed") ? std::stof(raw.at("Speed")) : 5.0f;
 
         return result;
     }
 
     template<>
-    AABB ComponentSerializer::ParseComponent<AABB>(std::unordered_map<string, string> raw) {
+    RigidBody ComponentSerializer::ParseComponent<RigidBody>(std::unordered_map<string, string> const &raw) {
         return {};
     }
 
     template<>
-    string ComponentSerializer::SerializeComponent<MeshRenderer>(MeshRenderer data) {
+    string ComponentSerializer::SerializeComponent<MeshRenderer>(MeshRenderer const &data) {
         std::stringstream ss;
 
         ss << "MeshRenderer+Mesh=" << data.mesh.Path() << "+UVTiling=" << data.material.tiling.x << "," << data.material.tiling.y;
         ss << "+Color=" << std::to_string(data.material.albedo.x) << "," << std::to_string(data.material.albedo.y) << "," << std::to_string(data.material.albedo.z) << "," << std::to_string(data.material.albedo.w);
         if (!data.material.shaded) ss << "+Unshaded";
 
-        if (data.material.texture) ss << "+Texture=" << data.material.texture->GetPath().string();
-        if (data.material.normalMap) ss << "+NormalMap=" << data.material.normalMap->GetPath().string();
-        if (data.material.heightMap) ss << "+HeightMap=" << data.material.heightMap->GetPath().string();
+        if (data.material.texture) ss << "+Texture=" << data.material.TexturePath();
+        if (data.material.normalMap) ss << "+NormalMap=" << data.material.NormalMapPath();
+        if (data.material.heightMap) ss << "+HeightMap=" << data.material.HeightMapPath();
 
         ss << "+Metallic=" << std::to_string(data.material.metallic) << "+Roughness=" << std::to_string(data.material.roughness);
 
@@ -204,12 +204,12 @@ namespace Elys {
     }
 
     template<>
-    string ComponentSerializer::SerializeComponent<AABB>(AABB data) {
-        return "AABB";
+    string ComponentSerializer::SerializeComponent<RigidBody>(RigidBody const &data) {
+        return "RigidBody";
     }
 
     template<>
-    string ComponentSerializer::SerializeComponent<Player>(Player data) {
+    string ComponentSerializer::SerializeComponent<Player>(Player const &data) {
         std::stringstream ss;
 
         ss << "Player+Speed=" << data.speed;
@@ -218,7 +218,7 @@ namespace Elys {
     }
 
     template<>
-    string ComponentSerializer::SerializeComponent<Light>(Light data) {
+    string ComponentSerializer::SerializeComponent<Light>(Light const &data) {
         std::stringstream ss;
 
         ss << "Light+Intensity=" << std::to_string(data.intensity) << "+Color=" << std::to_string(data.color.r) << "," << std::to_string(data.color.g) << "," << std::to_string(data.color.b);
@@ -272,8 +272,8 @@ namespace Elys {
                 Light component = ParseComponent<Light>(rawComponentsValue);
                 entity.AddComponent(component);
             }
-            else if (componentType == "AABB") {
-                AABB component = ParseComponent<AABB>(rawComponentsValue);
+            else if (componentType == "RigidBody") {
+                RigidBody component = ParseComponent<RigidBody>(rawComponentsValue);
                 entity.AddComponent(component);
             }
             else if (componentType == "Player") {
@@ -298,7 +298,7 @@ namespace Elys {
         if (entity.HasComponent<MeshRenderer>()) ss << SerializeComponent(entity.GetComponent<MeshRenderer>()) << ";";
         if (entity.HasComponent<Light>()) ss << SerializeComponent(entity.GetComponent<Light>()) << ";";
         if (entity.HasComponent<Player>()) ss << SerializeComponent(entity.GetComponent<Player>()) << ";";
-        if (entity.HasComponent<AABB>()) ss << SerializeComponent(entity.GetComponent<AABB>()) << ";";
+        if (entity.HasComponent<RigidBody>()) ss << SerializeComponent(entity.GetComponent<RigidBody>()) << ";";
 
         return ss.str();
     }

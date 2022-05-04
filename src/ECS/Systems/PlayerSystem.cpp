@@ -12,6 +12,7 @@ namespace Elys {
             auto entity = mCurrentScene->EntityFromID(entityID);
             auto &node = entity.GetComponent<Node>();
             auto &player = entity.GetComponent<Player>();
+            auto &rBody = entity.GetComponent<RigidBody>();
 
             vec3 velocity{0.0f};
 
@@ -26,15 +27,13 @@ namespace Elys {
             if (Input::IsKeyPressed(Key::S)) {
                 velocity.z -= 1.0f;
             }
-
             if (Input::IsKeyPressed(Key::W)) {
                 velocity.z += 1.0f;
             }
 
             velocity *= player.speed;
-            velocity *= deltaTime;
 
-            node.Move(velocity);
+            // rBody.ApplyForce(velocity, deltaTime);
 
             mPlayerCamera->SetTarget(node.InheritedPosition());
         }
