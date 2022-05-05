@@ -29,7 +29,7 @@ namespace Elys {
     }
 
     void Mesh::ScaleToUnitAndCenter() {
-        vec3 min{std::numeric_limits<float>::max()}, max{std::numeric_limits<float>::min()};
+        glm::vec3 min{std::numeric_limits<float>::max()}, max{std::numeric_limits<float>::min()};
 
         for(auto v : mVertices) {
             auto p = v.position;
@@ -47,13 +47,13 @@ namespace Elys {
         Mesh result;
         result.mVertices.resize((width + 1) * (height + 1));
         uint32_t index = 0;
-        constexpr vec3 normal = {0.0f, 1.0f, 0.0f};
+        constexpr glm::vec3 normal = {0.0f, 1.0f, 0.0f};
 
         for (uint16_t y = 0; y <= height; y++) {
             for (uint16_t x = 0; x <= width; x++) {
 
-                vec3 position = {2.0f * x / (float)width - 1.0f, 0, 2.0f * y / (float)height - 1.0f};
-                vec2 textCoord = {(float)x / (float)width, (float)y / (float)height};
+                glm::vec3 position = {2.0f * x / (float)width - 1.0f, 0, 2.0f * y / (float)height - 1.0f};
+                glm::vec2 textCoord = {(float)x / (float)width, (float)y / (float)height};
 
                 result.mVertices[index++] = {position, normal, textCoord};
 
@@ -145,13 +145,13 @@ namespace Elys {
         Mesh result;
         result.mVertices.resize(slice * stack);
         for (unsigned int stackIt = 0; stackIt < stack; ++stackIt) {
-            float u = (float)(stackIt) / (float)(stack - 1);
-            float theta = u * 2 * M_PI;
+            float u = static_cast<float>(stackIt) / static_cast<float>(stack - 1);
+            float theta = u * 2.0f * std::numbers::pi_v<float>;
             for (unsigned int sliceIt = 0; sliceIt < slice; ++sliceIt) {
                 unsigned int vertexIndex = stackIt + sliceIt * stack;
                 float v = (float)(sliceIt) / (float)(slice - 1);
-                float phi = (float)-M_PI_2 + v * M_PI;
-                vec3 xyz = {cos(theta) * cos(phi), sin(theta) * cos(phi), sin(phi)};
+                float phi = -std::numbers::pi_v<float> * 2.0f + v * std::numbers::pi_v<float>;
+                glm::vec3 xyz = {cos(theta) * cos(phi), sin(theta) * cos(phi), sin(phi)};
                 result.mVertices[vertexIndex] = {xyz, glm::normalize(xyz), {u, v}};
             }
         }
@@ -176,9 +176,9 @@ namespace Elys {
         mVAO = std::make_shared<VertexArray>();
         auto vertexBuffer = std::make_shared<VertexBuffer>((void*)&mVertices[0], mVertices.size() * sizeof(Vertex));
         BufferLayout vertexLayout{
-            {"position", sizeof(vec3), 3, GL_FLOAT},
-            {"normal", sizeof(vec3), 3, GL_FLOAT},
-            {"texCoord", sizeof(vec2), 2, GL_FLOAT}
+            {"position", sizeof(glm::vec3), 3, GL_FLOAT},
+            {"normal", sizeof(glm::vec3), 3, GL_FLOAT},
+            {"texCoord", sizeof(glm::vec2), 2, GL_FLOAT}
         };
         vertexBuffer->SetLayout(vertexLayout);
         mVAO->SetVertexBuffer(vertexBuffer);

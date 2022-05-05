@@ -4,6 +4,9 @@
 
 #include <ECS/Systems/LightSystem.hpp>
 
+using std::shared_ptr;
+using std::unique_ptr;
+
 namespace Elys {
     LightSystem::LightSystem(
         shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer)

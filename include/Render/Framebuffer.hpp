@@ -12,8 +12,6 @@
 
 #include <Core/Logger.hpp>
 
-using std::vector;
-
 namespace Elys {
     struct FramebufferAttachmentSpec {
         GLenum TextureFormat;
@@ -24,7 +22,7 @@ namespace Elys {
         float Height;
         int Sample = 1;
 
-        vector<FramebufferAttachmentSpec> Attachments;
+        std::vector<FramebufferAttachmentSpec> Attachments;
         GLenum DepthAttachmentFormat = 0;
     };
 
@@ -48,7 +46,7 @@ namespace Elys {
         void Update();
       private:
         unsigned int mBufferID;
-        vector<unsigned int> mColorAttachments;
+        std::vector<unsigned int> mColorAttachments;
         unsigned int mEntityAttachmentID;
         unsigned int mDepthAttachmentID;
 

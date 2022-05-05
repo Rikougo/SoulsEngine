@@ -20,9 +20,6 @@ namespace Elys {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
     void VertexBuffer::SetData(const void *data, uint32_t count, GLenum usage) {
-        glDeleteBuffers(1, &mID);
-
-        glGenBuffers(1, &mID);
         glBindBuffer(GL_ARRAY_BUFFER, mID);
         glBufferData(GL_ARRAY_BUFFER, count, data, usage);
     }

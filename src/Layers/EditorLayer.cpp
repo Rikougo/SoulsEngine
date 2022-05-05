@@ -279,7 +279,7 @@ namespace Elys {
 
     void EditorLayer::CreateScene() { mCurrentScene = std::make_shared<Scene>(); }
 
-    void EditorLayer::ChangeScene(shared_ptr<Scene> newScene) {
+    void EditorLayer::ChangeScene(std::shared_ptr<Scene> newScene) {
         mCurrentScene = std::move(newScene);
 
         InitSystems();

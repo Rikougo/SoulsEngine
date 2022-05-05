@@ -6,6 +6,8 @@
 
 #include <glad/glad.h>
 
+using glm::vec3;
+
 namespace Elys {
     AABB::AABB() : lo(0), hi(0) {}
     AABB::AABB(float min, float max) : lo(min), hi(max) {}
@@ -35,7 +37,7 @@ namespace Elys {
 
         mVAO.reset();
         mVAO = std::make_shared<VertexArray>();
-        auto vbo = std::make_shared<VertexBuffer>((void*)mVertices.data(), mVertices.size() * sizeof(vec3), GL_DYNAMIC_DRAW);
+        auto vbo = std::make_shared<VertexBuffer>((void*)mVertices.data(), static_cast<uint32_t>(mVertices.size() * sizeof(vec3)), GL_DYNAMIC_DRAW);
         BufferLayout vertexLayout{ {"position", sizeof(vec3), 3, GL_FLOAT} };
         vbo->SetLayout(vertexLayout);
         mVAO->SetVertexBuffer(vbo);
@@ -84,7 +86,7 @@ namespace Elys {
         };
     }
 
-    bool AABB::IsInFrustum(Frustum frustum, mat4 transform) const {
+    bool AABB::IsInFrustum(Frustum frustum, glm::mat4 transform) const {
         vec3 tMin = transform * glm::vec4(lo, 1.0f), tMax = transform * glm::vec4(hi, 1.0f);
         AABB transformedAABB(tMin, tMax);
 
@@ -124,22 +126,14 @@ namespace Elys {
             if(v.z > hi.z) hi.z = v.z;
         }
 
-        // small extend (only used for drawing)
-        // auto vLO = lo - vec3(0.001f);
-        // auto vHI = hi + vec3(0.001f);
-
-        /*if (mVAO) {
+        if (mVAO) {
             UpdateVertices();
 
             // TODO : Improve the way to replace VAO data.
-            auto vbo = std::make_shared<VertexBuffer>((void*)mVertices.data(), mVertices.size() * sizeof(vec3), GL_DYNAMIC_DRAW);
-            BufferLayout vertexLayout{ {"position", sizeof(vec3), 3, GL_FLOAT} };
-            vbo->SetLayout(vertexLayout);
-            mVAO->SetVertexBuffer(vbo);
+            mVAO->GetVertexBuffer()->SetData((void*)mVertices.data(), static_cast<uint32_t>(mVertices.size() * sizeof(vec3)), GL_DYNAMIC_DRAW);
         } else {
             InitBuffers();
-        }*/
-        InitBuffers();
+        }
     }
 
     bool AABB::Collapse(const AABB &other) const {

@@ -23,25 +23,27 @@ namespace Elys {
         AssetLoader::Init();
 
         mImGUILayer = new ImGuiLayer();
+        mEditorLayer = new EditorLayer();
         mLayerStack.PushOverlay(mImGUILayer);
-        mLayerStack.PushLayer(new EditorLayer());
+        mLayerStack.PushLayer(mEditorLayer);
     }
 
     Application::~Application() {
         delete mImGUILayer;
+        delete mEditorLayer;
     }
 
     void Application::Run() {
-        static float cumulator = 0.0f;
+        static float totalTime = 0.0f;
         while (mRunning) {
             auto time = (float)glfwGetTime();
             float deltaTime = time - mLastFrameTime;
 
-            cumulator += deltaTime;
+            totalTime += deltaTime;
 
-            if (cumulator > 0.05f) {
+            if (totalTime > 0.05f) {
                 Profile::Framerate = 1.0f / deltaTime;
-                cumulator = 0.0f;
+                totalTime = 0.0f;
             }
             Profile::DeltaTime = deltaTime;
 
@@ -94,5 +96,5 @@ namespace Elys {
         return false;
     }
 
-    Application *CreateApplication(string name) { return new Application(std::move(name)); }
+    Application *CreateApplication(std::string name) { return new Application(std::move(name)); }
 } // namespace Elys

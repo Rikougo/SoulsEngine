@@ -6,6 +6,8 @@
 
 #include <glad/glad.h>
 
+using std::shared_ptr;
+
 namespace Elys {
     RenderSystem::RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera,
                                shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer)
@@ -91,7 +93,7 @@ namespace Elys {
                 mLineShader->SetMat4("uProjection", mCamera->GetProjection());
                 mLineShader->SetMat4("uView", mCamera->GetView());
                 mLineShader->SetMat4("uModel", model);
-                mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? vec3{1.0f, 0.0f, 0.0f} : vec3{0.0f, 1.0f, 0.0f});
+                mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? glm::vec3{1.0f, 0.0f, 0.0f} : glm::vec3{0.0f, 1.0f, 0.0f});
 
                 aabb.VAO()->Bind();
                 glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
@@ -167,13 +169,13 @@ namespace Elys {
             auto &material = renderer.material;
 
             mOutlineShader->SetMat4("uModel", model);
-            auto outlineScale = mat4{1.0};
+            auto outlineScale = glm::mat4{1.0};
             outlineScale = glm::scale(outlineScale, {1.01, 1.01, 1.01});
             mOutlineShader->SetMat4("uOutlineScale", outlineScale);
             glm::vec4 outlineColor =
                 (id == mCurrentScene->GetSelected())
-                    ? vec4{191.0f / 255.0f, 139.0f / 255.0f, 99.0f / 255.0f, 1.0f}
-                    : vec4{242.0f / 255.0f, 124.0f / 255.0f, 34.0f / 255.0f, 1.0f};
+                    ? glm::vec4{191.0f / 255.0f, 139.0f / 255.0f, 99.0f / 255.0f, 1.0f}
+                    : glm::vec4{242.0f / 255.0f, 124.0f / 255.0f, 34.0f / 255.0f, 1.0f};
             mOutlineShader->SetVec4("uOutlineColor", outlineColor);
 
             mesh.VAO()->Bind();

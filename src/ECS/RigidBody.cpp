@@ -4,6 +4,8 @@
 
 #include "ECS/Components/RigidBody.hpp"
 
+using glm::vec3;
+
 Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) {
     mBoundingBox = AABB(mesh);
 }

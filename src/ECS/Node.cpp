@@ -4,8 +4,13 @@
 
 #include "ECS/Components/Node.hpp"
 
-namespace Elys {
+using glm::vec3;
+using glm::mat4;
+using glm::quat;
 
+using std::vector;
+
+namespace Elys {
     Node::Node()
         : mParent(nullptr),
           mLocalPosition(0.0f, 0.0f, 0.0f),

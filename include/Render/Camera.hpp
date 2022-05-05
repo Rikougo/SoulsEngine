@@ -11,9 +11,6 @@
 #include <Core/Geometry.hpp>
 #include <Core/KeyCode.hpp>
 
-using glm::vec3;
-using glm::mat4;
-
 namespace Elys {
     struct Frustum {
         Geometry::Plan topFace;
@@ -30,11 +27,11 @@ namespace Elys {
       public:
         virtual ~Camera() = default;
 
-        [[nodiscard]] virtual mat4 GetProjection() const = 0;
-        [[nodiscard]] virtual mat4 GetView() const = 0;
+        [[nodiscard]] virtual glm::mat4 GetProjection() const = 0;
+        [[nodiscard]] virtual glm::mat4 GetView() const = 0;
         [[nodiscard]] virtual Frustum GetFrustum() const = 0;
 
-        [[nodiscard]] virtual vec3 GetPosition() const = 0;
+        [[nodiscard]] virtual glm::vec3 GetPosition() const = 0;
 
         virtual void MouseInput(float x, float y, MouseCode button) = 0;
 

@@ -20,7 +20,7 @@ namespace Elys {
         void SetUseGravity(bool value) { mUseGravity = value; }
 
         void Update(float deltaTime);
-        void ApplyForce(vec3 force, float dt);
+        void ApplyForce(glm::vec3 force, float dt);
 
       private:
         AABB mBoundingBox{};
@@ -28,7 +28,7 @@ namespace Elys {
         bool mBounce = true;
         float mMass = 0.05f;
         float mGravity = 9.81f;
-        vec3 mVelocity {0,0,0};
+        glm::vec3 mVelocity {0,0,0};
     };
 }
 

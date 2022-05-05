@@ -5,11 +5,11 @@
 #include <Render/TrackBallCamera.hpp>
 
 namespace Elys {
-    mat4 TrackBallCamera::GetProjection() const {
+    glm::mat4 TrackBallCamera::GetProjection() const {
         if (mDirty) UpdateCameraData();
         return mProjection;
     }
-    mat4 TrackBallCamera::GetView() const {
+    glm::mat4 TrackBallCamera::GetView() const {
         if (mDirty) UpdateCameraData();
         return mView;
     }
@@ -29,15 +29,15 @@ namespace Elys {
         mPhi += deltaP;
 
         // Keep phi within -2PI to +2PI for easy 'up' comparison
-        if (mPhi > M_2_PI) {
-            mPhi -= M_2_PI;
-        } else if (mPhi < -M_2_PI) {
-            mPhi += M_2_PI;
+        if (mPhi > std::numbers::pi_v<float> * 2.0f) {
+            mPhi -= std::numbers::pi_v<float> * 2.0f;
+        } else if (mPhi < -(std::numbers::pi_v<float> * 2.0f)) {
+            mPhi += std::numbers::pi_v<float> * 2.0f;
         }
 
         // If phi is between 0 to PI or -PI to -2PI, make 'up' be positive Y, other wise make it
         // negative Y
-        if ((mPhi > 0 && mPhi < M_PI) || (mPhi < -M_PI && mPhi > -M_2_PI)) {
+        if ((mPhi > 0 && mPhi < std::numbers::pi_v<float>) || (mPhi < -std::numbers::pi_v<float> && mPhi > -(std::numbers::pi_v<float> * 2.0f))) {
             mUp = 1.0f;
         } else {
             mUp = -1.0f;
@@ -46,11 +46,11 @@ namespace Elys {
         mDirty = true;
     }
     void TrackBallCamera::Pan(float deltaX, float deltaY) {
-        vec3 look = normalize(-Geometry::ToCartesian(mPhi, mTheta, mDistance));
-        vec3 worldUp = {0.0f, mUp, 0.0f};
+        glm::vec3 look = normalize(-Geometry::ToCartesian(mPhi, mTheta, mDistance));
+        glm::vec3 worldUp = {0.0f, mUp, 0.0f};
 
-        vec3 right = normalize(glm::cross(look, worldUp));
-        vec3 up = normalize(glm::cross(look, right));
+        glm::vec3 right = normalize(glm::cross(look, worldUp));
+        glm::vec3 up = normalize(glm::cross(look, right));
 
         mTarget += (right * deltaX + up * deltaY);
 
@@ -87,7 +87,7 @@ namespace Elys {
         if (dx == 0.0f && dy == 0.0f) return;
 
         if (button == Mouse::ButtonLeft) {
-            Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
+            Rotate(-dx * std::numbers::pi_v<float> * 2.0f, dy * std::numbers::pi_v<float> * 2.0f);
         } else if (button == Mouse::ButtonRight) {
             Pan(dx * 10.0f, dy * 10.0f);
         }
@@ -99,7 +99,7 @@ namespace Elys {
             auto position = GetPosition();
             auto front = glm::normalize(mTarget - position);
             auto right = glm::normalize(glm::cross(front, {0.0f, 1.0f, 0.0f})); // cross(front, worldup)
-            vec3 up = glm::normalize(glm::cross(right, front));
+            glm::vec3 up = glm::normalize(glm::cross(right, front));
 
             const float halfVSide = mFar * tanf(mFOV * .5f);
             const float halfHSide = halfVSide * mRatioAspect;

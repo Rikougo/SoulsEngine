@@ -27,9 +27,6 @@
 #include <ECS/EntityManager.hpp>
 #include <ECS/SystemManager.hpp>
 
-using std::set;
-using std::unique_ptr;
-
 namespace Elys {
     class Entity;
 
@@ -70,9 +67,9 @@ namespace Elys {
 
         int mSelected {MAX_ENTITIES}, mHovered {MAX_ENTITIES};
 
-        unique_ptr<ComponentManager> mComponentManager;
-        unique_ptr<EntityManager> mEntityManager;
-        unique_ptr<SystemManager> mSystemManager;
+        std::unique_ptr<ComponentManager> mComponentManager;
+        std::unique_ptr<EntityManager> mEntityManager;
+        std::unique_ptr<SystemManager> mSystemManager;
 
         friend class Entity;
       public:
@@ -139,9 +136,9 @@ namespace Elys {
             return mScene->EntityFromNode(*node.Parent());
         }
 
-        [[nodiscard]] vector<Entity> Children() const {
+        [[nodiscard]] std::vector<Entity> Children() const {
             auto const &node = GetComponent<Node>();
-            vector<Entity> children;
+            std::vector<Entity> children;
 
             for (auto childNode : node.Children()) {
                 children.push_back(mScene->EntityFromNode(*childNode));

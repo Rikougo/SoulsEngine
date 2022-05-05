@@ -15,21 +15,18 @@
 #include <Render/Framebuffer.hpp>
 #include <Render/Mesh.hpp>
 
-using std::shared_ptr;
-using std::unique_ptr;
-
 namespace Elys {
     class LightSystem : public System {
       public:
         static const uint8_t MAX_LIGHT = 5;
       private:
         Mesh LIGHT_MESH;
-        shared_ptr<Scene> mCurrentScene;
-        shared_ptr<TrackBallCamera> mCamera;
-        shared_ptr<Shader> mShader;
-        shared_ptr<Framebuffer> mFramebuffer;
+        std::shared_ptr<Scene> mCurrentScene;
+        std::shared_ptr<TrackBallCamera> mCamera;
+        std::shared_ptr<Shader> mShader;
+        std::shared_ptr<Framebuffer> mFramebuffer;
       public:
-        LightSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer);
+        LightSystem(std::shared_ptr<Scene> &scene, std::shared_ptr<TrackBallCamera> &camera, std::shared_ptr<Shader> &shader, std::shared_ptr<Framebuffer> &framebuffer);
 
         ~LightSystem() = default;
 

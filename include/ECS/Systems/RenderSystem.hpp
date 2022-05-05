@@ -21,31 +21,29 @@
 #include <Render/Camera.hpp>
 #include <Render/TrackBallCamera.hpp>
 
-using std::shared_ptr;
-
 namespace Elys {
     class RenderSystem : public System {
       private:
-        shared_ptr<Scene> mCurrentScene;
+        std::shared_ptr<Scene> mCurrentScene;
 
         bool mFrustumCulling = false;
         bool mDebugMode = false;
         bool mWireframe = false;
         bool mLightning = true;
 
-        shared_ptr<TrackBallCamera> mCamera;
-        shared_ptr<Shader> mShader;
-        shared_ptr<Shader> mOutlineShader;
-        shared_ptr<Shader> mLineShader;
+        std::shared_ptr<TrackBallCamera> mCamera;
+        std::shared_ptr<Shader> mShader;
+        std::shared_ptr<Shader> mOutlineShader;
+        std::shared_ptr<Shader> mLineShader;
 
-        shared_ptr<Framebuffer> mFramebuffer;
+        std::shared_ptr<Framebuffer> mFramebuffer;
       public:
-        RenderSystem(shared_ptr<Scene> &scene, shared_ptr<TrackBallCamera> &camera, shared_ptr<Shader> &shader, shared_ptr<Framebuffer> &framebuffer);
+        RenderSystem(std::shared_ptr<Scene> &scene, std::shared_ptr<TrackBallCamera> &camera, std::shared_ptr<Shader> &shader, std::shared_ptr<Framebuffer> &framebuffer);
 
         ~RenderSystem() = default;
 
         void SetCamera(std::shared_ptr<TrackBallCamera>& camera);
-        void SetScene(shared_ptr<Scene> &sceneRef);
+        void SetScene(std::shared_ptr<Scene> &sceneRef);
         void Update(float deltaTime) override;
 
         [[nodiscard]] const Camera& MainCamera() const {
@@ -68,7 +66,7 @@ namespace Elys {
 
         void ToggleDebugMode();
         void SetDebugMode(bool value);
-        [[nodiscard]] bool IsDebugMode() { return mDebugMode; };
+        [[nodiscard]] bool IsDebugMode() const { return mDebugMode; };
     };
 }
 

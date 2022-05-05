@@ -14,12 +14,10 @@
 #include <Core/LayerStack.hpp>
 #include <Core/AssetLoader.hpp>
 
-#include "Core/Event.hpp"
+#include <Core/Event.hpp>
 
 #include <Layers/ImGuiLayer.hpp>
 #include <Layers/EditorLayer.hpp>
-
-using namespace std;
 
 int main(int argc, char* argv[]);
 
@@ -40,17 +38,19 @@ namespace Elys {
         explicit Application(std::string name);
 
         /// \Brief
-        /// Run the Gameloop, everything after this function call will happen once the window
+        /// Run the Game loop, everything after this function call will happen once the window
         /// closed.
         void Run();
 
         bool OnWindowClose(WindowCloseEvent &e);
         bool OnWindowResize(WindowResizeEvent &e);
       private:
-        unique_ptr<Window> mWindow;
+        std::unique_ptr<Window> mWindow;
         bool mRunning = true;
         bool mMinimized = false;
         float mLastFrameTime = 0.0f;
+
+        EditorLayer *mEditorLayer;
         ImGuiLayer *mImGUILayer;
         LayerStack mLayerStack;
 
@@ -64,7 +64,7 @@ namespace Elys {
     /// \Brief
     /// Application is a static instance. There is no need to handle more than one instance. From
     /// this point you can create your application.
-    Application *CreateApplication(string name = "Elys3D");
+    Application *CreateApplication(std::string name = "Elys3D");
 } // namespace Core
 
 #endif // ELYS_APPLICATION_HPP

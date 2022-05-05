@@ -8,15 +8,14 @@
 #include <functional>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 
-#include "Event.hpp"
-
+#include <Core/Event.hpp>
 #include <Core/Logger.hpp>
-#include <utility>
 
 namespace Elys {
     class Window {
