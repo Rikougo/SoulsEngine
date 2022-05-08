@@ -6,88 +6,68 @@
 
 namespace Elys {
     glm::mat4 TrackBallCamera::GetProjection() const {
-        if (mDirty) UpdateCameraData();
+        if (mDirty)
+            UpdateCameraData();
         return mProjection;
     }
     glm::mat4 TrackBallCamera::GetView() const {
-        if (mDirty) UpdateCameraData();
+        if (mDirty)
+            UpdateCameraData();
         return mView;
     }
     Frustum TrackBallCamera::GetFrustum() const {
-        if (mDirty) UpdateCameraData();
-
+        if (mDirty)
+            UpdateCameraData();
         return mFrustum;
     }
 
     void TrackBallCamera::Rotate(float deltaX, float deltaY) {
-        mYaw   += deltaX;
+        mYaw += deltaX;
         mPitch += deltaY;
-/*
-        // Keep phi within -2PI to +2PI for easy 'up' comparison
-        if (mPhi > M_2_PI) {
-            mPhi -= M_2_PI;
-        } else if (mPhi < -M_2_PI) {
-            mPhi += M_2_PI;
-        }
 
-        // If phi is between 0 to PI or -PI to -2PI, make 'up' be positive Y, other wise make it
-        // negative Y
-        if ((mPhi > 0 && mPhi < M_PI) || (mPhi < -M_PI && mPhi > -M_2_PI)) {
-            mUp = 1.0f;
-        } else {
-            mUp = -1.0f;
-        }*/
-
-        if(mPitch > 89.0f)
+        if (mPitch > 89.0f)
             mPitch = 89.0f;
-        if(mPitch < -89.0f)
+        if (mPitch < -89.0f)
             mPitch = -89.0f;
 
-        mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-        mDirection.y = sin(glm::radians(mPitch));
-        mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-        mTarget = glm::normalize(mDirection);
+        mForward.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+        mForward.y = sin(glm::radians(mPitch));
+        mForward.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
 
         mDirty = true;
     }
-    void TrackBallCamera::Pan(float deltaX, float deltaY) {
-        /*
-        glm::vec3 look = normalize(-Geometry::ToCartesian(mPhi, mTheta, mDistance));
-        glm::vec3 worldUp = {0.0f, mUp, 0.0f};
+    void TrackBallCamera::Pan(glm::vec3 direction) {
+        mForward = glm::normalize(mForward);
+        glm::vec3 right = glm::normalize(glm::cross(mForward, {0.0f, 1.0f, 0.0f}));
+        glm::vec3 up = glm::normalize(glm::cross(right, mForward));
 
-        glm::vec3 right = normalize(glm::cross(look, worldUp));
-        glm::vec3 up = normalize(glm::cross(look, right));
+        auto deltaSide = right * direction.x * speed;
+        auto deltaUP = up * direction.y * speed;
+        auto deltaForward = mForward * direction.z * speed;
 
-        mTarget += (right * deltaX + up * deltaY);
-        */
-        Translate(RIGHT, deltaX);
-        Translate(UP, deltaY);
+        mPosition += deltaSide + deltaUP + deltaForward;
 
         mDirty = true;
     }
     void TrackBallCamera::Zoom(float delta) {
-        mPosition += mTarget * delta * mZoomSpeed;
-
-        mDirty = true;
+        Pan({0.0f, 0.0f, 1.0f * delta});
     }
 
-    void TrackBallCamera::MouseInput(float x, float y, MouseCode button)    {
-        float sensitivity = 0.1f;
-
-        /// Rotation de la caméra
+    void TrackBallCamera::MouseInput(float x, float y, MouseCode button) {
         if (button == Mouse::ButtonLeft) {
             if (mNewCapture) {
                 mLastMouseX = x;
                 mLastMouseY = y;
             }
-            float xoffset = x - mLastMouseX;
-            float yoffset = mLastMouseY - y;
+            float xOffset = x - mLastMouseX;
+            float yOffset = mLastMouseY - y;
             mLastMouseX = x;
             mLastMouseY = y;
 
-            Rotate(xoffset * sensitivity, yoffset * sensitivity);
+            Rotate(xOffset * sensitivity, yOffset * sensitivity);
         }
-        /// Déplacement de la caméra
+
+
         else if (button == Mouse::ButtonRight) {
             if (mNewCapture) {
                 mLastMouseX = (x / mViewWidth);
@@ -98,79 +78,36 @@ namespace Elys {
             mLastMouseX = (x / mViewWidth);
             mLastMouseY = (y / mViewHeight);
 
-            Pan(dx * 10.0f, dy *  10.0f);
+            Pan({dx, 0.0f, dy});
         }
         mNewCapture = false;
-/*
-        if (dx == 0.0f && dy == 0.0f) return;
-
-        if (button == Mouse::ButtonLeft) {
-            Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
-        } else if (button == Mouse::ButtonRight) {
-            Pan(dx * 10.0f, dy * 10.0f);
-        }*/
     }
 
     void TrackBallCamera::UpdateCameraData() const {
-        {
-            // FRUSTUM
-            auto position = GetPosition();
-            auto front = glm::normalize(mTarget - position);
-            auto right = glm::normalize(glm::cross(front, {0.0f, 1.0f, 0.0f})); // cross(front, worldup)
-            glm::vec3 up = glm::normalize(glm::cross(right, front));
-
-            const float halfVSide = mFar * tanf(mFOV * .5f);
-            const float halfHSide = halfVSide * mRatioAspect;
-            const glm::vec3 frontMultFar = mFar * front;
-
-            // MATRIX
-            mProjection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
-            mView = glm::lookAt(position, position + mTarget, {0.0f, mUp, 0.0f});
-
-            auto vp = mProjection * mView;
-            glm::vec4 row1 = vp[0], row2 = vp[1], row3 = vp[2], row4 = vp[3];
-
-
-            mFrustum.nearFace   = Geometry::Plan(position + (mNear * front), front);
-            mFrustum.farFace    = Geometry::Plan(position + frontMultFar, -front);
-            mFrustum.rightFace  = Geometry::Plan(position, glm::cross(up, frontMultFar + right * halfHSide));
-            mFrustum.leftFace   = Geometry::Plan(position, glm::cross(frontMultFar - right * halfHSide, up));
-            mFrustum.topFace    = Geometry::Plan(position, glm::cross(right, frontMultFar - up * halfVSide));
-            mFrustum.bottomFace = Geometry::Plan(position, glm::cross(frontMultFar + up * halfVSide, right));
-
-
-            mDirty = false;
-        }
-    }
-    void TrackBallCamera::Translate(Direction direction, float speed) {
-        glm::vec3 up, right;
         auto position = GetPosition();
-        auto front = glm::normalize(mTarget - position);
-        right = glm::normalize(glm::cross(front, {0.0f, 1.0f, 0.0f}));
-        up = glm::normalize(glm::cross(right, front));
+        auto forward = glm::normalize(mForward);
+        auto right =
+            glm::normalize(glm::cross(forward, {0.0f, 1.0f, 0.0f})); // cross(front, worldup)
+        glm::vec3 up = glm::normalize(glm::cross(right, forward));
 
-        switch(direction)
-        {
-        case UP:
-            mPosition += up * speed * mZoomSpeed;
-            break;
-        case DOWN:
-            mPosition -= up * speed * mZoomSpeed;
-            break;
-        case LEFT:
-            mPosition -= right * speed * mZoomSpeed;
-            break;
-        case RIGHT:
-            mPosition += right * speed * mZoomSpeed;
-            break;
-        case FRONT:
-            mPosition += mTarget * speed * mZoomSpeed;
-            break;
-        case BACK:
-            mPosition -= mTarget * speed * mZoomSpeed;
-            break;
-        }
+        const float halfVSide = mFar * tanf(mFOV * .5f);
+        const float halfHSide = halfVSide * mRatioAspect;
+        const glm::vec3 frontXFar = mFar * forward;
 
-        mDirty = true;
+        // MATRIX
+        mProjection = glm::perspective(mFOV, mRatioAspect, mNear, mFar);
+        mView = glm::lookAt(position, position + forward, {0.0f, 1.0f, 0.0f});
+
+        auto vp = mProjection * mView;
+        glm::vec4 row1 = vp[0], row2 = vp[1], row3 = vp[2], row4 = vp[3];
+
+        mFrustum.nearFace   = Geometry::Plan(position + (mNear * forward), forward);
+        mFrustum.farFace    = Geometry::Plan(position + frontXFar, -forward);
+        mFrustum.rightFace  = Geometry::Plan(position, glm::cross(up, frontXFar + right * halfHSide));
+        mFrustum.leftFace   = Geometry::Plan(position, glm::cross(frontXFar - right * halfHSide, up));
+        mFrustum.topFace    = Geometry::Plan(position, glm::cross(right, frontXFar - up * halfVSide));
+        mFrustum.bottomFace = Geometry::Plan(position, glm::cross(frontXFar + up * halfVSide, right));
+
+        mDirty = false;
     }
 } // namespace Elys

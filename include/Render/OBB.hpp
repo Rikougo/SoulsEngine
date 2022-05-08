@@ -22,7 +22,6 @@ namespace Elys {
 
       private:
         void UpdateVertices() override;
-
       private:
         vec3 center;
         vec3 mUp, mForward, mRight;

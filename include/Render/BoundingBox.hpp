@@ -11,7 +11,7 @@
 namespace Elys {
     class BoundingBox {
       public:
-        BoundingBox(){};
+        BoundingBox()= default;;
         virtual void Update(glm::mat4 transform, Mesh const &mesh){};
         void RenderUpdate();
         void SetCollided(bool value) { mCollided = value; }

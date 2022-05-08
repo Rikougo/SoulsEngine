@@ -17,7 +17,7 @@ namespace Elys::GUI {
         windowPosPivot.y = (corner & 2) ? 1.0f : 0.0f;
     }
 
-    void SliderVec2(std::string const &label, glm::vec2 &data, float speed) {
+    void SliderVec2(std::string const &label, glm::vec2 &data, float speed, bool input) {
         ImGuiIO &io = ImGui::GetIO();
         ImGui::PushID(label.c_str());
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
@@ -29,13 +29,15 @@ namespace Elys::GUI {
         ImGui::TableSetupColumn("x", ImGuiTableColumnFlags_WidthStretch); // Default to auto
         ImGui::TableSetupColumn("y", ImGuiTableColumnFlags_WidthStretch); // Default to auto
 
+        auto sliderFlag = input ? 0 : ImGuiSliderFlags_NoInput;
+
         // X editor
         ImGui::TableNextColumn();
         ImGui::PushItemWidth(ImGui::GetColumnWidth() * 0.8f);
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 0.1f, 0.1f, 1.0f));
-        ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f");
+        ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f", sliderFlag);
         ImGui::PopStyleColor(3);
 
         // Y editor
@@ -44,7 +46,7 @@ namespace Elys::GUI {
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 1.0f, 0.25f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1f, 1.0f, 0.1f, 1.0f));
-        ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f");
+        ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f", sliderFlag);
         ImGui::PopStyleColor(3);
 
         ImGui::EndTable();
@@ -54,7 +56,7 @@ namespace Elys::GUI {
         ImGui::PopID();
     }
 
-    void SliderVec3(std::string const &label, glm::vec3 &data, float speed) {
+    void SliderVec3(std::string const &label, glm::vec3 &data, float speed, bool input) {
         ImGuiIO &io = ImGui::GetIO();
         ImGui::PushID(label.c_str());
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
@@ -67,13 +69,15 @@ namespace Elys::GUI {
         ImGui::TableSetupColumn("y", ImGuiTableColumnFlags_WidthStretch); // Default to auto
         ImGui::TableSetupColumn("z", ImGuiTableColumnFlags_WidthStretch); // Default to auto
 
+        auto sliderFlag = input ? 0 : ImGuiSliderFlags_NoInput;
+
         // X editor
         ImGui::TableNextColumn();
         ImGui::PushItemWidth(ImGui::GetColumnWidth() * 0.8f);
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 0.1f, 0.1f, 1.0f));
-        ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f");
+        ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f", sliderFlag);
         ImGui::PopStyleColor(3);
 
         // Y editor
@@ -82,7 +86,7 @@ namespace Elys::GUI {
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 1.0f, 0.25f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1f, 1.0f, 0.1f, 1.0f));
-        ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f");
+        ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f", sliderFlag);
         ImGui::PopStyleColor(3);
 
         // Z editor
@@ -91,7 +95,7 @@ namespace Elys::GUI {
         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5f, 0.5f, 1.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 1.0f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1f, 0.1f, 1.0f, 1.0f));
-        ImGui::DragFloat("##Z", &data[2], speed, 0.0f, 0.0f, "%0.2f");
+        ImGui::DragFloat("##Z", &data[2], speed, 0.0f, 0.0f, "%0.2f", sliderFlag);
         ImGui::PopStyleColor(3);
         ImGui::EndTable();
 

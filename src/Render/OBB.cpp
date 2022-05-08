@@ -33,8 +33,8 @@ void Elys::OBB::Update(glm::mat4 transform, const Elys::Mesh &mesh) {
         return;
     // center = mesh.position
     // mForward,mUp,mRight rotate selon mesh.rotation
-
 }
+
 void Elys::OBB::UpdateVertices() {
     mVertices = {// FRONT
                  (center - mForward - mUp - mRight), (center + mForward - mUp - mRight),

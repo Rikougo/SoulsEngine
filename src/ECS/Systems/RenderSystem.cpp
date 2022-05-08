@@ -40,8 +40,8 @@ namespace Elys {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // float clearColorValue[4] = {0.1f, 0.1f, 0.1f, 1.0f};
-        int clearEntityValue[4] = {-1, -1, -1, -1};
-        glClearBufferiv(GL_COLOR, 1, clearEntityValue);
+        int clearEntityValue = -1;
+        glClearBufferiv(GL_COLOR, 1, &clearEntityValue);
 
         if (!mShader || !mCamera) {
             ELYS_CORE_ERROR("RenderSystem::Update : {0} not initialized (nullptr) !",
@@ -82,7 +82,7 @@ namespace Elys {
             auto &mesh = renderer.mesh;
             auto &material = renderer.material;
 
-            if (mDebugMode && entity.HasComponent<RigidBody>()) {
+            /*if (mDebugMode && entity.HasComponent<RigidBody>()) {
                 auto &RBody = entity.GetComponent<RigidBody>();
 
                 auto &aabb = RBody.GetAABB();
@@ -100,7 +100,7 @@ namespace Elys {
                 glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
                 aabb.VAO()->Unbind();
                 mShader->Use();
-            }
+            }*/
 
             // drawing on stencil mask
             // DRAWING MESH
@@ -140,8 +140,7 @@ namespace Elys {
             mShader->SetVec2("uTilingUV", material.tiling);
 
             mesh.VAO()->Bind();
-            glDrawElements(GL_TRIANGLES, (GLsizei)mesh.VAO()->GetIndexBuffer()->Size(),
-                           GL_UNSIGNED_INT, nullptr);
+            glDrawElements(GL_TRIANGLES, (GLsizei)mesh.VAO()->GetIndexBuffer()->Size(), GL_UNSIGNED_INT, nullptr);
             mesh.VAO()->Unbind();
 
             Profile::DrawnMesh++;
@@ -205,7 +204,7 @@ namespace Elys {
     }
 
     bool RenderSystem::OnKeyPressed(KeyPressedEvent &event) {
-        if (event.GetKeyCode() == Key::W && event.GetRepeatCount() == 0)
+        if (event.GetKeyCode() == Key::Z && event.GetRepeatCount() == 0)
             mWireframe = !mWireframe;
         if (event.GetKeyCode() == Key::F && event.GetRepeatCount() == 0)
             mFrustumCulling = !mFrustumCulling;

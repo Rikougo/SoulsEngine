@@ -9,7 +9,6 @@ void Elys::BoundingBox::RenderUpdate() {
     if (mVAO) {
         UpdateVertices();
 
-        // TODO : Improve the way to replace VAO data.
         mVAO->GetVertexBuffer()->SetData((void *)mVertices.data(),
                                          static_cast<uint32_t>(mVertices.size() * sizeof(vec3)),
                                          GL_DYNAMIC_DRAW);

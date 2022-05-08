@@ -24,11 +24,11 @@ namespace Elys::GUI {
     void ConfigureWindowPos(Corner corner, ImVec2 &windowPos, ImVec2 &windowPosPivot,
                             float padding = 0.0f);
 
-    void SliderVec2(std::string const &label, glm::vec2 &data, float speed = 0.1f);
+    void SliderVec2(std::string const &label, glm::vec2 &data, float speed = 0.1f, bool input = true);
 
     /// \Brief
     /// Draw a colorized Vec3 editor
-    void SliderVec3(std::string const &label, glm::vec3 &data, float speed = 0.1f);
+    void SliderVec3(std::string const &label, glm::vec3 &data, float speed = 0.1f, bool input = true);
 
     void TextureInput(std::optional<Texture> &texture, const char* ID);
 } // namespace Elys::GUI

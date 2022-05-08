@@ -17,7 +17,8 @@ namespace Elys {
         mDebugName = "Editor";
 
         mCurrentScene = std::make_shared<Scene>();
-        mShader = std::make_shared<Shader>("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
+        mShader = std::make_shared<Shader>("./shaders/model_vertex.glsl",
+                                           "./shaders/model_fragment.glsl");
         mEditorCamera = std::make_shared<TrackBallCamera>();
         mEditorCamera->SetViewSize(1280, 720);
 
@@ -25,24 +26,25 @@ namespace Elys {
         mPlayerCamera->SetViewSize(1280, 720);
         mPlayerCamera->Rotate(0.0f, -0.5f);
 
-        mFramebuffer = std::make_shared<Framebuffer>(FramebufferData{
-            .Width = 1280,
-            .Height = 720,
-            .Attachments = {{GL_RGB}, {GL_RED_INTEGER}},
-            .DepthAttachmentFormat = GL_DEPTH24_STENCIL8
-        });
+        mFramebuffer = std::make_shared<Framebuffer>(
+            FramebufferData{.Width = 1280,
+                            .Height = 720,
+                            .Attachments = {{GL_RGB}, {GL_RED_INTEGER}},
+                            .DepthAttachmentFormat = GL_DEPTH24_STENCIL8});
 
         InitSystems();
 
         auto ground = mCurrentScene->CreateEntity("Ground");
         ground.GetComponent<Node>().SetPosition(0.0f, -2.0f, 0.0f);
         ground.GetComponent<Node>().SetScale(50);
-        ground.AddComponent<MeshRenderer>({
-            .mesh = AssetLoader::MeshesMap()["Plane32x32"],
-            .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_basecolor.jpg"))
-                            .SetNormalMap(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_normal.jpg"))
-                            .SetTiling({10, 10})
-        });
+        ground.AddComponent<MeshRenderer>(
+            {.mesh = AssetLoader::MeshesMap()["Plane32x32"],
+             .material =
+                 Material::FromTexture(
+                     AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_basecolor.jpg"))
+                     .SetNormalMap(AssetLoader::TextureFromPath(
+                         "textures/wood_wall/Wood_Wall_003_normal.jpg"))
+                     .SetTiling({10, 10})});
         ground.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Plane32x32")));
 
         /*auto player = mCurrentScene->CreateEntity("Player");
@@ -59,14 +61,12 @@ namespace Elys {
         std::uniform_real_distribution<float> dist(-50.0f, 50.0f);
         std::uniform_real_distribution<float> bDist(0.2f, 0.95f);
 
-        for(size_t i = 0; i < 100; i++) {
-            std::stringstream name; name << "Cube(" << i << ")";
+        for (size_t i = 0; i < 100; i++) {
+            std::stringstream name;
+            name << "Cube(" << i << ")";
             auto entity = mCurrentScene->CreateEntity(name.str());
             entity.GetComponent<Node>().SetPosition(dist(rd), 5.0f, dist(rd));
-            entity
-                .AddComponent<MeshRenderer>({
-                .mesh = AssetLoader::MeshesMap()["Cube"]
-            });
+            entity.AddComponent<MeshRenderer>({.mesh = AssetLoader::MeshesMap()["Cube"]});
             entity.AddComponent<RigidBody>({}).bounce = bDist(rd);
             entity.GetComponent<RigidBody>().SetUseGravity(true);
         }
@@ -119,22 +119,32 @@ namespace Elys {
 
         if (mViewportHovered && mCurrentState == EditorState::EDITING) {
             auto [mx, my] = ImGui::GetMousePos();
-            mx -= mViewport.offset.x; my -= mViewport.offset.y;
+            mx -= mViewport.offset.x;
+            my -= mViewport.offset.y;
 
             auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
+            ELYS_CORE_INFO("Hover {0}", entityID);
             mCurrentScene->SetHovered(entityID);
 
             if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
                 auto mPos = Input::GetMousePosition();
                 mEditorCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
-
-                // Input::SetCursorMode(Cursor::Disabled);
             } else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
                 auto mPos = Input::GetMousePosition();
                 mEditorCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonRight);
             } else {
                 mEditorCamera->EndCapture();
             }
+
+
+            if (!Input::IsKeyPressed(Key::LeftControl)) {
+                glm::vec3 cameraDirection{(Input::IsKeyPressed(Key::A) ? -1.0f : (Input::IsKeyPressed(Key::D) ? 1.0f : 0.0f)),
+                                          (Input::IsKeyPressed(Key::Q) ? -1.0f : (Input::IsKeyPressed(Key::E) ? 1.0f : 0.0f)),
+                                          (Input::IsKeyPressed(Key::S) ? -1.0f : (Input::IsKeyPressed(Key::W) ? 1.0f : 0.0f))};
+
+                mEditorCamera->Pan(cameraDirection * deltaTime);
+            }
+
         }
     }
 
@@ -143,15 +153,17 @@ namespace Elys {
         static ImGuiDockNodeFlags dockSpaceFlags = ImGuiDockNodeFlags_None;
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
         ImGui::SetNextWindowViewport(viewport->ID);
 
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
         window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+        // and handle the pass-thru hole, so we ask Begin() to not render a background.
         if (dockSpaceFlags & ImGuiDockNodeFlags_PassthruCentralNode) {
             window_flags |= ImGuiWindowFlags_NoBackground;
         }
@@ -162,73 +174,109 @@ namespace Elys {
         if (ImGui::Begin("MainDock", &dockSpaceOpen, window_flags)) {
             ImGui::PopStyleVar(3);
             // DockSpace
-            ImGuiIO& io = ImGui::GetIO();
-            ImGuiStyle& style = ImGui::GetStyle();
+            ImGuiIO &io = ImGui::GetIO();
+            ImGuiStyle &style = ImGui::GetStyle();
             float minWinSizeX = style.WindowMinSize.x;
             style.WindowMinSize.x = 370.0f;
-            if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-            {
+            if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
                 ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
                 ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockSpaceFlags);
             }
 
             style.WindowMinSize.x = minWinSizeX;
 
-            if (ImGui::BeginMenuBar())
-            {
-                if (ImGui::BeginMenu("File"))
-                {
-                    if (ImGui::MenuItem("Exit", "Ctrl + Q")) Application::Get().Shutdown();
-                    if (ImGui::MenuItem("Save scene", "Ctrl + S")) AssetLoader::SerializeScene(mCurrentScene, "scene.escene");
-                    if (ImGui::MenuItem("Reload shader", "Ctrl + R")) mShader->Reload("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
-                    if (ImGui::MenuItem("Toggle playmode", "Ctrl + P")) TogglePlayMode();
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Exit", "Ctrl + Q"))
+                        Application::Get().Shutdown();
+                    if (ImGui::MenuItem("Save scene", "Ctrl + S"))
+                        AssetLoader::SerializeScene(mCurrentScene, "scene.escene");
+                    if (ImGui::MenuItem("Reload shader", "Ctrl + R"))
+                        mShader->Reload("./shaders/model_vertex.glsl",
+                                        "./shaders/model_fragment.glsl");
+                    if (ImGui::MenuItem("Toggle playmode", "Ctrl + P"))
+                        TogglePlayMode();
 
                     ImGui::EndMenu();
                 }
-            } ImGui::EndMenuBar();
+            }
+            ImGui::EndMenuBar();
 
             // ImGui::ShowDemoWindow();
 
-            if (ImGui::Begin("Debug & Stats")) {
-                static bool VSYNC = true;
-                bool tempVSYNC = VSYNC;
+            if (ImGui::Begin("Settings")) {
+                if (ImGui::CollapsingHeader("Editor camera", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    ImGui::BeginTable("##EditorCamera", 2, ImGuiTableFlags_NoPadInnerX);
 
-                ImGui::Checkbox("Vsync", &tempVSYNC);
-                if (tempVSYNC != VSYNC) {
-                    VSYNC = tempVSYNC;
-                    Application::Get().GetWindow().EnableVSync(VSYNC);
+                    ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 100.0f); // Default to 100.0f
+                    ImGui::TableSetupColumn("widget", ImGuiTableColumnFlags_WidthStretch); // Default to auto
+
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Position");
+                    ImGui::TableNextColumn();
+                    auto position = mEditorCamera->GetPosition();
+                    GUI::SliderVec3("##Position", position, 0.1f, false);
+
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Speed");
+                    ImGui::TableNextColumn();
+                    ImGui::DragFloat("##Speed", &mEditorCamera->speed, 0.1f);
+
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Sensitivity");
+                    ImGui::TableNextColumn();
+                    ImGui::DragFloat("##Sensitivity", &mEditorCamera->sensitivity, 0.1f);
+
+                    ImGui::EndTable();
                 }
 
-                ImGui::Text("Framerate : %0.1f", Profile::Framerate);
-                ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
-                ImGui::Text("DrawnMesh : %d", Profile::DrawnMesh);
+                if (ImGui::CollapsingHeader("Stats", ImGuiTreeNodeFlags_DefaultOpen)) {
+                    static bool VSYNC = true;
+                    bool tempVSYNC = VSYNC;
 
-                ImGui::Text("%0.3fx%0.3f", Input::GetMousePosition().x, Input::GetMousePosition().y);
-                ImGui::Text("%0.3fx%0.3f", mViewport.offset.x, mViewport.offset.y);
-            } ImGui::End();
+                    ImGui::Checkbox("Vsync", &tempVSYNC);
+                    if (tempVSYNC != VSYNC) {
+                        VSYNC = tempVSYNC;
+                        Application::Get().GetWindow().EnableVSync(VSYNC);
+                    }
+
+                    ImGui::Text("Framerate : %0.1f", Profile::Framerate);
+                    ImGui::Text("Total time : %0.3f", Profile::DeltaTime);
+                    ImGui::Text("DrawnMesh : %d", Profile::DrawnMesh);
+
+                    ImGui::Text("%0.3fx%0.3f", Input::GetMousePosition().x,
+                                Input::GetMousePosition().y);
+                    ImGui::Text("%0.3fx%0.3f", mViewport.offset.x, mViewport.offset.y);
+                }
+            }
+            ImGui::End();
 
             mGraphScene.OnImGUIRender(mCurrentScene, nullptr);
-            mComponentsEditor.OnImGUIRender(mCurrentScene->EntityFromID(mCurrentScene->GetSelected()), nullptr);
+            mComponentsEditor.OnImGUIRender(
+                mCurrentScene->EntityFromID(mCurrentScene->GetSelected()), nullptr);
             mContentBrowser.OnImGUIRender(nullptr);
 
             // Viewport: where the 3D scene is drawn
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
             if (ImGui::Begin("Viewport")) {
                 /*if (ImGui::BeginMenuBar()) {
                     ImGui::Button("Play");
                 } ImGui::EndMenuBar();*/
 
                 auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-		auto viewportOffset = ImGui::GetWindowPos();
+                auto viewportOffset = ImGui::GetWindowPos();
                 auto viewportSize = ImGui::GetContentRegionAvail();
 
-                // it is viewport position in screen space, useful to have relative mouse position in viewport
-                mViewport.offset = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+                // it is viewport position in screen space, useful to have relative mouse position
+                // in viewport
+                mViewport.offset = {viewportMinRegion.x + viewportOffset.x,
+                                    viewportMinRegion.y + viewportOffset.y};
                 mViewport.size = {viewportSize.x, viewportSize.y};
 
                 // Bind Framebuffer color texture to an ImGui image
                 unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID(0);
-                ImGui::Image((ImTextureID)((size_t)textureID), viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+                ImGui::Image((ImTextureID)((size_t)textureID), viewportSize, ImVec2{0, 1},
+                             ImVec2{1, 0});
 
                 mViewportHovered = ImGui::IsWindowHovered();
 
@@ -236,7 +284,8 @@ namespace Elys {
                 Application::Get().GetImGUILayer().SetBlocking(!mViewportHovered);
 
                 if (ImGui::BeginDragDropTarget()) {
-                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(AssetLoader::DragDropType::FILE_SCENE)) {
+                    if (const ImGuiPayload *payload =
+                            ImGui::AcceptDragDropPayload(AssetLoader::DragDropType::FILE_SCENE)) {
                         const auto *path = (const wchar_t *)payload->Data;
                         ChangeScene(AssetLoader::SceneFromPath(path));
                     }
@@ -244,10 +293,19 @@ namespace Elys {
                     ImGui::EndDragDropTarget();
                 }
             } ImGui::End();
+
+            if (ImGui::Begin("EntityTexture")) {
+                auto viewportSize = ImGui::GetContentRegionAvail();
+
+                unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID(1);
+                ImGui::Image((ImTextureID)((size_t)textureID), viewportSize, ImVec2{0, 1},
+                             ImVec2{1, 0});
+            } ImGui::End();
             ImGui::PopStyleVar();
         } else {
             ImGui::PopStyleVar(3);
-        } ImGui::End();
+        }
+        ImGui::End();
     }
 
     void EditorLayer::OnEvent(Event &event) {
@@ -256,51 +314,29 @@ namespace Elys {
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 
         if (mCurrentState == EditorState::EDITING) {
-            // Mouse Inputs
-            if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
-                auto mPos = Input::GetMousePosition();
-                mEditorCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
-            }
-
-            if (Input::IsKeyPressed(Key::E)) {
-                mEditorCamera->Translate(TrackBallCamera::UP);
-            }
-            if (Input::IsKeyPressed(Key::Q)) {
-                mEditorCamera->Translate(TrackBallCamera::DOWN);
-            }
-            if (Input::IsKeyPressed(Key::A)) {
-                mEditorCamera->Translate(TrackBallCamera::LEFT);
-            }
-            if (Input::IsKeyPressed(Key::D)) {
-                mEditorCamera->Translate(TrackBallCamera::RIGHT);
-            }
-            if (Input::IsKeyPressed(Key::W)) {
-                mEditorCamera->Translate(TrackBallCamera::FRONT);
-            }
-            if (Input::IsKeyPressed(Key::S)) {
-                mEditorCamera->Translate(TrackBallCamera::BACK);
-            }
-
             dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
-            dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
-              mEditorCamera->Zoom(event.GetYOffset() * (Input::IsKeyPressed(Key::LeftShift) ? 10.0f : 0.1f));
+            dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event) {
+                mEditorCamera->Zoom(event.GetYOffset() *
+                                    (Input::IsKeyPressed(Key::LeftShift) ? 10.0f : 0.1f));
 
-              return false;
+                return false;
             });
 
             dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent &event) {
-              if (event.GetMouseButton() != Mouse::ButtonMiddle) return false;
+                if (event.GetMouseButton() != Mouse::ButtonMiddle)
+                    return false;
 
-              auto [mx, my] = ImGui::GetMousePos();
-              mx -= mViewport.offset.x; my -= mViewport.offset.y;
+                auto [mx, my] = ImGui::GetMousePos();
+                mx -= mViewport.offset.x;
+                my -= mViewport.offset.y;
 
-              auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
+                auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
 
-              mCurrentScene->SetSelected(entityID);
+                mCurrentScene->SetSelected(entityID);
 
-              ELYS_CORE_INFO("Clicked entity {0} at [x: {1}, y: {2}]", entityID, mx, my);
+                ELYS_CORE_INFO("Clicked entity {0} at [x: {1}, y: {2}]", entityID, mx, my);
 
-              return false;
+                return false;
             });
         }
     }
@@ -314,25 +350,26 @@ namespace Elys {
     }
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
+        auto kc = event.GetKeyCode();
 
         // --- APPLICATION INTERACTION --- //
-        if (event.GetKeyCode() == Key::P && Input::IsKeyPressed(Key::LeftControl)) {
+        if (kc == Key::P && Input::IsKeyPressed(Key::LeftControl)) {
             TogglePlayMode();
         }
 
-        if (event.GetKeyCode() == Key::A && Input::IsKeyPressed(Key::LeftControl)) {
+        if (kc == Key::A && Input::IsKeyPressed(Key::LeftControl)) {
             Application::Get().Shutdown();
         }
 
-        if (event.GetKeyCode() == Key::S && Input::IsKeyPressed(Key::LeftControl)) {
+        if (kc == Key::S && Input::IsKeyPressed(Key::LeftControl)) {
             AssetLoader::SerializeScene(mCurrentScene, "scene.escene");
         }
 
-        if (event.GetKeyCode() == Key::R && Input::IsKeyPressed(Key::LeftControl)) {
+        if (kc == Key::R && Input::IsKeyPressed(Key::LeftControl)) {
             mShader->Reload("./shaders/model_vertex.glsl", "./shaders/model_fragment.glsl");
         }
 
-        if (event.GetKeyCode() == Key::D && Input::IsKeyPressed(Key::LeftControl)) {
+        if (kc == Key::D && Input::IsKeyPressed(Key::LeftControl)) {
             mRenderSystem->ToggleDebugMode();
         }
 
@@ -340,10 +377,12 @@ namespace Elys {
     }
 
     void EditorLayer::InitSystems() {
-        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
+        mLightSystem = mCurrentScene->RegisterSystem<LightSystem>(mCurrentScene, mEditorCamera,
+                                                                  mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<LightSystem, Light, Node>();
 
-        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mEditorCamera, mShader, mFramebuffer);
+        mRenderSystem = mCurrentScene->RegisterSystem<RenderSystem>(mCurrentScene, mEditorCamera,
+                                                                    mShader, mFramebuffer);
         mCurrentScene->SetSystemSignature<RenderSystem, MeshRenderer, Node>();
 
         mPhysicSystem = mCurrentScene->RegisterSystem<PhysicSystem>(mCurrentScene);
@@ -354,16 +393,17 @@ namespace Elys {
     }
 
     void EditorLayer::TogglePlayMode() {
-        mCurrentState = (mCurrentState == EditorState::EDITING) ? EditorState::PLAYING : EditorState::EDITING;
+        mCurrentState =
+            (mCurrentState == EditorState::EDITING) ? EditorState::PLAYING : EditorState::EDITING;
 
-        switch (mCurrentState) {
+        /*switch (mCurrentState) {
         case EditorState::EDITING:
             mRenderSystem->SetCamera(mEditorCamera);
             break;
         case EditorState::PLAYING:
             mRenderSystem->SetCamera(mPlayerCamera);
             break;
-        }
+        }*/
 
         mPhysicSystem->SetPhysicUpdate(mCurrentState == EditorState::PLAYING);
     }
