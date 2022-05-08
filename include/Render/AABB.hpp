@@ -17,16 +17,13 @@
 #include <Render/Mesh.hpp>
 #include <Render/Camera.hpp>
 
-using std::array;
-using glm::vec3;
-
 namespace Elys {
     class AABB {
       public:
         AABB();
         AABB(float min, float max);
-        AABB(vec3 min, float size);
-        AABB(vec3 min, vec3 max);
+        AABB(glm::vec3 min, float size);
+        AABB(glm::vec3 min, glm::vec3 max);
         explicit AABB(const Mesh& mesh);
         ~AABB() = default;
 
@@ -35,7 +32,7 @@ namespace Elys {
         [[nodiscard]] bool IsForwardPlan(const Geometry::Plan& plan) const;
 
         [[nodiscard]] std::shared_ptr<VertexArray> VAO() const { return mVAO; }
-        [[nodiscard]] std::vector<vec3> Vertices() const { return mVertices; }
+        [[nodiscard]] std::vector<glm::vec3> Vertices() const { return mVertices; }
 
         void Update(glm::mat4 transform, Mesh const &mesh);
         void SetCollided(bool value) { mCollided = value; }

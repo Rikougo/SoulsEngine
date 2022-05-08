@@ -15,26 +15,22 @@
 
 #include <Render/Texture.hpp>
 
-using glm::vec2;
-using glm::vec3;
-using glm::vec4;
-
 namespace Elys {
     struct Material {
         float metallic = 0.0f;
         float roughness = 0.0f;
         bool shaded = true;
 
-        vec4 albedo{0.58f, 0.58f, 0.58f, 1.0f};
+        glm::vec4 albedo{0.58f, 0.58f, 0.58f, 1.0f};
         std::optional<Texture> texture;
         std::optional<Texture> normalMap;
         std::optional<Texture> heightMap;
-        vec2 tiling{1.0f, 1.0f};
+        glm::vec2 tiling{1.0f, 1.0f};
 
         /** @brief
          *  Create Material texture, it does have default Ambient/Diffuse/Specular specs but have white opaque color.
          */
-        static Material FromTexture(const Texture &texture, vec4 a = {1.0f, 1.0f, 1.0f, 1.0f}, float roughness = 0.0f, float metallic = 0.0f) {
+        static Material FromTexture(const Texture &texture, glm::vec4 a = {1.0f, 1.0f, 1.0f, 1.0f}, float roughness = 0.0f, float metallic = 0.0f) {
             return {
                 .metallic = metallic,
                 .roughness = roughness,
@@ -86,7 +82,7 @@ namespace Elys {
             return *this;
         }
 
-        Material& SetAlbedo(const vec4 &value) {
+        Material& SetAlbedo(const glm::vec4 &value) {
             albedo = value;
             return *this;
         }
@@ -101,7 +97,7 @@ namespace Elys {
             return *this;
         }
 
-        Material& SetTiling(vec2 value) {
+        Material& SetTiling(glm::vec2 value) {
             tiling = value;
             return *this;
         }

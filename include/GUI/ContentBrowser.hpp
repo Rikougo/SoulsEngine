@@ -13,8 +13,6 @@
 #include <Core/AssetLoader.hpp>
 #include <Render/Material.hpp>
 
-using std::filesystem::path;
-
 namespace Elys::GUI {
     class ContentBrowser {
       public:
@@ -26,7 +24,7 @@ namespace Elys::GUI {
         void OnImGUIRender(bool *open);
       private:
         Texture mFileIcon, mFolderIcon;
-        path mCurrentPath;
+        std::filesystem::path mCurrentPath;
     };
 } // namespace Elys::GUI
 

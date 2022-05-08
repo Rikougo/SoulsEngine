@@ -11,9 +11,6 @@
 
 #include <glad/glad.h>
 
-using std::string;
-using std::vector;
-
 namespace Elys {
     /**
      * @brief
@@ -21,7 +18,7 @@ namespace Elys {
      * while used in BufferLayout (see BufferLayout::ComputeBufferElement)
      */
     struct BufferElement {
-        string name;
+        std::string name;
         uint32_t offset;
         uint32_t size;
         uint32_t dataSize;
@@ -30,19 +27,19 @@ namespace Elys {
 
         BufferElement() = default;
 
-        BufferElement(string name, uint32_t dataSize, uint32_t size, GLenum type, bool normalize = false) :
+        BufferElement(std::string name, uint32_t dataSize, uint32_t size, GLenum type, bool normalize = false) :
             name(std::move(name)), dataSize(dataSize), size(size), glType(type), normalize(normalize) {}
     };
 
     class BufferLayout {
       private:
         uint32_t mStride;
-        vector<BufferElement> mElements;
+        std::vector<BufferElement> mElements;
       public: /** ITERATORS */
-        vector<BufferElement>::iterator begin() { return mElements.begin(); }
-        vector<BufferElement>::iterator end() { return mElements.end(); }
-        [[nodiscard]] vector<BufferElement>::const_iterator begin() const { return mElements.begin(); }
-        [[nodiscard]] vector<BufferElement>::const_iterator end() const { return mElements.end(); }
+        std::vector<BufferElement>::iterator begin() { return mElements.begin(); }
+        std::vector<BufferElement>::iterator end() { return mElements.end(); }
+        [[nodiscard]] std::vector<BufferElement>::const_iterator begin() const { return mElements.begin(); }
+        [[nodiscard]] std::vector<BufferElement>::const_iterator end() const { return mElements.end(); }
       public:
         BufferLayout() = default;
         BufferLayout(std::initializer_list<BufferElement> elements) : mElements(elements) {

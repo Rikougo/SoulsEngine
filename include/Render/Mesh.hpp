@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <random>
 #include <memory>
+#include <numbers>
 
 #include <glm/glm.hpp>
 
@@ -19,23 +20,19 @@
 
 #include <Render/DataHolder.hpp>
 
-using glm::vec2;
-using glm::vec3;
-using std::vector;
-
 namespace Elys {
     struct Vertex {
-        vec3 position{0.0f, 0.0f, 0.0f};
-        vec3 normal{0.0f, 0.0f, 0.0f};
-        vec2 texCoord{0.0f, 0.0f};
+        glm::vec3 position{0.0f, 0.0f, 0.0f};
+        glm::vec3 normal{0.0f, 0.0f, 0.0f};
+        glm::vec2 texCoord{0.0f, 0.0f};
     };
 
     struct MeshPartial {
-        vector<Vertex> mVertices{0};
-        vector<uint32_t> mIndices{0};
+        std::vector<Vertex> mVertices{0};
+        std::vector<uint32_t> mIndices{0};
 
         MeshPartial& Append(MeshPartial const &other) {
-            size_t previousSize = mVertices.size();
+            auto previousSize = static_cast<uint32_t>(mVertices.size());
             mVertices.insert(mVertices.end(), other.mVertices.begin(), other.mVertices.end());
 
             for(auto i : other.mIndices) {
@@ -71,8 +68,8 @@ namespace Elys {
         [[nodiscard]] const std::shared_ptr<VertexArray>& VAO() const { return mVAO; }
         [[nodiscard]] size_t IndicesSize() const { return mIndices.size(); }
         [[nodiscard]] bool IsInit() const { return mInitialized; }
-        [[nodiscard]] const vector<Vertex>& Vertices() const { return mVertices; }
-        [[nodiscard]] const vector<uint32_t>& Indices() const { return mIndices; }
+        [[nodiscard]] const std::vector<Vertex>& Vertices() const { return mVertices; }
+        [[nodiscard]] const std::vector<uint32_t>& Indices() const { return mIndices; }
         [[nodiscard]] std::string Path() const { return mPath; }
       private:
         void ScaleToUnitAndCenter();

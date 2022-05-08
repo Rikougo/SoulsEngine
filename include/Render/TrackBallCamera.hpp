@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <numbers>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,17 +18,13 @@
 
 #include <Render/Camera.hpp>
 
-using glm::vec2;
-using glm::vec3;
-using glm::mat4;
-
 namespace Elys {
     class TrackBallCamera : public Camera {
       public:
         TrackBallCamera() = default;
 
-        mat4 GetProjection() const override;
-        mat4 GetView() const override;
+        glm::mat4 GetProjection() const override;
+        glm::mat4 GetView() const override;
         Frustum GetFrustum() const override;
 
         void StartCapture(int button) {
@@ -44,11 +41,11 @@ namespace Elys {
         void MouseInput(float x, float y, MouseCode button) override;
         void SetTarget(glm::vec3 newTarget) { mTarget = newTarget; mDirty = true; }
 
-        [[nodiscard]] vec3 GetPosition() const override { return mTarget + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
-        [[nodiscard]] vec2 GetRotation() const { return {mPhi, mTheta}; }
+        [[nodiscard]] glm::vec3 GetPosition() const override { return mTarget + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
+        [[nodiscard]] glm::vec2 GetRotation() const { return {mPhi, mTheta}; }
         [[nodiscard]] float GetUp() const { return mUp; }
         [[nodiscard]] float GetDistance() const { return mDistance; }
-        [[nodiscard]] vec3 GetTarget() const { return mTarget; }
+        [[nodiscard]] glm::vec3 GetTarget() const { return mTarget; }
 
       private:
         void UpdateCameraData() const;
@@ -56,13 +53,13 @@ namespace Elys {
       private:
         // cache data
         mutable Frustum mFrustum;
-        mutable mat4 mProjection{1.0f};
-        mutable mat4 mView{1.0f};
+        mutable glm::mat4 mProjection{1.0f};
+        mutable glm::mat4 mView{1.0f};
 
-        float mTheta = M_PI, mPhi = (float)M_PI / 2;
+        float mTheta = std::numbers::pi_v<float>, mPhi = std::numbers::pi_v<float> / 2.0f;
         float mUp = 1.0f;
         float mDistance = 5.0f;
-        vec3 mTarget{0.0f, 0.0f, 0.0f};
+        glm::vec3 mTarget{0.0f, 0.0f, 0.0f};
 
         bool mCapture = false;
         bool mNewCapture = true;

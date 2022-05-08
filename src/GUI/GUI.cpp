@@ -32,18 +32,18 @@ namespace Elys::GUI {
         // X editor
         ImGui::TableNextColumn();
         ImGui::PushItemWidth(ImGui::GetColumnWidth() * 0.8f);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0, 0.5, 0.5, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0, 0.25, 0.25, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0, 0.1, 0.1, 1.0));
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 0.1f, 0.1f, 1.0f));
         ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f");
         ImGui::PopStyleColor(3);
 
         // Y editor
         ImGui::TableNextColumn();
         ImGui::PushItemWidth(ImGui::GetColumnWidth() * 0.8f);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5, 1.0, 0.5, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25, 1.0, 0.25, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1, 1.0, 0.1, 1.0));
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 1.0f, 0.25f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1f, 1.0f, 0.1f, 1.0f));
         ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f");
         ImGui::PopStyleColor(3);
 
@@ -70,27 +70,27 @@ namespace Elys::GUI {
         // X editor
         ImGui::TableNextColumn();
         ImGui::PushItemWidth(ImGui::GetColumnWidth() * 0.8f);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0, 0.5, 0.5, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0, 0.25, 0.25, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0, 0.1, 0.1, 1.0));
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 0.1f, 0.1f, 1.0f));
         ImGui::DragFloat("##X", &data[0], speed, 0.0f, 0.0f, "%0.2f");
         ImGui::PopStyleColor(3);
 
         // Y editor
         ImGui::TableNextColumn();
         ImGui::PushItemWidth(ImGui::GetColumnWidth() * 0.8f);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5, 1.0, 0.5, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25, 1.0, 0.25, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1, 1.0, 0.1, 1.0));
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5f, 1.0f, 0.5f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 1.0f, 0.25f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1f, 1.0f, 0.1f, 1.0f));
         ImGui::DragFloat("##Y", &data[1], speed, 0.0f, 0.0f, "%0.2f");
         ImGui::PopStyleColor(3);
 
         // Z editor
         ImGui::TableNextColumn();
         ImGui::PushItemWidth(ImGui::GetColumnWidth() * 0.8f);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5, 0.5, 1.0, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25, 0.25, 1.0, 1.0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1, 0.1, 1.0, 1.0));
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.5f, 0.5f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.1f, 0.1f, 1.0f, 1.0f));
         ImGui::DragFloat("##Z", &data[2], speed, 0.0f, 0.0f, "%0.2f");
         ImGui::PopStyleColor(3);
         ImGui::EndTable();

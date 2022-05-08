@@ -10,8 +10,6 @@
 
 #include <glm/glm.hpp>
 
-using glm::vec2;
-
 namespace Elys {
     class Texture {
       private:
@@ -37,7 +35,7 @@ namespace Elys {
         [[nodiscard]] unsigned int ID() const { return mId; }
         std::filesystem::path GetPath() const { return mPath; }
         [[nodiscard]] std::string GetName() { return mPath.filename().string(); }
-        [[nodiscard]] vec2 GetSize() const { return {mWidth, mHeight}; }
+        [[nodiscard]] glm::vec2 GetSize() const { return {mWidth, mHeight}; }
 
         static Texture FromPath(const std::filesystem::path &path);
     };

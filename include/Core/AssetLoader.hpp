@@ -22,11 +22,6 @@
 #include <Render/Texture.hpp>
 #include <Render/Mesh.hpp>
 
-using std::string;
-using std::vector;
-using std::filesystem::path;
-using std::shared_ptr;
-
 namespace Elys {
     class AssetLoader {
       public:
@@ -36,32 +31,32 @@ namespace Elys {
         };
       public:
         static constexpr char const* gAssetPath = "./assets";
-        static const std::unordered_map<string, char const*> gExtensionToDragType;
+        static const std::unordered_map<std::string, char const*> gExtensionToDragType;
       public:
         static void Init();
 
-        static Texture& TextureFromPath(path const &path);
-        static Mesh& MeshFromPath(path const &path);
-        static shared_ptr<Scene> SceneFromPath(path const &path);
-        static std::unordered_map<string, Mesh>& MeshesMap();
-        static std::vector<string> LoadedMeshesNames();
+        static Texture& TextureFromPath(std::filesystem::path const &path);
+        static Mesh& MeshFromPath(std::filesystem::path const &path);
+        static std::shared_ptr<Scene> SceneFromPath(std::filesystem::path const &path);
+        static std::unordered_map<std::string, Mesh>& MeshesMap();
+        static std::vector<std::string> LoadedMeshesNames();
 
-        static void SerializeScene(shared_ptr<Scene> &scene, path const &path);
+        static void SerializeScene(std::shared_ptr<Scene> &scene, std::filesystem::path const &path);
       private:
         static MeshPartial ProcessAssimpNode(aiNode *node, const aiScene *scene);
         static MeshPartial ProcessAssimpMesh(aiMesh *mesh, const aiScene *scene);
       private:
-        static std::unordered_map<string, Mesh> gLoadedMeshes;
-        static std::unordered_map<string, Texture> gLoadedTextures;
+        static std::unordered_map<std::string, Mesh> gLoadedMeshes;
+        static std::unordered_map<std::string, Texture> gLoadedTextures;
     };
 
     class ComponentSerializer {
       public:
-        static Entity LoadEntity(const string& raw, shared_ptr<Scene> &sceneRef);
-        static string SerializeEntity(Entity entity);
+        static Entity LoadEntity(const std::string& raw, std::shared_ptr<Scene> &sceneRef);
+        static std::string SerializeEntity(Entity entity);
       private:
-        template<typename T> static string SerializeComponent(T const &data);
-        template<typename T> static T ParseComponent(std::unordered_map<string, string> const &raw);
+        template<typename T> static std::string SerializeComponent(T const &data);
+        template<typename T> static T ParseComponent(std::unordered_map<std::string, std::string> const &raw);
       private:
         static glm::vec2 ParseVec2(std::string raw);
         static glm::vec3 ParseVec3(std::string raw);

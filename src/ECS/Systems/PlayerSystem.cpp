@@ -6,7 +6,7 @@
 
 namespace Elys {
     void Elys::PlayerSystem::Update(float deltaTime) {
-        using glm::vec2;
+        using glm::vec3;
 
         for (auto entityID : mEntities) {
             auto entity = mCurrentScene->EntityFromID(entityID);

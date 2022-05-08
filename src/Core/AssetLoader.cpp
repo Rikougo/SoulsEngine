@@ -4,6 +4,11 @@
 
 #include <Core/AssetLoader.hpp>
 
+using std::string;
+using std::vector;
+using std::filesystem::path;
+using std::shared_ptr;
+
 namespace Elys {
     const std::unordered_map<string, char const*> AssetLoader::gExtensionToDragType = {
         {".png",     AssetLoader::DragDropType::FILE_IMAGE},

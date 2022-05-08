@@ -6,14 +6,14 @@
 #define ELYS_LAYER_HPP
 
 #include <string>
-
-#include "Event.hpp"
 #include <utility>
+
+#include <Core/Event.hpp>
 
 namespace Elys {
     class Layer {
       public:
-        Layer(std::string name = "Layer") : mDebugName(std::move(name)) {};
+        explicit Layer(std::string name = "Layer") : mDebugName(std::move(name)) {};
         virtual ~Layer() = default;
 
         /// \Brief
