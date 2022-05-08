@@ -31,8 +31,6 @@ namespace Elys {
             mNewCapture = true;
         }
 
-        enum Direction { UP, DOWN, LEFT, RIGHT, FRONT, BACK };
-
         void EndCapture() {
             mCapture = false;
             mNewCapture = true;

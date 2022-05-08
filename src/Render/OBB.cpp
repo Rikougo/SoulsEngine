@@ -2,64 +2,73 @@
 // Created by pierrhum on 08/05/2022.
 //
 
-#include "Render/OBB.hpp"
-Elys::OBB::OBB(const Elys::Mesh &mesh) {
-    vec3 lo = vec3(std::numeric_limits<float>::max());
-    vec3 hi = vec3(std::numeric_limits<float>::min());
+#include <Render/OBB.hpp>
 
-    for (Vertex v : mesh.Vertices()) {
-        if (v.position.x < lo.x)
-            lo.x = v.position.x;
-        if (v.position.y < lo.y)
-            lo.y = v.position.y;
-        if (v.position.z < lo.z)
-            lo.z = v.position.z;
-
-        if (v.position.x > hi.x)
-            hi.x = v.position.x;
-        if (v.position.y > hi.y)
-            hi.y = v.position.y;
-        if (v.position.z > hi.z)
-            hi.z = v.position.z;
+namespace Elys {
+    OBB::OBB(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation) :
+        mCenter(center), mSize(size), mRotation(rotation) {
     }
-    center = vec3((hi.x+lo.x)/2, (hi.y+lo.y)/2, (hi.z+lo.z)/2);
-    mForward = vec3((hi.x+lo.x)/2, 0, 0);
-    mUp = vec3(0, (hi.y+lo.y)/2, 0);
-    mRight = vec3(0, 0, (hi.z+lo.z)/2);
 
-}
-void Elys::OBB::Update(glm::mat4 transform, const Elys::Mesh &mesh) {
-    if (transform == mTransform)
-        return;
-    // center = mesh.position
-    // mForward,mUp,mRight rotate selon mesh.rotation
-}
+    void OBB::Update(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation) {
+        mCenter = center;
+        mSize = size;
+        mRotation = rotation;
 
-void Elys::OBB::UpdateVertices() {
-    mVertices = {// FRONT
-                 (center - mForward - mUp - mRight), (center + mForward - mUp - mRight),
+        UpdateVertices();
+    }
 
-                 (center + mForward - mUp - mRight), (center + mForward + mUp - mRight),
+    void OBB::UpdateVertices() {
+        mVertices = {
+            mCenter + mRotation[0] * mSize[0] + mRotation[1] * mSize[1] + mRotation[2] * mSize[2],
+            mCenter - mRotation[0] * mSize[0] + mRotation[1] * mSize[1] + mRotation[2] * mSize[2],
+            mCenter + mRotation[0] * mSize[0] - mRotation[1] * mSize[1] + mRotation[2] * mSize[2],
+            mCenter + mRotation[0] * mSize[0] + mRotation[1] * mSize[1] - mRotation[2] * mSize[2],
+            mCenter - mRotation[0] * mSize[0] - mRotation[1] * mSize[1] - mRotation[2] * mSize[2],
+            mCenter + mRotation[0] * mSize[0] - mRotation[1] * mSize[1] - mRotation[2] * mSize[2],
+            mCenter - mRotation[0] * mSize[0] + mRotation[1] * mSize[1] - mRotation[2] * mSize[2],
+            mCenter - mRotation[0] * mSize[0] - mRotation[1] * mSize[1] + mRotation[2] * mSize[2],
+        };
+    }
 
-                 (center + mForward + mUp - mRight), (center - mForward + mUp - mRight),
+    std::pair<float, float> OBB::GetInterval(OBB const &obb, glm::vec3 const &axis) {
+        std::pair<float, float> result{
+            glm::dot(axis, obb.mVertices[0]),
+            glm::dot(axis, obb.mVertices[0])
+        };
 
-                 (center - mForward + mUp - mRight), (center - mForward - mUp - mRight),
+        for(uint8_t i = 1; i < 8; i++) {
+            float projection = glm::dot(axis, obb.mVertices[i]);
 
-                 // SIDE
-                 (center - mForward - mUp - mRight), (center - mForward - mUp + mRight),
+            result.first = projection < result.first ? projection : result.first;
+            result.second = projection > result.second ? projection : result.second;
+        }
 
-                 (center + mForward - mUp - mRight), (center + mForward - mUp + mRight),
+        return result;
+    }
 
-                 (center + mForward + mUp - mRight), (center + mForward + mUp + mRight),
+    bool OBB::CollapseOnAxis(const OBB &left, const OBB &right, const glm::vec3 &axis) {
+        auto a = OBB::GetInterval(left, axis);
+        auto b = OBB::GetInterval(right, axis);
 
-                 (center - mForward + mUp - mRight), (center - mForward + mUp + mRight),
+        return ((b.first <= a.second) && (a.first <= b.second));
+    }
 
-                 // BACK
-                 (center + mForward - mUp + mRight), (center - mForward - mUp + mRight),
+    bool OBB::Collapse(const OBB &left, const OBB &right) {
+        std::array<glm::vec3, 15> testAxis = {
+            left.mRotation[0], left.mRotation[1], left.mRotation[2],
+            right.mRotation[0], right.mRotation[1], right.mRotation[2]
+        };
 
-                 (center - mForward - mUp + mRight), (center - mForward + mUp + mRight),
+        for(uint8_t i = 0; i < 3; i++) {
+            testAxis[6 + i * 3 + 0] = glm::cross(testAxis[i], testAxis[3]);
+            testAxis[6 + i * 3 + 1] = glm::cross(testAxis[i], testAxis[4]);
+            testAxis[6 + i * 3 + 2] = glm::cross(testAxis[i], testAxis[5]);
+        }
 
-                 (center - mForward + mUp + mRight), (center + mForward + mUp + mRight),
+        for(auto const &axis : testAxis) {
+            if (!CollapseOnAxis(left, right, axis)) return false;
+        }
 
-                 (center - mForward + mUp + mRight), (center + mForward - mUp + mRight)};
+        return true;
+    }
 }

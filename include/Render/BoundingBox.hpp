@@ -22,7 +22,7 @@ namespace Elys {
 
       protected:
         void InitBuffers();
-        virtual void UpdateVertices() {};
+        virtual void UpdateVertices() = 0;
 
         mutable std::shared_ptr<VertexArray> mVAO;
         bool mCollided = false;

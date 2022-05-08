@@ -5,27 +5,28 @@
 #ifndef ELYS_OBB_HPP
 #define ELYS_OBB_HPP
 
-#include "Mesh.hpp"
-#include "AABB.hpp"
-
-using glm::vec3;
-using glm::mat3;
+#include <Render/Mesh.hpp>
+#include <Render/AABB.hpp>
 
 namespace Elys {
     class OBB : BoundingBox {
       public:
         OBB() = default;
-        explicit OBB(const Mesh& mesh);
+        OBB(glm::vec3 const &center, glm::vec3 const &size = glm::vec3{1.0f}, glm::mat3 const &rotation = glm::mat3{1.0f});
         ~OBB() = default;
 
-        void Update(glm::mat4 transform, Mesh const &mesh) override;
+        void Update(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation);
 
       private:
         void UpdateVertices() override;
       private:
-        vec3 center;
-        vec3 mUp, mForward, mRight;
-        mat3 mRotation;
+        glm::vec3 mSize{1.0f, 1.0f, 1.0f};
+        glm::vec3 mCenter{0.0f, 0.0f, 0.0f};
+        glm::mat3 mRotation{1.0f};
+      public:
+        static std::pair<float, float> GetInterval(OBB const &obb, glm::vec3 const &axis);
+        static bool CollapseOnAxis(OBB const &left, OBB const &right, glm::vec3 const &axis);
+        static bool Collapse(OBB const &left, OBB const &right);
     };
 }
 #endif // ELYS_OBB_HPP
