@@ -37,19 +37,6 @@ namespace Elys {
         InitBuffers();
     }
 
-    void AABB::InitBuffers() {
-        UpdateVertices();
-
-        mVAO.reset();
-        mVAO = std::make_shared<VertexArray>();
-        auto vbo = std::make_shared<VertexBuffer>(
-            (void *)mVertices.data(), static_cast<uint32_t>(mVertices.size() * sizeof(vec3)),
-            GL_DYNAMIC_DRAW);
-        BufferLayout vertexLayout{{"position", sizeof(vec3), 3, GL_FLOAT}};
-        vbo->SetLayout(vertexLayout);
-        mVAO->SetVertexBuffer(vbo);
-    }
-
     void AABB::UpdateVertices() {
         mVertices = {// FRONT
                      lo, vec3(hi.x, lo.y, lo.z),
@@ -124,19 +111,6 @@ namespace Elys {
                 hi.y = v.y;
             if (v.z > hi.z)
                 hi.z = v.z;
-        }
-    }
-
-    void AABB::RenderUpdate() {
-        if (mVAO) {
-            UpdateVertices();
-
-            // TODO : Improve the way to replace VAO data.
-            mVAO->GetVertexBuffer()->SetData((void *)mVertices.data(),
-                                             static_cast<uint32_t>(mVertices.size() * sizeof(vec3)),
-                                             GL_DYNAMIC_DRAW);
-        } else {
-            InitBuffers();
         }
     }
 

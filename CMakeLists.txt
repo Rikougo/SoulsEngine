@@ -44,7 +44,7 @@ set(
         src/ECS/Systems/PlayerSystem.cpp
         src/ECS/RigidBody.cpp
         src/GUI/ComponentsEditor.cpp
-        src/ECS/System.cpp)
+        src/ECS/System.cpp include/Render/OBB.hpp src/Render/OBB.cpp include/Render/BoundingBox.hpp src/Render/BoundingBox.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)

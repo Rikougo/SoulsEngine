@@ -27,7 +27,7 @@ namespace Elys {
         std::shared_ptr<Scene> mCurrentScene;
 
         bool mFrustumCulling = false;
-        bool mDebugMode = false;
+        bool mDebugMode = true;
         bool mWireframe = false;
         bool mLightning = true;
 

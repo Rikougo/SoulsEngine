@@ -59,8 +59,8 @@ namespace Elys {
         std::uniform_real_distribution<float> dist(-50.0f, 50.0f);
         std::uniform_real_distribution<float> bDist(0.2f, 0.95f);
 
-        for(size_t i = 0; i < 250; i++) {
-            std::stringstream name; name << "Sphere(" << i << ")";
+        for(size_t i = 0; i < 100; i++) {
+            std::stringstream name; name << "Cube(" << i << ")";
             auto entity = mCurrentScene->CreateEntity(name.str());
             entity.GetComponent<Node>().SetPosition(dist(rd), 5.0f, dist(rd));
             entity
