@@ -253,6 +253,31 @@ namespace Elys {
         dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 
         if (mCurrentState == EditorState::EDITING) {
+            // Mouse Inputs
+            if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
+                auto mPos = Input::GetMousePosition();
+                mEditorCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonLeft);
+            }
+
+            if (Input::IsKeyPressed(Key::E)) {
+                mEditorCamera->Translate(TrackBallCamera::UP);
+            }
+            if (Input::IsKeyPressed(Key::Q)) {
+                mEditorCamera->Translate(TrackBallCamera::DOWN);
+            }
+            if (Input::IsKeyPressed(Key::A)) {
+                mEditorCamera->Translate(TrackBallCamera::LEFT);
+            }
+            if (Input::IsKeyPressed(Key::D)) {
+                mEditorCamera->Translate(TrackBallCamera::RIGHT);
+            }
+            if (Input::IsKeyPressed(Key::W)) {
+                mEditorCamera->Translate(TrackBallCamera::FRONT);
+            }
+            if (Input::IsKeyPressed(Key::S)) {
+                mEditorCamera->Translate(TrackBallCamera::BACK);
+            }
+
             dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
             dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
               mEditorCamera->Zoom(event.GetYOffset() * 0.1f);
@@ -286,6 +311,7 @@ namespace Elys {
     }
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent &event) {
+
         // --- APPLICATION INTERACTION --- //
         if (event.GetKeyCode() == Key::P && Input::IsKeyPressed(Key::LeftControl)) {
             TogglePlayMode();

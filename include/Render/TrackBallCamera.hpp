@@ -33,19 +33,23 @@ namespace Elys {
             mButtonType = button;
         }
 
+        enum Direction {UP, DOWN, LEFT, RIGHT, FRONT, BACK};
+
         void EndCapture() { mCapture = false; mNewCapture = true; }
 
         void Rotate(float deltaT, float deltaP);
+        void Translate(Direction direction, float speed=0.1f);
         void Zoom(float delta);
         void Pan(float deltaX, float deltaY);
         void MouseInput(float x, float y, MouseCode button) override;
         void SetTarget(glm::vec3 newTarget) { mTarget = newTarget; mDirty = true; }
 
-        [[nodiscard]] glm::vec3 GetPosition() const override { return mTarget + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
+        [[nodiscard]] glm::vec3 GetPosition() const override { return mPosition + Geometry::ToCartesian(mPhi, mTheta, mDistance); }
         [[nodiscard]] glm::vec2 GetRotation() const { return {mPhi, mTheta}; }
         [[nodiscard]] float GetUp() const { return mUp; }
         [[nodiscard]] float GetDistance() const { return mDistance; }
         [[nodiscard]] glm::vec3 GetTarget() const { return mTarget; }
+
 
       private:
         void UpdateCameraData() const;
@@ -55,6 +59,11 @@ namespace Elys {
         mutable Frustum mFrustum;
         mutable glm::mat4 mProjection{1.0f};
         mutable glm::mat4 mView{1.0f};
+
+        glm::vec3 mPosition{0.0f, 0.0f, 0.0f};
+        glm::vec3 mDirection;
+        float mYaw = -90.0f;
+        float mPitch = 0.0f;
 
         float mTheta = std::numbers::pi_v<float>, mPhi = std::numbers::pi_v<float> / 2.0f;
         float mUp = 1.0f;
