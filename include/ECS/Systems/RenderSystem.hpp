@@ -5,6 +5,8 @@
 #ifndef ELYS_RENDER_SYSTEM_HPP
 #define ELYS_RENDER_SYSTEM_HPP
 
+#include <variant>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -20,6 +22,8 @@
 #include <Render/Framebuffer.hpp>
 #include <Render/Camera.hpp>
 #include <Render/TrackBallCamera.hpp>
+
+#include <Physics/BoundingBox.hpp>
 
 namespace Elys {
     class RenderSystem : public System {

@@ -1,8 +1,8 @@
 ﻿cmake_minimum_required(VERSION 3.14)
 
 project(Elys VERSION 0.1
-    DESCRIPTION "Basic OpenGl game engine."
-    LANGUAGES CXX C)
+        DESCRIPTION "Basic OpenGl game engine."
+        LANGUAGES CXX C)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -31,7 +31,7 @@ set(
         src/Render/Shader.cpp
         src/Render/TrackBallCamera.cpp
         src/Render/Mesh.cpp
-        src/Render/AABB.cpp
+        src/Physics/AABB.cpp
         src/Render/Framebuffer.cpp
         src/Render/DataHolder.cpp
         src/Application.cpp
@@ -44,7 +44,9 @@ set(
         src/ECS/Systems/PlayerSystem.cpp
         src/ECS/RigidBody.cpp
         src/GUI/ComponentsEditor.cpp
-        src/ECS/System.cpp include/Render/OBB.hpp src/Render/OBB.cpp include/Render/BoundingBox.hpp src/Render/BoundingBox.cpp)
+        src/ECS/System.cpp
+        src/Physics/OBB.cpp
+        src/Physics/BoundingBox.cpp)
 
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)
@@ -54,7 +56,7 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
 if (MSVC)
     target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /Zc:__cplusplus)
-endif()
+endif ()
 
 target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_20)
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC glfw OpenGL::GL IMGUI Glad assimp)

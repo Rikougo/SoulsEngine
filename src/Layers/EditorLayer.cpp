@@ -47,7 +47,7 @@ namespace Elys {
                      .SetTiling({10, 10})});
         ground.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Plane32x32")));
 
-        /*auto player = mCurrentScene->CreateEntity("Player");
+        auto player = mCurrentScene->CreateEntity("Player");
         player.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);
         player.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
@@ -55,21 +55,7 @@ namespace Elys {
         player.AddComponent<RigidBody>(
             RigidBody(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
         player.AddComponent<Player>({});
-        player.GetComponent<RigidBody>().SetUseGravity(true);*/
-
-        std::random_device rd;
-        std::uniform_real_distribution<float> dist(-50.0f, 50.0f);
-        std::uniform_real_distribution<float> bDist(0.2f, 0.95f);
-
-        for (size_t i = 0; i < 100; i++) {
-            std::stringstream name;
-            name << "Cube(" << i << ")";
-            auto entity = mCurrentScene->CreateEntity(name.str());
-            entity.GetComponent<Node>().SetPosition(dist(rd), 5.0f, dist(rd));
-            entity.AddComponent<MeshRenderer>({.mesh = AssetLoader::MeshesMap()["Cube"]});
-            entity.AddComponent<RigidBody>({}).bounce = bDist(rd);
-            entity.GetComponent<RigidBody>().SetUseGravity(true);
-        }
+        player.GetComponent<RigidBody>().SetUseGravity(true);
 
         /*auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");

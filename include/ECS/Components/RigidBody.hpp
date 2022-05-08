@@ -5,7 +5,9 @@
 #ifndef ELYS_RIGID_BODY_HPP
 #define ELYS_RIGID_BODY_HPP
 
-#include <Render/AABB.hpp>
+#include <variant>
+
+#include <Physics/BoundingBox.hpp>
 
 namespace Elys {
     class RigidBody {
@@ -13,7 +15,7 @@ namespace Elys {
         RigidBody() = default;
         explicit RigidBody(const Mesh& mesh);
 
-        [[nodiscard]] AABB& GetAABB() { return mBoundingBox; };
+        [[nodiscard]] Volume& GetVolume() { return mBoundingBox; };
         [[nodiscard]] glm::vec3& Velocity() { return mVelocity; };
         [[nodiscard]] bool UseGravity() const { return useGravity; };
         [[nodiscard]] glm::vec3 Position() { return mPosition; }
@@ -32,12 +34,13 @@ namespace Elys {
         float mass = 0.1f, bounce = 1.0f, friction = 1.0f;
         bool useGravity = false;
       private:
-        glm::vec3 mPosition, mOldPosition;
+        glm::vec3 mPosition{}, mOldPosition{};
 
-        AABB mBoundingBox{};
+        Volume mBoundingBox{};
         glm::vec3 mVelocity {0};
         std::vector<AABB*> mConstraints{};
         glm::vec3 mForces{};
+        bool mCollided{false};
     };
 }
 

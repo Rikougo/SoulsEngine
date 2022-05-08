@@ -7,7 +7,7 @@
 using glm::vec3;
 
 Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) {
-    mBoundingBox = AABB(mesh);
+    mBoundingBox = OBB();
 }
 
 void Elys::RigidBody::Update(float deltaTime) {

@@ -82,12 +82,12 @@ namespace Elys {
             auto &mesh = renderer.mesh;
             auto &material = renderer.material;
 
-            /*if (mDebugMode && entity.HasComponent<RigidBody>()) {
+            if (mDebugMode && entity.HasComponent<RigidBody>()) {
                 auto &RBody = entity.GetComponent<RigidBody>();
 
-                auto &aabb = RBody.GetAABB();
-                aabb.RenderUpdate();
-                if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
+                auto &volume = RBody.GetVolume();
+                UpdateBuffers(volume);
+                /*if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
                     continue;
                 }
                 mLineShader->Use();
@@ -96,11 +96,11 @@ namespace Elys {
                 mLineShader->SetMat4("uModel", model);
                 mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? glm::vec3{1.0f, 0.0f, 0.0f} : glm::vec3{0.0f, 1.0f, 0.0f});
 
-                aabb.VAO()->Bind();
+                volume.VAO()->Bind();
                 glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
-                aabb.VAO()->Unbind();
-                mShader->Use();
-            }*/
+                volume.VAO()->Unbind();
+                mShader->Use();*/
+            }
 
             // drawing on stencil mask
             // DRAWING MESH

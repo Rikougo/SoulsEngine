@@ -2,11 +2,12 @@
 // Created by pierrhum on 08/05/2022.
 //
 
-#include <Render/OBB.hpp>
+#include "Physics/OBB.hpp"
 
 namespace Elys {
     OBB::OBB(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation) :
         mCenter(center), mSize(size), mRotation(rotation) {
+        UpdateVertices();
     }
 
     void OBB::Update(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation) {
@@ -28,6 +29,24 @@ namespace Elys {
             mCenter - mRotation[0] * mSize[0] + mRotation[1] * mSize[1] - mRotation[2] * mSize[2],
             mCenter - mRotation[0] * mSize[0] - mRotation[1] * mSize[1] + mRotation[2] * mSize[2],
         };
+
+        mRenderVertices = {
+
+        };
+
+        if (mVAO) {
+            mVAO->GetVertexBuffer()->SetData((void *)mRenderVertices.data(),
+                                             static_cast<uint32_t>(mRenderVertices.size() * sizeof(glm::vec3)),
+                                             GL_DYNAMIC_DRAW);
+        } else {
+            mVAO = std::make_shared<VertexArray>();
+            auto vbo = std::make_shared<VertexBuffer>(
+                (void *)mRenderVertices.data(), static_cast<uint32_t>(mRenderVertices.size() * sizeof(glm::vec3)),
+                GL_DYNAMIC_DRAW);
+            BufferLayout vertexLayout{{"position", sizeof(glm::vec3), 3, GL_FLOAT}};
+            vbo->SetLayout(vertexLayout);
+            mVAO->SetVertexBuffer(vbo);
+        }
     }
 
     std::pair<float, float> OBB::GetInterval(OBB const &obb, glm::vec3 const &axis) {

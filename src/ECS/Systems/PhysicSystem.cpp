@@ -12,10 +12,8 @@ namespace Elys {
             // PHYSICS
             auto& node = entity.GetComponent<Node>();
             auto& rBody = entity.GetComponent<RigidBody>();
-            auto& aabb = rBody.GetAABB();
+            auto& volume = rBody.GetVolume();
             auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
-
-            aabb.SetCollided(false);
 
             // when position is reset using editor
             if (node.InheritedPosition() != rBody.Position())
@@ -27,12 +25,10 @@ namespace Elys {
                 if (otherID == id) continue;
 
                 auto other = mCurrentScene->EntityFromID(otherID);
-                auto &otherAABB = other.GetComponent<RigidBody>().GetAABB();
+                auto &otherVolume = other.GetComponent<RigidBody>().GetVolume();
 
-                rBody.PushConstraints(&otherAABB);
-
-                if (aabb.Collapse(otherAABB)) {
-                    aabb.SetCollided(true);
+                if (Intersect(volume, otherVolume)) {
+                    ELYS_CORE_INFO("Collision");
                 }
             }
 
@@ -40,7 +36,7 @@ namespace Elys {
                 rBody.Update(deltaTime);
                 node.SetPosition(rBody.Position());
             }
-            aabb.Update(node.InheritedTransform(), mesh);
+            // aabb.Update(node.InheritedTransform(), mesh);
         }
     }
 
