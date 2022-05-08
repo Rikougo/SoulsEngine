@@ -25,15 +25,15 @@ namespace Elys {
             }
 
             if (Input::IsKeyPressed(Key::S)) {
-                velocity.z -= 1.0f;
+                velocity.y -= 1.0f;
             }
             if (Input::IsKeyPressed(Key::W)) {
-                velocity.z += 1.0f;
+                velocity.y += 1.0f;
             }
 
             velocity *= player.speed;
 
-            // rBody.ApplyForce(velocity, deltaTime);
+            // rBody.PushForce(velocity);
 
             mPlayerCamera->SetTarget(node.InheritedPosition());
         }

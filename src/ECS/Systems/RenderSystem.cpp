@@ -85,7 +85,8 @@ namespace Elys {
             if (mDebugMode && entity.HasComponent<RigidBody>()) {
                 auto &RBody = entity.GetComponent<RigidBody>();
 
-                auto const &aabb = RBody.GetAABB();
+                auto &aabb = RBody.GetAABB();
+                aabb.RenderUpdate();
                 if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
                     continue;
                 }
@@ -208,8 +209,6 @@ namespace Elys {
             mWireframe = !mWireframe;
         if (event.GetKeyCode() == Key::F && event.GetRepeatCount() == 0)
             mFrustumCulling = !mFrustumCulling;
-
-        ELYS_CORE_INFO("Frustum {0}", mFrustumCulling);
 
         return false;
     }

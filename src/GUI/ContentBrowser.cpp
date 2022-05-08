@@ -24,10 +24,9 @@ namespace Elys::GUI {
 
             ImGui::Columns(columnCount, nullptr, false);
 
-            for (auto &directoryEntry : std::filesystem::directory_iterator(mCurrentPath)) {
+            for (auto const &directoryEntry : std::filesystem::directory_iterator(mCurrentPath)) {
                 const auto &path = directoryEntry.path();
-                auto relativePath = std::filesystem::relative(path, AssetLoader::gAssetPath);
-                std::string filenameString = relativePath.filename().string();
+                std::string filenameString = path.filename().string();
 
                 ImGui::PushID(filenameString.c_str());
                 Texture icon = directoryEntry.is_directory() ? mFolderIcon : mFileIcon;
@@ -36,6 +35,7 @@ namespace Elys::GUI {
 
                 if (path.has_extension() && AssetLoader::gExtensionToDragType.contains(path.extension().string())) {
                     if (ImGui::BeginDragDropSource()) {
+                        auto relativePath = std::filesystem::relative(path, AssetLoader::gAssetPath);
                         #ifdef WIN32
                         const wchar_t* itemPath = relativePath.c_str();
                         #else
@@ -51,12 +51,21 @@ namespace Elys::GUI {
                         ImGui::Text("%ls", itemPath);
                         ImGui::EndDragDropSource();
                     }
+                } else if (path.has_extension() && path.extension() == ".fbx") {
+                    if (ImGui::BeginPopupContextItem()) {
+                        if (ImGui::Selectable("Load mesh")) {
+                            auto relativePath = std::filesystem::relative(path, AssetLoader::gAssetPath);
+                            AssetLoader::MeshFromPath(relativePath);
+                        }
+                        ImGui::EndPopup();
+                    }
                 }
 
                 ImGui::PopStyleColor();
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                    if (directoryEntry.is_directory())
+                    if (directoryEntry.is_directory()) {
                         mCurrentPath /= path.filename();
+                    }
                 }
                 ImGui::TextWrapped("%s", filenameString.c_str());
 

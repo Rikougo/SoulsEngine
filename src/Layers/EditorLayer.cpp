@@ -10,7 +10,6 @@
 
 #include <Application.hpp>
 
-#include <GUI/ProfileDisplay.hpp>
 #include <utility>
 
 namespace Elys {
@@ -42,30 +41,37 @@ namespace Elys {
             .mesh = AssetLoader::MeshesMap()["Plane32x32"],
             .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_basecolor.jpg"))
                             .SetNormalMap(AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_normal.jpg"))
+                            .SetTiling({10, 10})
         });
         ground.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Plane32x32")));
-        ground.GetComponent<RigidBody>().SetUseGravity(false);
 
-        auto lava = mCurrentScene->CreateEntity("Lava");
-        lava.GetComponent<Node>().SetPosition(-1.0f, 20.0f, 0.0f);
-        lava.AddComponent<MeshRenderer>({
+        /*auto player = mCurrentScene->CreateEntity("Player");
+        player.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);
+        player.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
         });
-        lava.AddComponent<RigidBody>(
+        player.AddComponent<RigidBody>(
             RigidBody(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
-        lava.AddComponent<Player>({});
+        player.AddComponent<Player>({});
+        player.GetComponent<RigidBody>().SetUseGravity(true);*/
 
-        auto mud = mCurrentScene->CreateEntity("Mud");
-        mud.GetComponent<Node>().SetPosition(2.0f, 0.0f, 0.0f);
-        mud.AddComponent<MeshRenderer>({
-            .mesh = AssetLoader::MeshesMap()["Cube"],
-            .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_basecolor.jpg"))
-                            .SetNormalMap(AssetLoader::TextureFromPath("textures/dry_mud/Stylized_Dry_Mud_normal.jpg"))
-        });
-        mud.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Cube")));
-        mud.GetComponent<RigidBody>().SetUseGravity(false);
+        std::random_device rd;
+        std::uniform_real_distribution<float> dist(-50.0f, 50.0f);
+        std::uniform_real_distribution<float> bDist(0.2f, 0.95f);
 
-        auto center = mCurrentScene->CreateEntity("Center");
+        for(size_t i = 0; i < 250; i++) {
+            std::stringstream name; name << "Sphere(" << i << ")";
+            auto entity = mCurrentScene->CreateEntity(name.str());
+            entity.GetComponent<Node>().SetPosition(dist(rd), 5.0f, dist(rd));
+            entity
+                .AddComponent<MeshRenderer>({
+                .mesh = AssetLoader::MeshesMap()["Cube"]
+            });
+            entity.AddComponent<RigidBody>({}).bounce = bDist(rd);
+            entity.GetComponent<RigidBody>().SetUseGravity(true);
+        }
+
+        /*auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
         light.SetParent(center);
         light.GetComponent<Node>().SetPosition(0.0f, 5.0f, 0.0f);
@@ -74,7 +80,7 @@ namespace Elys {
         light.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshesMap()["Sphere"],
             .material = Material{.albedo = {1.0f, 1.0f, 1.0f, 1.0f}}.SetSelfLight(true)
-        });
+        });*/
     }
 
     void EditorLayer::OnDetach() {
@@ -106,8 +112,8 @@ namespace Elys {
         // ORDER HERE IS IMPORTANT
         if (mCurrentState == EditorState::PLAYING) {
             mPlayerSystem->Update(deltaTime);
+            mPhysicSystem->Update(deltaTime);
         }
-        mPhysicSystem->Update(deltaTime);
         mLightSystem->Update(deltaTime);
         mRenderSystem->Update(deltaTime);
 
@@ -126,11 +132,8 @@ namespace Elys {
             } else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
                 auto mPos = Input::GetMousePosition();
                 mEditorCamera->MouseInput(mPos.x, mPos.y, Mouse::ButtonRight);
-
-                // Input::SetCursorMode(Cursor::Disabled);
             } else {
                 mEditorCamera->EndCapture();
-                // Input::SetCursorMode(Cursor::Normal);
             }
         }
     }
@@ -184,11 +187,7 @@ namespace Elys {
                 }
             } ImGui::EndMenuBar();
 
-            mGraphScene.OnImGUIRender(mCurrentScene, nullptr);
-            mComponentsEditor.OnImGUIRender(mCurrentScene->EntityFromID(mCurrentScene->GetSelected()), nullptr);
-            mContentBrowser.OnImGUIRender(nullptr);
-
-            ImGui::ShowDemoWindow();
+            // ImGui::ShowDemoWindow();
 
             if (ImGui::Begin("Debug & Stats")) {
                 static bool VSYNC = true;
@@ -207,6 +206,10 @@ namespace Elys {
                 ImGui::Text("%0.3fx%0.3f", Input::GetMousePosition().x, Input::GetMousePosition().y);
                 ImGui::Text("%0.3fx%0.3f", mViewport.offset.x, mViewport.offset.y);
             } ImGui::End();
+
+            mGraphScene.OnImGUIRender(mCurrentScene, nullptr);
+            mComponentsEditor.OnImGUIRender(mCurrentScene->EntityFromID(mCurrentScene->GetSelected()), nullptr);
+            mContentBrowser.OnImGUIRender(nullptr);
 
             // Viewport: where the 3D scene is drawn
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -280,7 +283,7 @@ namespace Elys {
 
             dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(mRenderSystem->OnKeyPressed));
             dispatcher.Dispatch<MouseScrolledEvent>([this](MouseScrolledEvent &event){
-              mEditorCamera->Zoom(event.GetYOffset() * 0.1f);
+              mEditorCamera->Zoom(event.GetYOffset() * (Input::IsKeyPressed(Key::LeftShift) ? 10.0f : 0.1f));
 
               return false;
             });
@@ -361,5 +364,7 @@ namespace Elys {
             mRenderSystem->SetCamera(mPlayerCamera);
             break;
         }
+
+        mPhysicSystem->SetPhysicUpdate(mCurrentState == EditorState::PLAYING);
     }
 } // namespace Elys

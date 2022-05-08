@@ -24,15 +24,15 @@ namespace Elys {
         mPitch += deltaY;
 /*
         // Keep phi within -2PI to +2PI for easy 'up' comparison
-        if (mPhi > std::numbers::pi_v<float> * 2.0f) {
-            mPhi -= std::numbers::pi_v<float> * 2.0f;
-        } else if (mPhi < -(std::numbers::pi_v<float> * 2.0f)) {
-            mPhi += std::numbers::pi_v<float> * 2.0f;
+        if (mPhi > M_2_PI) {
+            mPhi -= M_2_PI;
+        } else if (mPhi < -M_2_PI) {
+            mPhi += M_2_PI;
         }
 
         // If phi is between 0 to PI or -PI to -2PI, make 'up' be positive Y, other wise make it
         // negative Y
-        if ((mPhi > 0 && mPhi < std::numbers::pi_v<float>) || (mPhi < -std::numbers::pi_v<float> && mPhi > -(std::numbers::pi_v<float> * 2.0f))) {
+        if ((mPhi > 0 && mPhi < M_PI) || (mPhi < -M_PI && mPhi > -M_2_PI)) {
             mUp = 1.0f;
         } else {
             mUp = -1.0f;
@@ -105,7 +105,7 @@ namespace Elys {
         if (dx == 0.0f && dy == 0.0f) return;
 
         if (button == Mouse::ButtonLeft) {
-            Rotate(-dx * std::numbers::pi_v<float> * 2.0f, dy * std::numbers::pi_v<float> * 2.0f);
+            Rotate(-dx * static_cast<float>(M_2_PI), dy * static_cast<float>(M_2_PI));
         } else if (button == Mouse::ButtonRight) {
             Pan(dx * 10.0f, dy * 10.0f);
         }*/

@@ -36,7 +36,16 @@ set(
         src/Render/DataHolder.cpp
         src/Application.cpp
         main.cpp
-        src/GUI/GUI.cpp src/GUI/ContentBrowser.cpp src/Core/AssetLoader.cpp src/Render/Texture.cpp src/ECS/Systems/PhysicSystem.cpp src/ECS/Systems/PlayerSystem.cpp  src/ECS/RigidBody.cpp)
+        src/GUI/GUI.cpp
+        src/GUI/ContentBrowser.cpp
+        src/Core/AssetLoader.cpp
+        src/Render/Texture.cpp
+        src/ECS/Systems/PhysicSystem.cpp
+        src/ECS/Systems/PlayerSystem.cpp
+        src/ECS/RigidBody.cpp
+        src/GUI/ComponentsEditor.cpp
+        src/ECS/System.cpp)
+
 # Copy GLSL files into build directory
 # file(COPY shaders/ DESTINATION shaders/)
 # file(COPY assets/ DESTINATION assets/)
