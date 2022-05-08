@@ -151,11 +151,11 @@ namespace Elys {
         result.mVertices.resize(slice * stack);
         for (unsigned int stackIt = 0; stackIt < stack; ++stackIt) {
             float u = static_cast<float>(stackIt) / static_cast<float>(stack - 1);
-            float theta = u * 2.0f * std::numbers::pi_v<float>;
+            float theta = u * 2 * M_PI;
             for (unsigned int sliceIt = 0; sliceIt < slice; ++sliceIt) {
                 unsigned int vertexIndex = stackIt + sliceIt * stack;
                 float v = (float)(sliceIt) / (float)(slice - 1);
-                float phi = -std::numbers::pi_v<float> * 2.0f + v * std::numbers::pi_v<float>;
+                float phi = (float)-M_PI_2 + v * M_PI;
                 glm::vec3 xyz = {cos(theta) * cos(phi), sin(theta) * cos(phi), sin(phi)};
                 result.mVertices[vertexIndex] = {xyz, glm::normalize(xyz), {u, v}};
             }

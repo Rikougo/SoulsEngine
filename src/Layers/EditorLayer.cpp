@@ -112,8 +112,8 @@ namespace Elys {
         // ORDER HERE IS IMPORTANT
         if (mCurrentState == EditorState::PLAYING) {
             mPlayerSystem->Update(deltaTime);
+            mPhysicSystem->Update(deltaTime);
         }
-        // mPhysicSystem->Update(deltaTime);
         mLightSystem->Update(deltaTime);
         mRenderSystem->Update(deltaTime);
 
@@ -330,14 +330,14 @@ namespace Elys {
     void EditorLayer::TogglePlayMode() {
         mCurrentState = (mCurrentState == EditorState::EDITING) ? EditorState::PLAYING : EditorState::EDITING;
 
-        /*switch (mCurrentState) {
+        switch (mCurrentState) {
         case EditorState::EDITING:
             mRenderSystem->SetCamera(mEditorCamera);
             break;
         case EditorState::PLAYING:
             mRenderSystem->SetCamera(mPlayerCamera);
             break;
-        }*/
+        }
 
         mPhysicSystem->SetPhysicUpdate(mCurrentState == EditorState::PLAYING);
     }

@@ -7,7 +7,6 @@
 
 #include <cmath>
 #include <iostream>
-#include <numbers>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -56,7 +55,7 @@ namespace Elys {
         mutable glm::mat4 mProjection{1.0f};
         mutable glm::mat4 mView{1.0f};
 
-        float mTheta = std::numbers::pi_v<float>, mPhi = std::numbers::pi_v<float> / 2.0f;
+        float mTheta = M_PI, mPhi = (float)M_PI / 2;
         float mUp = 1.0f;
         float mDistance = 5.0f;
         glm::vec3 mTarget{0.0f, 0.0f, 0.0f};

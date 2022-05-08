@@ -23,7 +23,7 @@ namespace Elys {
 
             rBody.ApplyForces();
 
-            /*for(auto otherID : mEntities) {
+            for(auto otherID : mEntities) {
                 if (otherID == id) continue;
 
                 auto other = mCurrentScene->EntityFromID(otherID);
@@ -34,7 +34,7 @@ namespace Elys {
                 if (aabb.Collapse(otherAABB)) {
                     aabb.SetCollided(true);
                 }
-            }*/
+            }
 
             if (mPhysicUpdate) {
                 rBody.Update(deltaTime);
