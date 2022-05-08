@@ -7,6 +7,7 @@
 
 #include <string>
 #include <filesystem>
+#include <optional>
 
 #include <glm/glm.hpp>
 

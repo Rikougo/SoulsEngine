@@ -14,12 +14,21 @@
 
 namespace Elys {
     class PhysicSystem : public System {
-      private:
-        std::shared_ptr<Scene> mCurrentScene;
       public:
-        PhysicSystem(std::shared_ptr<Scene> &sceneRef) : mCurrentScene(sceneRef) {}
+        static constexpr glm::vec3 GRAVITY{0.0f, -9.81f, 0.0f};
+      private:
+        std::vector<AABB*> mConstraints{};
+        std::shared_ptr<Scene> mCurrentScene;
+        bool mPhysicUpdate = false;
+      public:
+        explicit PhysicSystem(std::shared_ptr<Scene> &sceneRef) : mCurrentScene(sceneRef) {}
+
+        void SetPhysicUpdate(bool value) {mPhysicUpdate = value;}
 
         void Update(float deltaTime) override;
+
+        void AddEntity(EntityID newEntity) override;
+        void RemoveEntity(EntityID removedEntity) override;
     };
 }
 

@@ -33,8 +33,10 @@ namespace Elys {
 
         [[nodiscard]] std::shared_ptr<VertexArray> VAO() const { return mVAO; }
         [[nodiscard]] std::vector<glm::vec3> Vertices() const { return mVertices; }
+        [[nodiscard]] float Size() const { return (hi - lo).x; }
 
         void Update(glm::mat4 transform, Mesh const &mesh);
+        void RenderUpdate();
         void SetCollided(bool value) { mCollided = value; }
         [[nodiscard]] bool IsCollided() const { return mCollided; }
       private:
@@ -46,6 +48,10 @@ namespace Elys {
         std::vector<glm::vec3> mVertices;
         glm::mat4 mTransform{}; // transform cache
         glm::vec3 hi{}, lo{};
+
+      public:
+        static bool Linetest(AABB const& aabb, Geometry::Line const &line);
+        static bool Raycast(AABB const& aabb, Geometry::Ray const &ray, Geometry::RaycastResult &result);
     };
 }
 

@@ -31,6 +31,39 @@ namespace Elys::Geometry {
         }
     };
 
+    class Line {
+      private:
+        glm::vec3 mStart{0}, mEnd{0};
+      public:
+        Line() = default;
+        Line(glm::vec3 start, glm::vec3 end);
+
+        [[nodiscard]] glm::vec3 Start() const;
+        [[nodiscard]] glm::vec3 End() const;
+
+        float Length() const;
+    };
+
+    class Ray {
+      private:
+        glm::vec3 mOrigin{0}, mDirection{0};
+      public:
+        Ray() = default;
+        Ray(glm::vec3 origin, glm::vec3 direction);
+
+        [[nodiscard]] glm::vec3 Origin() const;
+        [[nodiscard]] glm::vec3 Direction() const;
+
+        void SetDirection(glm::vec3 direction);
+    };
+
+    struct RaycastResult {
+        glm::vec3 point{0.0f};
+        glm::vec3 normal{0.0f};
+        float t{0.0f};
+        bool hit{false};
+    };
+
     struct SphericalCoordinates {
         float theta, phi, radius;
     };

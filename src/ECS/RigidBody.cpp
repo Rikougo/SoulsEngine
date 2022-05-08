@@ -11,18 +11,55 @@ Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) {
 }
 
 void Elys::RigidBody::Update(float deltaTime) {
-    vec3 oldVelocity = {mVelocity.x, mVelocity.y, mVelocity.z};
-    if(mUseGravity) {
-        // GRAVITY
-        ApplyForce(mMass * vec3 {0,-mGravity,0}, deltaTime);
-        // Force Normal
-        if(mBoundingBox.IsCollided()) {
-            mVelocity = mBounce ? vec3{0,-0.5 * oldVelocity.y,0} : vec3{0,0,0};
+    mOldPosition = mPosition;
+    vec3 acceleration = mForces * (1.0f / mass);
+
+    vec3 oldVelocity = mVelocity;
+    mVelocity = mVelocity * friction + acceleration * deltaTime;
+
+    mPosition = mPosition + (oldVelocity + mVelocity) * 0.5f * deltaTime;
+
+    SolveConstraints();
+
+    mConstraints.clear();
+}
+
+void Elys::RigidBody::ApplyForces() {
+    mForces = useGravity ? vec3{0.0f, -9.81f, 0.0f} * mass : vec3{0.0f};
+}
+
+void Elys::RigidBody::SolveConstraints() {
+    auto size = mConstraints.size();
+
+    if (mOldPosition == mPosition) return;
+
+    for(size_t i = 0; i < size; i++) {
+        Geometry::Line traveled(mOldPosition, mPosition);
+        if (AABB::Linetest(*mConstraints[i], traveled)) {
+            glm::vec3 direction = glm::normalize(mVelocity);
+            Geometry::Ray ray(mOldPosition, direction);
+
+            Geometry::RaycastResult result;
+            if (AABB::Raycast(*mConstraints[i], ray, result)) {
+                mPosition = result.point + result.normal * 0.002f;
+                glm::vec3 vn = result.normal * dot(result.normal, mVelocity);
+                glm::vec3 vt = mVelocity - vn;
+
+                mOldPosition = mPosition;
+                mVelocity = vt - vn * bounce;
+
+                break;
+            }
         }
     }
+}
 
-    // ELYS_CORE_INFO("Velocity: {0}", mVelocity.y);
+void Elys::RigidBody::PushConstraints(Elys::AABB* aabb) {
+    mConstraints.push_back(aabb);
 }
-void Elys::RigidBody::ApplyForce(vec3 force, float dt) {
-    mVelocity += force * dt;
+
+void Elys::RigidBody::SetPosition(vec3 position) {
+    mOldPosition = position;
+    mPosition = position;
 }
+void Elys::RigidBody::ResetVelocity() {mVelocity = vec3(0.0f);}

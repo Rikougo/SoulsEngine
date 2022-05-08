@@ -14,6 +14,9 @@ namespace Elys{
       public:
         virtual void Update(float deltaTime) = 0;
 
+        virtual void AddEntity(EntityID newEntity);
+        virtual void RemoveEntity(EntityID removedEntity);
+      protected:
         std::set<EntityID> mEntities;
     };
 }

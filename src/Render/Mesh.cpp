@@ -37,9 +37,14 @@ namespace Elys {
             if (p.x > max.x) max.x = p.x; if (p.y > max.y) max.y = p.y; if (p.z > max.z) max.z = p.z;
         }
 
+        float dX = std::abs(max.x - min.x);
+        float dY = std::abs(max.y - min.y);
+        float dZ = std::abs(max.z - min.z);
+        float maxDist = std::max({dX, dY, dZ});
+
         for(auto &v : mVertices) {
             v.position -= min;
-            v.position = (v.position / glm::abs(max - min)) * 2.0f - 1.0f;
+            v.position = (v.position / maxDist) * glm::vec3(2.0f, 2.0f, 2.0f) - glm::vec3(dX / maxDist, dY / maxDist, dZ / maxDist);
         }
     }
 

@@ -44,7 +44,7 @@ namespace Elys {
             for (auto const &pair : mSystems) {
                 auto const &system = pair.second;
 
-                system->mEntities.erase(entity);
+                system->RemoveEntity(entity);
             }
         }
 
@@ -57,11 +57,11 @@ namespace Elys {
 
                 // Entity signature matches system signature - insert into set
                 if ((entitySignature & systemSignature) == systemSignature) {
-                    system->mEntities.insert(entity);
+                    system->AddEntity(entity);
                 }
                 // Entity signature does not match system signature - erase from set
                 else {
-                    system->mEntities.erase(entity);
+                    system->RemoveEntity(entity);
                 }
             }
         }

@@ -12,6 +12,7 @@
 #include <random>
 #include <memory>
 #include <numbers>
+#include <sstream>
 
 #include <glm/glm.hpp>
 
