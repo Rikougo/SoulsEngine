@@ -78,7 +78,7 @@ namespace Elys::Geometry {
     /// https://en.wikipedia.org/wiki/Spherical_coordinate_system
     glm::vec3 ToCartesian(SphericalCoordinates coords);
 
-    struct Matrix {
+/*    struct Matrix {
 
         #define CMP(x, y) (fabsf((x) - (y)) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
 
@@ -93,7 +93,7 @@ namespace Elys::Geometry {
 
         static glm::mat4 Transpose(const glm::mat4& matrix) {
             glm::mat4 result;
-            Transpose(matrix.asArray, result.asArray, 4, 4);
+            // Transpose(matrix.asArray, result.asArray, 4, 4);
             return result;
         }
 
@@ -111,7 +111,7 @@ namespace Elys::Geometry {
                     }
                     int target = index++;
                     int source = 4 * i + j;
-                    result.asArray[target] = mat.asArray[source];
+                    // result.asArray[target] = mat.asArray[source];
                 }
             }
             return result;
@@ -140,7 +140,7 @@ namespace Elys::Geometry {
 
         static glm::mat3 Cofactor(const glm::mat3 &mat) {
             glm::mat3 result;
-            Cofactor(result.asArray, Minor(mat).asArray, 3, 3);
+            // Cofactor(result.asArray, Minor(mat).asArray, 3, 3);
             return result;
         }
 
@@ -148,7 +148,7 @@ namespace Elys::Geometry {
             float result = 0.0f;
             glm::mat4 cofactor = Cofactor(mat);
             for (int j = 0; j < 4; ++j) {
-                result += glm::mat.asArray[4 * 0 + j] * cofactor[0][j];
+                // result += glm::mat.asArray[4 * 0 + j] * cofactor[0][j];
             }
             return result;
         }
@@ -160,7 +160,7 @@ namespace Elys::Geometry {
             }
             return Adjugate(mat) * (1.0f / det);
         }
-    }
+    };*/
 } // namespace Elys::Geometry
 
 #endif // ELYS_GEOMETRY_HPP

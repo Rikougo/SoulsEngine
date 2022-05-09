@@ -6,12 +6,11 @@
 
 using glm::vec3;
 
-Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) {
-    mBoundingBox = AABB(mesh);
+Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) { mVolume = AABB(mesh);
 }
 
 Elys::RigidBody::RigidBody(const vec3 &center, const vec3 &size, const glm::mat3 &rotation) {
-    mBoundingBox = OBB(center, size, rotation);
+    mVolume = OBB(center, size, rotation);
 }
 
 void Elys::RigidBody::Update(float deltaTime) {
@@ -35,7 +34,7 @@ void Elys::RigidBody::ApplyForces() {
     mForces = useGravity ? vec3{0.0f, -9.81f, 0.0f} * mass : vec3{0.0f};
 }
 
-void Elys::RigidBody::AddLinearImpulse(const vec3 impulse) {
+void Elys::RigidBody::AddLinearImpulse(const vec3 &impulse) {
     mVelocity = mVelocity + impulse;
 }
 
@@ -81,8 +80,16 @@ glm::mat4 Elys::RigidBody::InvTensor() {
     float iz = 0.0f;
     float iw = 0.0f;
 
+    auto size = std::visit<glm::vec3>(
+        overloaded{
+            [](AABB const &aabb) { return glm::vec3{aabb.Size()}; },
+            [](OBB const &obb) { return obb.Size(); }
+        },
+        mVolume
+    );
+
     if (mass != 0) {
-        vec3 size = box.size * 2.0f;
+        size *= 2.0f;
         float fraction = (1.0f / 12.0f);
         float x2 = size.x * size.x;
         float y2 = size.y * size.y;
@@ -93,7 +100,7 @@ glm::mat4 Elys::RigidBody::InvTensor() {
         iw = 1.0f;
     }
 
-    return Geometry::Matrix::Inverse(glm::mat4(
+    return glm::inverse(glm::mat4(
         ix, 0, 0, 0,
         0, iy, 0, 0,
         0, 0, iz, 0,

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include <Core/Logger.hpp>
+#include <Core/Base.hpp>
 
 #include <ECS/System.hpp>
 #include <ECS/Scene.hpp>

@@ -7,6 +7,8 @@
 
 #include <variant>
 
+#include <Core/Base.hpp>
+
 #include <Physics/BoundingBox.hpp>
 
 namespace Elys {
@@ -16,7 +18,7 @@ namespace Elys {
         explicit RigidBody(const Mesh& mesh);
         explicit RigidBody(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation);
 
-        [[nodiscard]] Volume& GetVolume() { return mBoundingBox; };
+        [[nodiscard]] Volume& GetVolume() { return mVolume; };
         [[nodiscard]] glm::vec3& Velocity() { return mVelocity; };
         [[nodiscard]] bool UseGravity() const { return useGravity; };
         [[nodiscard]] glm::vec3 Position() { return mPosition; }
@@ -30,7 +32,7 @@ namespace Elys {
 
         void Update(float deltaTime);
         void ApplyForces();
-        void AddLinearImpulse(const glm::vec3 impulse);
+        void AddLinearImpulse(const glm::vec3 &impulse);
         void SolveConstraints();
 
         glm::mat4 InvTensor();
@@ -42,7 +44,7 @@ namespace Elys {
       private:
         glm::vec3 mPosition{}, mOldPosition{};
 
-        Volume mBoundingBox{};
+        Volume mVolume{};
         glm::vec3 mVelocity {0};
         std::vector<AABB*> mConstraints{};
         glm::vec3 mForces{};

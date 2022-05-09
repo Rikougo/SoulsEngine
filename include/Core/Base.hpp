@@ -33,6 +33,10 @@ namespace Elys {
     constexpr ComponentType MAX_COMPONENTS = 32;
 
     using Signature = std::bitset<MAX_COMPONENTS>;
+
+    template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+    // explicit deduction guide (not needed as of C++20)
+    template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 }
 
 #endif // ELYS_BASE_HPP

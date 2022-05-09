@@ -15,6 +15,7 @@ namespace Elys {
         ~OBB() = default;
 
         [[nodiscard]] std::shared_ptr<VertexArray> VAO() { return mVAO; }
+        [[nodiscard]] glm::vec3 Size() const { return mSize; }
 
         glm::mat3 GetRotation() { return mRotation; }
 
