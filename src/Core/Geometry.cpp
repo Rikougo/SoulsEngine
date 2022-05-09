@@ -17,6 +17,35 @@ namespace Elys::Geometry {
         return ToCartesian(coords.phi, coords.theta, coords.radius);
     }
 
+    void ResetCollisionManifold(CollisionManifold *result) {
+        if (result != 0) {
+            result->colliding = false;
+            result->normal = glm::vec3(0, 0, 1);
+            result->depth = FLT_MAX;
+            result->contacts.clear();
+        }
+    }
+    bool ClipToPlane(const Plan &plane, const Line &line, glm::vec3 *outPoint) {
+        // Ensure that the line and plane intersect
+        glm::vec3 ab = line.End() - line.Start();
+        float nAB = glm::dot(plane.normal, ab);
+        if (CMP(nAB, 0)) {
+            return false;
+        }
+        // Find the time along the line at which it intersects the plane
+        float nA = glm::dot(plane.normal, line.Start());
+        float t = (plane.distance - nA) / nAB;
+
+        // If the intersection time was valid, return the point at which the line and plane intersect
+        if (t >= 0.0f && t <= 1.0f) {
+            if (outPoint != 0) {
+                *outPoint = line.Start() + ab * t;
+            }
+            return true;
+        }
+        return false;
+    }
+
     // LINE
     Line::Line(glm::vec3 start, glm::vec3 end) : mStart(start), mEnd(end) {}
     glm::vec3 Line::Start() const { return mStart; }

@@ -54,11 +54,23 @@ namespace Elys {
         });
         player.AddComponent<RigidBody>(RigidBody{
             player.GetComponent<Node>().InheritedPosition(),
-            {1.0f, 2.0f, 0.5f},
+            player.GetComponent<Node>().InheritedScale(),
             glm::mat3{1.0f}
         });
         player.AddComponent<Player>({});
         player.GetComponent<RigidBody>().SetUseGravity(true);
+
+
+        auto obb = mCurrentScene->CreateEntity("Obb");
+        obb.GetComponent<Node>().SetPosition(-1.0f, 0.0f, 0.0f);
+        obb.AddComponent<MeshRenderer>({
+            .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
+        });
+        obb.AddComponent<RigidBody>(RigidBody{
+            obb.GetComponent<Node>().InheritedPosition(),
+            obb.GetComponent<Node>().InheritedScale(),
+            glm::mat3{1.0f}
+        });
 
         /*auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
