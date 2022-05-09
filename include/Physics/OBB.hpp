@@ -19,6 +19,7 @@ namespace Elys {
         [[nodiscard]] std::vector<glm::vec3> GetVertices() const { return mVertices; }
         [[nodiscard]] glm::vec3 GetPosition() const { return mCenter; }
         [[nodiscard]] glm::mat3 GetRotation() const { return mRotation; }
+        void SetRotation(glm::mat3 Rotation) { mRotation = Rotation; }
         [[nodiscard]] glm::vec3 Size() const { return mSize; }
         [[nodiscard]] glm::vec3& Size() { return mSize; }
         [[nodiscard]] std::shared_ptr<VertexArray> VAO() { return mVAO; }

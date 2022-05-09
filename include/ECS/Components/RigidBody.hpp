@@ -23,6 +23,7 @@ namespace Elys {
         [[nodiscard]] glm::vec3& Velocity() { return mVelocity; };
         [[nodiscard]] bool UseGravity() const { return useGravity; };
         [[nodiscard]] glm::vec3 Position() { return mPosition; }
+        [[nodiscard]] glm::vec3 Orientation() { return mOrientation; }
         [[nodiscard]] glm::vec3 OldPosition() { return mOldPosition; }
 
         void SetUseGravity(bool value) { useGravity = value; }
@@ -59,7 +60,7 @@ namespace Elys {
         glm::vec3 mForces{};
         bool mCollided{false};
 
-        glm::vec3 orientation;
+        glm::vec3 mOrientation {0,0,0};
         glm::vec3 angVel;
         glm::vec3 torques; // Sum torques
     };

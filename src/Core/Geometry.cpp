@@ -46,6 +46,17 @@ namespace Elys::Geometry {
         return false;
     }
 
+    glm::vec3 MultiplyVector(const glm::vec3 &vec, const glm::mat4 &mat) {
+        glm::vec3 result;
+        result.x = vec.x * mat[0][0] + vec.y * mat[1][0] +
+                   vec.z * mat[2][0] + 0.0f * mat[3][0];
+        result.y = vec.x * mat[0][1] + vec.y * mat[1][1] +
+                   vec.z * mat[2][1] + 0.0f * mat[3][1];
+        result.z = vec.x * mat[0][2] + vec.y * mat[1][2] +
+                   vec.z * mat[2][2] + 0.0f * mat[3][2];
+        return result;
+    }
+
     // LINE
     Line::Line(glm::vec3 start, glm::vec3 end) : mStart(start), mEnd(end) {}
     glm::vec3 Line::Start() const { return mStart; }

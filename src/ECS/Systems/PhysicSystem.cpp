@@ -35,7 +35,7 @@ namespace Elys {
                     if (other == entity)
                         continue;
 
-                    auto otherRBody = other.GetComponent<RigidBody>();
+                    auto &otherRBody = other.GetComponent<RigidBody>();
                     auto &otherVolume = otherRBody.GetVolume();
 
                     Geometry::CollisionManifold result;
@@ -96,6 +96,7 @@ namespace Elys {
                 rBody.Update(deltaTime);
                 rBody.SyncCollisionVolumes(node, mesh);
                 node.SetPosition(rBody.Position());
+                node.SetRotation(rBody.Orientation());
             }
         }
     }

@@ -10,6 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define CMP(x, y) (fabsf((x) - (y)) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
+#define RAD2DEG(x) ((x) * 57.295754f)
+#define DEG2RAD(x) ((x) * 0.0174533f)
 
 namespace Elys::Geometry {
     struct Plan {
@@ -93,6 +95,7 @@ namespace Elys::Geometry {
     glm::vec3 ToCartesian(SphericalCoordinates coords);
 
     bool ClipToPlane(const Plan& plane, const Line& line, glm::vec3* outPoint);
+    glm::vec3 MultiplyVector(const glm::vec3& vec, const glm::mat4& mat);
 
 } // namespace Elys::Geometry
 

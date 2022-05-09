@@ -14,8 +14,7 @@ Elys::RigidBody::RigidBody(const vec3 &center, const vec3 &size, const glm::mat3
 }
 
 void Elys::RigidBody::Update(float deltaTime) {
-    if(isKinematic) mVelocity = {0,0,0};
-    else {
+    if(!isKinematic) {
         mOldPosition = mPosition;
         vec3 oldVelocity = mVelocity;
 
@@ -25,11 +24,17 @@ void Elys::RigidBody::Update(float deltaTime) {
         mVelocity = (mVelocity + acceleration * deltaTime) * damping;
 
         mPosition = mPosition + mVelocity * deltaTime;
+
+
+        mOrientation = mOrientation + angVel * deltaTime;
+        ELYS_CORE_INFO("Orientation : {0} {1} {2}", mOrientation.x, mOrientation.y, mOrientation.z);
     }
 }
 
 void Elys::RigidBody::ApplyForces() {
-    mForces = useGravity ? vec3{0.0f, -9.81f, 0.0f} * mass : vec3{0.0f};
+    if(!isKinematic) {
+        mForces = useGravity ? vec3{0.0f, -9.81f, 0.0f} * mass : vec3{0.0f};
+    }
 }
 
 void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
@@ -40,8 +45,14 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     float invMassSum = invMass1 + invMass2;
     if (invMassSum == 0.0f) { return; }
 
+    // Store the inverse inertia tensor for both the colliding objects
+    vec3 r1 = M.contacts[c] - mPosition;
+    vec3 r2 = M.contacts[c] - other.mPosition;
+    glm::mat4 i1 = InvTensor();
+    glm::mat4 i2 = other.InvTensor();
+
     // Relative velocity
-    vec3 relativeVel = other.mVelocity - mVelocity;
+    vec3 relativeVel = (other.mVelocity + glm::cross(other.angVel, r2)) - (mVelocity + glm::cross(angVel, r1));
     // Relative collision normal
     vec3 relativeNorm = M.normal;
     relativeNorm = glm::normalize(relativeNorm);
@@ -50,11 +61,16 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
         return;
     }
 
+
     // find  j: the magnitude of the impulse needed to resolve the collision.
     float e = fminf(cor, other.cor);
     float numerator = (-(1.0f + e) * glm::dot(relativeVel, relativeNorm));
-    float j = numerator / invMassSum;
-    if (M.contacts.size() > 0) {
+    float d1 = invMassSum;
+    vec3 d2 = glm::cross(Geometry::MultiplyVector(glm::cross(r1, relativeNorm), i1), r1);
+    vec3 d3 = glm::cross(Geometry::MultiplyVector(glm::cross(r2, relativeNorm), i2), r2);
+    float denominator = d1 + glm::dot(relativeNorm, d2 + d3);
+    float j = (denominator == 0.0f) ? 0.0f : numerator / denominator;
+    if (M.contacts.size() > 0.0f && j != 0.0f) {
         j /= (float)M.contacts.size();
     }
 
@@ -62,6 +78,8 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     vec3 impulse = relativeNorm * j;
     mVelocity = mVelocity - impulse * invMass1;
     other.mVelocity = other.mVelocity + impulse * invMass2;
+    angVel = angVel - Geometry::MultiplyVector(glm::cross(r1, impulse), i1);
+    other.angVel = other.angVel + Geometry::MultiplyVector(glm::cross(r2, impulse), i2);
 
     // Friction
     vec3 t = relativeVel - (relativeNorm * glm::dot(relativeVel, relativeNorm));
@@ -72,8 +90,16 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
 
     // find jt: the magnitude of the friction we are applying to this collision
     numerator = -glm::dot(relativeVel, t);
-    float jt = numerator / invMassSum;
-    if (M.contacts.size() > 0) {
+    d1 = invMassSum;
+    d2 = glm::cross(Geometry::MultiplyVector(glm::cross(r1, t), i1), r1);
+    d3 = glm::cross(Geometry::MultiplyVector(glm::cross(r2, t), i2), r2);
+    denominator = d1 + glm::dot(t, d2 + d3);
+    if (denominator == 0.0f) {
+        return;
+    }
+
+    float jt = numerator / denominator;
+    if (M.contacts.size() > 0 && jt != 0.0f) {
         jt /= (float)M.contacts.size();
     }
     if (CMP(jt, 0.0f)) {
@@ -94,6 +120,8 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
 
     mVelocity = mVelocity - tangentImpulse * invMass1;
     other.mVelocity = other.mVelocity + tangentImpulse * invMass2;
+    angVel = angVel - Geometry::MultiplyVector(glm::cross(r1, tangentImpulse), i1);
+    other.angVel = other.angVel + Geometry::MultiplyVector(glm::cross(r2, tangentImpulse), i2);
 }
 
 void Elys::RigidBody::AddLinearImpulse(const vec3 &impulse) {
@@ -107,6 +135,7 @@ void Elys::RigidBody::SolveConstraints() {
 
     for(size_t i = 0; i < size; i++) {
         Geometry::Line traveled(mOldPosition, mPosition);
+
         if (AABB::Linetest(*mConstraints[i], traveled)) {
             glm::vec3 direction = glm::normalize(mVelocity);
             Geometry::Ray ray(mOldPosition, direction);
@@ -182,15 +211,7 @@ glm::mat4 Elys::RigidBody::InvTensor() {
 void Elys::RigidBody::AddRotationalImpulse(const vec3 &point, const vec3 &impulse) {
     vec3 centerOfMass = mPosition;
     vec3 torque = glm::cross(point - centerOfMass, impulse);
-    glm::mat4 tensor = InvTensor();
 
-    vec3 angAccel{0,0,0};
-    angAccel.x = torque.x * tensor[0][0] + torque.y * tensor[1][0] +
-                 torque.z * tensor[2][0] + 0.0f * tensor[3][0];
-    angAccel.y = torque.x * tensor[0][1] + torque.y * tensor[1][1] +
-                 torque.z * tensor[2][1] + 0.0f * tensor[3][1];
-    angAccel.z = torque.x * tensor[0][2] + torque.y * tensor[1][2] +
-                 torque.z * tensor[2][2] + 0.0f * tensor[3][2];
-
+    vec3 angAccel = Geometry::MultiplyVector(torque, InvTensor());
     angVel = angVel + angAccel;
 }
