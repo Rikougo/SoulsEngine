@@ -66,14 +66,7 @@ namespace Elys {
                 auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
 
                 rBody.Update(deltaTime);
-
-                std::visit(
-                    overloaded{[&](AABB &aabb) { aabb.Update(node.InheritedTransform(), mesh); },
-                               [&](OBB &obb) {
-                                   obb.Update(node.InheritedPosition(),
-                                              glm::mat3_cast(node.InheritedRotation()));
-                               }},
-                    volume);
+                rBody.SynchCollisionVolumes(node, mesh);
 
                 node.SetPosition(rBody.Position());
             }
@@ -94,6 +87,19 @@ namespace Elys {
 
                 m1->SetPosition(m1->Position() - correction * m1->InvMass());
                 m2->SetPosition(m2->Position() + correction * m2->InvMass());
+                for (auto id : mEntities) {
+                    auto entity = mCurrentScene->EntityFromID(id);
+                    auto &node = entity.GetComponent<Node>();
+                    auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
+                    auto &rBody = entity.GetComponent<RigidBody>();
+                    if(&rBody==m1) {
+                        m1->SynchCollisionVolumes(node, mesh);
+                    } else if(&rBody==m2) {
+                        m2->SynchCollisionVolumes(node, mesh);
+                    }
+
+                }
+                // synch collider & check solveconstraints
 
             }
 

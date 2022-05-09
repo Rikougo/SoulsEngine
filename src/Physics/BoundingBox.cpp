@@ -69,31 +69,6 @@ namespace Elys {
 
         Geometry::CollisionManifold Volume_IntersectImpl(OBB &left, OBB &right) {
             return OBB::FindCollisionFeatures(left, right);
-            /*
-            auto lRotation = left.GetRotation(), rRotation = right.GetRotation();
-
-            std::array<glm::vec3, 15> testAxis = {
-                lRotation[0], lRotation[1], lRotation[2],
-                rRotation[0], rRotation[1], rRotation[2]
-            };
-
-            for(uint8_t i = 0; i < 3; i++) {
-                testAxis[6 + i * 3 + 0] = glm::cross(testAxis[i], testAxis[3]);
-                testAxis[6 + i * 3 + 1] = glm::cross(testAxis[i], testAxis[4]);
-                testAxis[6 + i * 3 + 2] = glm::cross(testAxis[i], testAxis[5]);
-            }
-
-            for(auto const &axis : testAxis) {
-                auto a = left.GetInterval(axis);
-                auto b = right.GetInterval(axis);
-
-                if (!((b.first <= a.second) && (a.first <= b.second))) {
-                    return false;
-                }
-            }
-
-            return true;
-            */
         }
     }
 

@@ -133,6 +133,16 @@ void Elys::RigidBody::PushConstraints(Elys::AABB* aabb) {
     mConstraints.push_back(aabb);
 }
 
+void Elys::RigidBody::SynchCollisionVolumes(Node& node, const Mesh& mesh) {
+    std::visit(
+        overloaded{[&](AABB &aabb) { aabb.Update(node.InheritedTransform(), mesh); },
+                   [&](OBB &obb) {
+                       obb.Update(node.InheritedPosition(),
+                                  glm::mat3_cast(node.InheritedRotation()));
+                   }},
+        mVolume);
+}
+
 void Elys::RigidBody::SetPosition(vec3 position) {
     mOldPosition = position;
     mPosition = position;
