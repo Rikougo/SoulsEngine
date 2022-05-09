@@ -3,18 +3,41 @@
 //
 #include "Physics/BoundingBox.hpp"
 
+#include <glad/glad.h>
+
 using glm::vec3;
 
 namespace Elys {
     // Update buffers impl
     namespace {
-        void Volume_UpdateBuffersImpl(AABB &aabb) { ELYS_CORE_INFO("AABB call"); }
+        void Volume_UpdateBuffersImpl(AABB &aabb) { aabb.UpdateVertices(); }
 
-        void Volume_UpdateBuffersImpl(OBB &obb) { ELYS_CORE_INFO("OBB call"); }
+        void Volume_UpdateBuffersImpl(OBB &obb) { obb.UpdateVertices(); }
     } // namespace
 
     void UpdateBuffers(Volume &volume) {
         std::visit([&](auto &x) { Volume_UpdateBuffersImpl(x); }, volume);
+    }
+
+    // Draw volume impl
+    namespace {
+        void Volume_DrawVolumeImpl(AABB &aabb) {
+            auto VAO = aabb.VAO();
+            VAO->Bind();
+            glDrawArrays(GL_LINES, 0, 24);
+            VAO->Unbind();
+        }
+
+        void Volume_DrawVolumeImpl(OBB &obb) {
+            auto VAO = obb.VAO();
+            VAO->Bind();
+            glDrawElements(GL_LINES, (GLsizei)VAO->GetIndexBuffer()->Size(), GL_UNSIGNED_INT, nullptr);
+            VAO->Unbind();
+        }
+    }
+
+    void DrawVolume(Volume &volume) {
+        std::visit([&](auto &x) { Volume_DrawVolumeImpl(x); }, volume);
     }
 
     // Intersect impl

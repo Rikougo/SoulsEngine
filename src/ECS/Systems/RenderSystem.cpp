@@ -87,19 +87,14 @@ namespace Elys {
 
                 auto &volume = RBody.GetVolume();
                 UpdateBuffers(volume);
-                /*if (mFrustumCulling && !aabb.IsInFrustum(frustum, model)) {
-                    continue;
-                }
                 mLineShader->Use();
                 mLineShader->SetMat4("uProjection", mCamera->GetProjection());
                 mLineShader->SetMat4("uView", mCamera->GetView());
                 mLineShader->SetMat4("uModel", model);
-                mLineShader->SetVec3("uLineColor", aabb.IsCollided() ? glm::vec3{1.0f, 0.0f, 0.0f} : glm::vec3{0.0f, 1.0f, 0.0f});
+                mLineShader->SetVec3("uLineColor", glm::vec3{0.0f, 1.0f, 0.0f});
 
-                volume.VAO()->Bind();
-                glDrawArrays(GL_LINES, 0, (GLsizei)aabb.Vertices().size());
-                volume.VAO()->Unbind();
-                mShader->Use();*/
+                DrawVolume(volume);
+                mShader->Use();
             }
 
             // drawing on stencil mask

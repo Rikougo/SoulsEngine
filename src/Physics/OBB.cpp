@@ -7,7 +7,7 @@
 namespace Elys {
     OBB::OBB(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation) :
         mCenter(center), mSize(size), mRotation(rotation) {
-        UpdateVertices();
+        // UpdateVertices();
     }
 
     void OBB::Update(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation) {
@@ -15,7 +15,7 @@ namespace Elys {
         mSize = size;
         mRotation = rotation;
 
-        UpdateVertices();
+        // UpdateVertices();
     }
 
     void OBB::UpdateVertices() {
@@ -30,22 +30,36 @@ namespace Elys {
             mCenter - mRotation[0] * mSize[0] - mRotation[1] * mSize[1] + mRotation[2] * mSize[2],
         };
 
-        mRenderVertices = {
-
+        static uint32_t indices[] = {
+            6, 1,
+            6, 3,
+            6, 4,
+            2, 7,
+            2, 5,
+            2, 0,
+            0, 1,
+            0, 3,
+            7, 1,
+            7, 4,
+            4, 5,
+            5, 3
         };
 
         if (mVAO) {
-            mVAO->GetVertexBuffer()->SetData((void *)mRenderVertices.data(),
-                                             static_cast<uint32_t>(mRenderVertices.size() * sizeof(glm::vec3)),
+            mVAO->GetVertexBuffer()->SetData((void *)mVertices.data(),
+                                             static_cast<uint32_t>(mVertices.size() * sizeof(glm::vec3)),
                                              GL_DYNAMIC_DRAW);
         } else {
             mVAO = std::make_shared<VertexArray>();
             auto vbo = std::make_shared<VertexBuffer>(
-                (void *)mRenderVertices.data(), static_cast<uint32_t>(mRenderVertices.size() * sizeof(glm::vec3)),
+                (void *)mVertices.data(), static_cast<uint32_t>(mVertices.size() * sizeof(glm::vec3)),
                 GL_DYNAMIC_DRAW);
+
+            auto ebo = std::make_shared<IndexBuffer>(indices, 24);
             BufferLayout vertexLayout{{"position", sizeof(glm::vec3), 3, GL_FLOAT}};
             vbo->SetLayout(vertexLayout);
             mVAO->SetVertexBuffer(vbo);
+            mVAO->SetIndexBuffer(ebo);
         }
     }
 

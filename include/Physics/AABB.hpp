@@ -25,7 +25,9 @@ namespace Elys {
         explicit AABB(const Mesh& mesh);
         ~AABB() = default;
 
+        [[nodiscard]] std::shared_ptr<VertexArray> VAO() { return mVAO; }
         [[nodiscard]] float Size() const { return (hi - lo).x; }
+        [[]]
         std::pair<glm::vec3, glm::vec3> GetBounds() { return {lo, hi}; }
 
         void UpdateVertices();

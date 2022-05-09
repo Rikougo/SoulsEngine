@@ -7,15 +7,22 @@
 using glm::vec3;
 
 Elys::RigidBody::RigidBody(const Elys::Mesh &mesh) {
-    mBoundingBox = OBB();
+    mBoundingBox = AABB(mesh);
+}
+
+Elys::RigidBody::RigidBody(const vec3 &center, const vec3 &size, const glm::mat3 &rotation) {
+    mBoundingBox = OBB(center, size, rotation);
 }
 
 void Elys::RigidBody::Update(float deltaTime) {
     mOldPosition = mPosition;
-    vec3 acceleration = mForces * (1.0f / mass);
-
     vec3 oldVelocity = mVelocity;
+
+    // The dampening simulates air friction
+    const float damping = 0.98f;
+    vec3 acceleration = mForces * (1.0f / mass);
     mVelocity = mVelocity * friction + acceleration * deltaTime;
+    mVelocity = mVelocity * damping;
 
     mPosition = mPosition + (oldVelocity + mVelocity) * 0.5f * deltaTime;
 
@@ -26,6 +33,10 @@ void Elys::RigidBody::Update(float deltaTime) {
 
 void Elys::RigidBody::ApplyForces() {
     mForces = useGravity ? vec3{0.0f, -9.81f, 0.0f} * mass : vec3{0.0f};
+}
+
+void Elys::RigidBody::AddLinearImpulse(const vec3 impulse) {
+    mVelocity = mVelocity + impulse;
 }
 
 void Elys::RigidBody::SolveConstraints() {
@@ -63,3 +74,4 @@ void Elys::RigidBody::SetPosition(vec3 position) {
     mPosition = position;
 }
 void Elys::RigidBody::ResetVelocity() {mVelocity = vec3(0.0f);}
+

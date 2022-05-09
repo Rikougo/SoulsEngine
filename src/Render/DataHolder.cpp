@@ -9,6 +9,7 @@ namespace Elys {
         glGenBuffers(1, &mID);
         glBindBuffer(GL_ARRAY_BUFFER, mID);
         glBufferData(GL_ARRAY_BUFFER, count, data, usage);
+        mCount = count;
     }
     VertexBuffer::~VertexBuffer() {
         glDeleteBuffers(1, &mID);
@@ -22,6 +23,7 @@ namespace Elys {
     void VertexBuffer::SetData(const void *data, uint32_t count, GLenum usage) {
         glBindBuffer(GL_ARRAY_BUFFER, mID);
         glBufferData(GL_ARRAY_BUFFER, count, data, usage);
+        mCount = count;
     }
 
     IndexBuffer::IndexBuffer(uint32_t *indices, uint32_t size) : mSize(size) {

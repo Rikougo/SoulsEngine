@@ -5,14 +5,20 @@
 #include <ECS/Systems/PhysicSystem.hpp>
 
 namespace Elys {
+    namespace {
+        template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+        // explicit deduction guide (not needed as of C++20)
+        template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+    } // namespace
+
     void PhysicSystem::Update(float deltaTime) {
-        for(auto id : mEntities) {
+        for (auto id : mEntities) {
             auto entity = mCurrentScene->EntityFromID(id);
 
             // PHYSICS
-            auto& node = entity.GetComponent<Node>();
-            auto& rBody = entity.GetComponent<RigidBody>();
-            auto& volume = rBody.GetVolume();
+            auto &node = entity.GetComponent<Node>();
+            auto &rBody = entity.GetComponent<RigidBody>();
+            auto &volume = rBody.GetVolume();
             auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
 
             // when position is reset using editor
@@ -21,8 +27,9 @@ namespace Elys {
 
             rBody.ApplyForces();
 
-            for(auto otherID : mEntities) {
-                if (otherID == id) continue;
+            for (auto otherID : mEntities) {
+                if (otherID == id)
+                    continue;
 
                 auto other = mCurrentScene->EntityFromID(otherID);
                 auto &otherVolume = other.GetComponent<RigidBody>().GetVolume();
@@ -36,17 +43,23 @@ namespace Elys {
                 rBody.Update(deltaTime);
                 node.SetPosition(rBody.Position());
             }
-            // aabb.Update(node.InheritedTransform(), mesh);
+
+            std::visit(
+                overloaded{
+                    [&](AABB &aabb) { aabb.Update(node.InheritedTransform(), mesh); },
+                    [&](OBB &obb) { obb.Update(node.InheritedPosition(), node.InheritedScale(), glm::mat3_cast(node.InheritedRotation())); }
+                },
+                volume
+            );
         }
     }
 
     void PhysicSystem::AddEntity(EntityID newEntity) {
         if (mEntities.insert(newEntity).second) {
-            
         }
     }
     void PhysicSystem::RemoveEntity(EntityID removedEntity) {
         if (mEntities.erase(removedEntity) > 0) {
         }
     }
-}
+} // namespace Elys

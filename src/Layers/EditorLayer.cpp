@@ -52,8 +52,11 @@ namespace Elys {
         player.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
         });
-        player.AddComponent<RigidBody>(
-            RigidBody(AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")));
+        player.AddComponent<RigidBody>(RigidBody{
+            player.GetComponent<Node>().InheritedPosition(),
+            {1.0f, 2.0f, 0.5f},
+            glm::mat3{1.0f}
+        });
         player.AddComponent<Player>({});
         player.GetComponent<RigidBody>().SetUseGravity(true);
 
@@ -98,8 +101,8 @@ namespace Elys {
         // ORDER HERE IS IMPORTANT
         if (mCurrentState == EditorState::PLAYING) {
             mPlayerSystem->Update(deltaTime);
-            mPhysicSystem->Update(deltaTime);
         }
+        mPhysicSystem->Update(deltaTime);
         mLightSystem->Update(deltaTime);
         mRenderSystem->Update(deltaTime);
 
@@ -279,13 +282,6 @@ namespace Elys {
                 }
             } ImGui::End();
 
-            if (ImGui::Begin("EntityTexture")) {
-                auto viewportSize = ImGui::GetContentRegionAvail();
-
-                unsigned int textureID = mRenderSystem->GetFramebuffer()->GetColorTextureID(1);
-                ImGui::Image((ImTextureID)((size_t)textureID), viewportSize, ImVec2{0, 1},
-                             ImVec2{1, 0});
-            } ImGui::End();
             ImGui::PopStyleVar();
         } else {
             ImGui::PopStyleVar(3);

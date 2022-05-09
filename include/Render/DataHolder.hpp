@@ -83,7 +83,9 @@ namespace Elys {
         void SetData(const void* data, uint32_t count, GLenum usage = GL_STATIC_DRAW);
         void SetLayout(const BufferLayout &bufferLayout) { mLayout = bufferLayout; }
         [[nodiscard]] const BufferLayout& GetLayout() const { return mLayout; }
+        [[nodiscard]] uint32_t GetCount() const { return mCount; }
       private:
+        uint32_t mCount;
         uint32_t mID;
         BufferLayout mLayout;
     };

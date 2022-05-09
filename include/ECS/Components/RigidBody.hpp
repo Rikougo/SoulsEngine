@@ -14,6 +14,7 @@ namespace Elys {
       public:
         RigidBody() = default;
         explicit RigidBody(const Mesh& mesh);
+        explicit RigidBody(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation);
 
         [[nodiscard]] Volume& GetVolume() { return mBoundingBox; };
         [[nodiscard]] glm::vec3& Velocity() { return mVelocity; };
@@ -29,6 +30,7 @@ namespace Elys {
 
         void Update(float deltaTime);
         void ApplyForces();
+        void AddLinearImpulse(const glm::vec3 impulse);
         void SolveConstraints();
       public:
         float mass = 0.1f, bounce = 1.0f, friction = 1.0f;
