@@ -31,7 +31,7 @@ namespace Elys {
         void SetPosition(glm::vec3 position);
         void ResetVelocity();
         void PushConstraints(AABB* aabb);
-        void SynchCollisionVolumes(Node& node, const Mesh& mesh);
+        void SyncCollisionVolumes(Node& node, const Mesh& mesh);
 
         float InvMass() {
             if (mass == 0.0f) {return 0.0f;}

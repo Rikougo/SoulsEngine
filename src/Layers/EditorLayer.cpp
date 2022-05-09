@@ -45,13 +45,26 @@ namespace Elys {
                      .SetNormalMap(AssetLoader::TextureFromPath(
                          "textures/wood_wall/Wood_Wall_003_normal.jpg"))
                      .SetTiling({10, 10})});
-        ground.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Plane32x32")));
+        ground.AddComponent<RigidBody>(RigidBody{ground.GetComponent<Node>().InheritedPosition(),
+                                                 {50.0f, 1.0f, 50.0f},
+                                                 glm::mat3{1.0f}});
         ground.GetComponent<RigidBody>().SetIsKinematic(true);
+
+        auto obb = mCurrentScene->CreateEntity("Obb");
+        obb.GetComponent<Node>().SetPosition(-1.0f, 0.0f, 0.0f);
+        obb.AddComponent<MeshRenderer>({
+            .mesh = AssetLoader::MeshFromPath("Sphere")
+        });
+        obb.AddComponent<RigidBody>(RigidBody{
+            obb.GetComponent<Node>().InheritedPosition(),
+            obb.GetComponent<Node>().InheritedScale(),
+            glm::mat3{1.0f}
+        });
 
         auto player = mCurrentScene->CreateEntity("Player");
         player.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);
         player.AddComponent<MeshRenderer>({
-            .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
+            .mesh = AssetLoader::MeshFromPath("Sphere")
         });
         player.AddComponent<RigidBody>(RigidBody{
             player.GetComponent<Node>().InheritedPosition(),
@@ -60,19 +73,6 @@ namespace Elys {
         });
         player.AddComponent<Player>({});
         player.GetComponent<RigidBody>().SetUseGravity(true);
-
-
-        auto obb = mCurrentScene->CreateEntity("Obb");
-        obb.GetComponent<Node>().SetPosition(-1.0f, 0.0f, 0.0f);
-        obb.AddComponent<MeshRenderer>({
-            .mesh = AssetLoader::MeshFromPath("model/tavern/Barrel/trn_Barrel.fbx")
-        });
-        obb.AddComponent<RigidBody>(RigidBody{
-            obb.GetComponent<Node>().InheritedPosition(),
-            obb.GetComponent<Node>().InheritedScale(),
-            glm::mat3{1.0f}
-        });
-        obb.GetComponent<RigidBody>().SetIsKinematic(true);
 
         /*auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");

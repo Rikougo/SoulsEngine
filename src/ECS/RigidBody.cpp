@@ -22,10 +22,9 @@ void Elys::RigidBody::Update(float deltaTime) {
         // The dampening simulates air friction
         const float damping = 0.98f;
         vec3 acceleration = mForces * (1.0f / mass);
-        mVelocity = mVelocity * friction + acceleration * deltaTime;
-        mVelocity = mVelocity * damping;
+        mVelocity = (mVelocity + acceleration * deltaTime) * damping;
 
-        mPosition = mPosition + (oldVelocity + mVelocity) * 0.5f * deltaTime;
+        mPosition = mPosition + mVelocity * deltaTime;
     }
 }
 
@@ -53,21 +52,19 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
 
     // find  j: the magnitude of the impulse needed to resolve the collision.
     float e = fminf(cor, other.cor);
-    float numerator = (-(1.0f + e) *
-                       glm::dot(relativeVel, relativeNorm));
+    float numerator = (-(1.0f + e) * glm::dot(relativeVel, relativeNorm));
     float j = numerator / invMassSum;
-    if (M.contacts.size() > 0.0f && j != 0.0f) {
+    if (M.contacts.size() > 0) {
         j /= (float)M.contacts.size();
     }
 
     // Apply Linear Impulse to the rigidbodies
     vec3 impulse = relativeNorm * j;
-    mVelocity = mVelocity - impulse *invMass1;
-    other.mVelocity = other.mVelocity + impulse *invMass2;
+    mVelocity = mVelocity - impulse * invMass1;
+    other.mVelocity = other.mVelocity + impulse * invMass2;
 
     // Friction
-    vec3 t = relativeVel - (relativeNorm *
-                            glm::dot(relativeVel, relativeNorm));
+    vec3 t = relativeVel - (relativeNorm * glm::dot(relativeVel, relativeNorm));
     if (CMP(glm::dot(t,t), 0.0f)) {
         return;
     }
@@ -76,7 +73,7 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     // find jt: the magnitude of the friction we are applying to this collision
     numerator = -glm::dot(relativeVel, t);
     float jt = numerator / invMassSum;
-    if (M.contacts.size() > 0.0f &&jt != 0.0f) {
+    if (M.contacts.size() > 0) {
         jt /= (float)M.contacts.size();
     }
     if (CMP(jt, 0.0f)) {
@@ -93,10 +90,10 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     }
 
     // Apply the tangential impulse (friction) to the velocity of each rigidbody
-    vec3 tangentImpuse = t * jt;
+    vec3 tangentImpulse = t * jt;
 
-    mVelocity = mVelocity - tangentImpuse * invMass1;
-    other.mVelocity = other.mVelocity + tangentImpuse * invMass2;
+    mVelocity = mVelocity - tangentImpulse * invMass1;
+    other.mVelocity = other.mVelocity + tangentImpulse * invMass2;
 }
 
 void Elys::RigidBody::AddLinearImpulse(const vec3 &impulse) {
@@ -133,7 +130,7 @@ void Elys::RigidBody::PushConstraints(Elys::AABB* aabb) {
     mConstraints.push_back(aabb);
 }
 
-void Elys::RigidBody::SynchCollisionVolumes(Node& node, const Mesh& mesh) {
+void Elys::RigidBody::SyncCollisionVolumes(Node& node, const Mesh& mesh) {
     std::visit(
         overloaded{[&](AABB &aabb) { aabb.Update(node.InheritedTransform(), mesh); },
                    [&](OBB &obb) {
