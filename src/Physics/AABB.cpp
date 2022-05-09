@@ -9,10 +9,10 @@
 using glm::vec3;
 
 namespace Elys {
-    AABB::AABB() : lo(0), hi(0) {}
-    AABB::AABB(float min, float max) : lo(min), hi(max) {}
-    AABB::AABB(vec3 min, float size) : lo(min), hi(min + size) {}
-    AABB::AABB(vec3 min, vec3 max) : lo(min), hi(max) {}
+    AABB::AABB() : lo(0), hi(0) { UpdateVertices(); }
+    AABB::AABB(float min, float max) : lo(min), hi(max) { UpdateVertices(); }
+    AABB::AABB(vec3 min, float size) : lo(min), hi(min + size) { UpdateVertices(); }
+    AABB::AABB(vec3 min, vec3 max) : lo(min), hi(max) { UpdateVertices(); }
     // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
     AABB::AABB(const Mesh &mesh) {
         lo = vec3(std::numeric_limits<float>::max());
@@ -33,36 +33,19 @@ namespace Elys {
             if (v.position.z > hi.z)
                 hi.z = v.position.z;
         }
+
+        UpdateVertices();
     }
 
-    void AABB::UpdateVertices() {
-        mRenderVertices = {// FRONT
-             lo, vec3(hi.x, lo.y, lo.z),
-             vec3(hi.x, lo.y, lo.z), vec3(hi.x, hi.y, lo.z),
-             vec3(hi.x, hi.y, lo.z), vec3(lo.x, hi.y, lo.z),
-             vec3(lo.x, hi.y, lo.z), lo,
-
-             // SIDE
-             lo, vec3(lo.x, lo.y, hi.z),
-             vec3(hi.x, lo.y, lo.z), vec3(hi.x, lo.y, hi.z),
-             vec3(hi.x, hi.y, lo.z), hi,
-             vec3(lo.x, hi.y, lo.z), vec3(lo.x, hi.y, hi.z),
-
-             // BACK
-             vec3(hi.x, lo.y, hi.z), vec3(lo.x, lo.y, hi.z),
-             vec3(lo.x, lo.y, hi.z), vec3(lo.x, hi.y, hi.z),
-             vec3(lo.x, hi.y, hi.z), hi,
-             hi, vec3(hi.x, lo.y, hi.z)
-        };
-
+    void AABB::UpdateBuffers() {
         if (mVAO) {
-            mVAO->GetVertexBuffer()->SetData((void *)mRenderVertices.data(),
-                                             static_cast<uint32_t>(mRenderVertices.size() * sizeof(vec3)),
+            mVAO->GetVertexBuffer()->SetData((void *)mVertices.data(),
+                                             static_cast<uint32_t>(mVertices.size() * sizeof(vec3)),
                                              GL_DYNAMIC_DRAW);
         } else {
             mVAO = std::make_shared<VertexArray>();
             auto vbo = std::make_shared<VertexBuffer>(
-                (void *)mRenderVertices.data(), static_cast<uint32_t>(mRenderVertices.size() * sizeof(vec3)),
+                (void *)mVertices.data(), static_cast<uint32_t>(mVertices.size() * sizeof(vec3)),
                 GL_DYNAMIC_DRAW);
             BufferLayout vertexLayout{{"position", sizeof(vec3), 3, GL_FLOAT}};
             vbo->SetLayout(vertexLayout);
@@ -94,6 +77,29 @@ namespace Elys {
             if (v.z > hi.z)
                 hi.z = v.z;
         }
+
+        UpdateVertices();
+    }
+
+    void AABB::UpdateVertices() {
+        mVertices = {// FRONT
+             lo, vec3(hi.x, lo.y, lo.z),
+             vec3(hi.x, lo.y, lo.z), vec3(hi.x, hi.y, lo.z),
+             vec3(hi.x, hi.y, lo.z), vec3(lo.x, hi.y, lo.z),
+             vec3(lo.x, hi.y, lo.z), lo,
+
+             // SIDE
+             lo, vec3(lo.x, lo.y, hi.z),
+             vec3(hi.x, lo.y, lo.z), vec3(hi.x, lo.y, hi.z),
+             vec3(hi.x, hi.y, lo.z), hi,
+             vec3(lo.x, hi.y, lo.z), vec3(lo.x, hi.y, hi.z),
+
+             // BACK
+             vec3(hi.x, lo.y, hi.z), vec3(lo.x, lo.y, hi.z),
+             vec3(lo.x, lo.y, hi.z), vec3(lo.x, hi.y, hi.z),
+             vec3(lo.x, hi.y, hi.z), hi,
+             hi, vec3(hi.x, lo.y, hi.z)
+        };
     }
 
     bool AABB::Collapse(AABB const &left, AABB const &right) {

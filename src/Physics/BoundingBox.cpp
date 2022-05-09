@@ -10,9 +10,9 @@ using glm::vec3;
 namespace Elys {
     // Update buffers impl
     namespace {
-        void Volume_UpdateBuffersImpl(AABB &aabb) { aabb.UpdateVertices(); }
+        void Volume_UpdateBuffersImpl(AABB &aabb) { aabb.UpdateBuffers(); }
 
-        void Volume_UpdateBuffersImpl(OBB &obb) { obb.UpdateVertices(); }
+        void Volume_UpdateBuffersImpl(OBB &obb) { obb.UpdateBuffers(); }
     } // namespace
 
     void UpdateBuffers(Volume &volume) {
@@ -74,8 +74,8 @@ namespace Elys {
             }
 
             for(auto const &axis : testAxis) {
-                auto a = OBB::GetInterval(left, axis);
-                auto b = OBB::GetInterval(right, axis);
+                auto a = left.GetInterval(axis);
+                auto b = right.GetInterval(axis);
 
                 if (!((b.first <= a.second) && (a.first <= b.second))) {
                     return false;

@@ -317,6 +317,27 @@ namespace Elys::GUI {
         ImGui::TableNextColumn();
         ImGui::DragFloat("##friction", &rBody.friction, 0.1f);
 
+        ImGui::TableNextColumn();
+        ImGui::Text("Volume");
+        ImGui::TableNextColumn();
+        std::visit(overloaded{
+            [](AABB &aabb) { ImGui::Text("AABB shape is based on Mesh."); },
+            [](OBB &obb) {
+                auto tableFlags = ImGuiTableFlags_NoPadInnerX;
+                ImGui::BeginTable("Volume", 2, tableFlags);
+
+                ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 100.0f); // Default to 100.0f
+                ImGui::TableSetupColumn("widget", ImGuiTableColumnFlags_WidthStretch); // Default to auto
+
+                ImGui::TableNextColumn();
+                ImGui::Text("Size");
+                ImGui::TableNextColumn();
+                GUI::SliderVec3("##Size", obb.Size(), 0.1);
+
+                ImGui::EndTable();
+           }
+        }, rBody.GetVolume());
+
         ImGui::EndTable();
     }
     void ComponentsEditor::PlayerEditor(const std::string &label, Player &player)  {

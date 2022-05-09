@@ -44,7 +44,7 @@ namespace Elys {
       private:
         glm::vec3 mPosition{}, mOldPosition{};
 
-        Volume mVolume{};
+        Volume mVolume{OBB{}};
         glm::vec3 mVelocity {0};
         std::vector<AABB*> mConstraints{};
         glm::vec3 mForces{};

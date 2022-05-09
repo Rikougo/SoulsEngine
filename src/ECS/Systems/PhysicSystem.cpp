@@ -41,7 +41,7 @@ namespace Elys {
             std::visit(
                 overloaded{
                     [&](AABB &aabb) { aabb.Update(node.InheritedTransform(), mesh); },
-                    [&](OBB &obb) { obb.Update(node.InheritedPosition(), node.InheritedScale(), glm::mat3_cast(node.InheritedRotation())); }
+                    [&](OBB &obb) { obb.Update(node.InheritedPosition(), glm::mat3_cast(node.InheritedRotation())); }
                 },
                 volume
             );

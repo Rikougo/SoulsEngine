@@ -27,14 +27,15 @@ namespace Elys {
 
         [[nodiscard]] std::shared_ptr<VertexArray> VAO() { return mVAO; }
         [[nodiscard]] float Size() const { return (hi - lo).x; }
-        [[]]
-        std::pair<glm::vec3, glm::vec3> GetBounds() { return {lo, hi}; }
+        [[nodiscard]] std::pair<glm::vec3, glm::vec3> GetBounds() { return {lo, hi}; }
 
-        void UpdateVertices();
+        void UpdateBuffers();
         void Update(glm::mat4 transform, Mesh const &mesh);
       private:
+        void UpdateVertices();
+      private:
         glm::vec3 hi{}, lo{};
-        std::vector<glm::vec3> mRenderVertices;
+        std::vector<glm::vec3> mVertices;
         glm::mat4 mTransform{}; // transform cache
         mutable std::shared_ptr<VertexArray> mVAO;
       public:

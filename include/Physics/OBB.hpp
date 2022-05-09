@@ -16,21 +16,22 @@ namespace Elys {
 
         [[nodiscard]] std::shared_ptr<VertexArray> VAO() { return mVAO; }
         [[nodiscard]] glm::vec3 Size() const { return mSize; }
+        [[nodiscard]] glm::vec3& Size() { return mSize; }
 
         glm::mat3 GetRotation() { return mRotation; }
 
+        void UpdateBuffers();
+        void Update(glm::vec3 const &center, glm::mat3 const &rotation);
+
+        std::pair<float, float> GetInterval(glm::vec3 const &axis);
+      private:
         void UpdateVertices();
-        void Update(glm::vec3 const &center, glm::vec3 const &size, glm::mat3 const &rotation);
-      public:
-        static std::pair<float, float> GetInterval(OBB const &obb, glm::vec3 const &axis);
-        static bool CollapseOnAxis(OBB const &left, OBB const &right, glm::vec3 const &axis);
-        static bool Collapse(OBB const &left, OBB const &right);
       private:
         mutable std::shared_ptr<VertexArray> mVAO;
 
         std::vector<glm::vec3> mVertices;
-        glm::vec3 mSize{1.0f, 1.0f, 1.0f};
         glm::vec3 mCenter{0.0f, 0.0f, 0.0f};
+        glm::vec3 mSize{1.0f, 1.0f, 1.0f};
         glm::mat3 mRotation{1.0f};
     };
 }

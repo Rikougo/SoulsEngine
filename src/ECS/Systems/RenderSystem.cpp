@@ -87,6 +87,7 @@ namespace Elys {
 
                 auto &volume = RBody.GetVolume();
                 UpdateBuffers(volume);
+
                 mLineShader->Use();
                 mLineShader->SetMat4("uProjection", mCamera->GetProjection());
                 mLineShader->SetMat4("uView", mCamera->GetView());
