@@ -111,7 +111,6 @@ void Elys::Framebuffer::Update() {
 int Elys::Framebuffer::GetPixel(int x, int y, int layer) {
     Bind();
     int pixelData;
-    ELYS_CORE_INFO("Pos : {0}, {1}", x, y);
     glReadBuffer(GL_COLOR_ATTACHMENT0 + layer);
     glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
     Unbind();

@@ -109,7 +109,6 @@ namespace Elys {
             my -= mViewport.offset.y;
 
             auto entityID = mFramebuffer->GetPixel((int)mx, (int)(mViewport.size.y - my), 1);
-            ELYS_CORE_INFO("Hover {0}", entityID);
             mCurrentScene->SetHovered(entityID);
 
             if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
