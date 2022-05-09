@@ -18,9 +18,15 @@ namespace Elys {
       public:
         static constexpr glm::vec3 GRAVITY{0.0f, -9.81f, 0.0f};
       private:
+        std::vector<RigidBody*> colliders1;
+        std::vector<RigidBody*> colliders2;
+        std::vector<Geometry::CollisionManifold> results;
+
         std::vector<AABB*> mConstraints{};
         std::shared_ptr<Scene> mCurrentScene;
         bool mPhysicUpdate = false;
+        int ImpulseIteration = 5;
+        float PenetrationSlack = 0.01f, LinearProjectionPercent = 0.45f;
       public:
         explicit PhysicSystem(std::shared_ptr<Scene> &sceneRef) : mCurrentScene(sceneRef) {}
 

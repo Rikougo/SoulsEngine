@@ -14,24 +14,89 @@ Elys::RigidBody::RigidBody(const vec3 &center, const vec3 &size, const glm::mat3
 }
 
 void Elys::RigidBody::Update(float deltaTime) {
-    mOldPosition = mPosition;
-    vec3 oldVelocity = mVelocity;
+    if(isKinematic) mVelocity = {0,0,0};
+    else {
+        mOldPosition = mPosition;
+        vec3 oldVelocity = mVelocity;
 
-    // The dampening simulates air friction
-    const float damping = 0.98f;
-    vec3 acceleration = mForces * (1.0f / mass);
-    mVelocity = mVelocity * friction + acceleration * deltaTime;
-    mVelocity = mVelocity * damping;
+        // The dampening simulates air friction
+        const float damping = 0.98f;
+        vec3 acceleration = mForces * (1.0f / mass);
+        mVelocity = mVelocity * friction + acceleration * deltaTime;
+        mVelocity = mVelocity * damping;
 
-    mPosition = mPosition + (oldVelocity + mVelocity) * 0.5f * deltaTime;
-
-    SolveConstraints();
-
-    mConstraints.clear();
+        mPosition = mPosition + (oldVelocity + mVelocity) * 0.5f * deltaTime;
+    }
 }
 
 void Elys::RigidBody::ApplyForces() {
     mForces = useGravity ? vec3{0.0f, -9.81f, 0.0f} * mass : vec3{0.0f};
+}
+
+void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
+                                   const Elys::Geometry::CollisionManifold &M, int c) {
+    // Linear Velocity
+    float invMass1 = InvMass();
+    float invMass2 = other.InvMass();
+    float invMassSum = invMass1 + invMass2;
+    if (invMassSum == 0.0f) { return; }
+
+    // Relative velocity
+    vec3 relativeVel = other.mVelocity - mVelocity;
+    // Relative collision normal
+    vec3 relativeNorm = M.normal;
+    relativeNorm = glm::normalize(relativeNorm);
+    // Moving away from each other? Do nothing!
+    if (glm::dot(relativeVel, relativeNorm) > 0.0f) {
+        return;
+    }
+
+    // find  j: the magnitude of the impulse needed to resolve the collision.
+    float e = fminf(cor, other.cor);
+    float numerator = (-(1.0f + e) *
+                       glm::dot(relativeVel, relativeNorm));
+    float j = numerator / invMassSum;
+    if (M.contacts.size() > 0.0f && j != 0.0f) {
+        j /= (float)M.contacts.size();
+    }
+
+    // Apply Linear Impulse to the rigidbodies
+    vec3 impulse = relativeNorm * j;
+    mVelocity = mVelocity - impulse *invMass1;
+    other.mVelocity = other.mVelocity + impulse *invMass2;
+
+    // Friction
+    vec3 t = relativeVel - (relativeNorm *
+                            glm::dot(relativeVel, relativeNorm));
+    if (CMP(glm::dot(t,t), 0.0f)) {
+        return;
+    }
+    t = glm::normalize(t);
+
+    // find jt: the magnitude of the friction we are applying to this collision
+    numerator = -glm::dot(relativeVel, t);
+    float jt = numerator / invMassSum;
+    if (M.contacts.size() > 0.0f &&jt != 0.0f) {
+        jt /= (float)M.contacts.size();
+    }
+    if (CMP(jt, 0.0f)) {
+        return;
+    }
+
+    // Property of friction called Coulomb's Law
+    float friction = sqrtf(this->friction * other.friction);
+    if (jt> j * friction) {
+        jt = j * friction;
+    }
+    else if (jt< -j * friction) {
+        jt = -j * friction;
+    }
+
+    // Apply the tangential impulse (friction) to the velocity of each rigidbody
+    vec3 tangentImpuse = t * jt;
+
+    mVelocity = mVelocity - tangentImpuse * invMass1;
+    other.mVelocity = other.mVelocity + tangentImpuse * invMass2;
 }
 
 void Elys::RigidBody::AddLinearImpulse(const vec3 &impulse) {

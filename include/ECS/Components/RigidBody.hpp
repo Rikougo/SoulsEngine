@@ -25,13 +25,19 @@ namespace Elys {
         [[nodiscard]] glm::vec3 OldPosition() { return mOldPosition; }
 
         void SetUseGravity(bool value) { useGravity = value; }
+        void SetIsKinematic(bool value) { isKinematic = value; }
 
         void SetPosition(glm::vec3 position);
         void ResetVelocity();
         void PushConstraints(AABB* aabb);
 
+        float InvMass() {
+            if (mass == 0.0f) {return 0.0f;}
+            return 1.0f / mass;
+        }
         void Update(float deltaTime);
         void ApplyForces();
+        void ApplyImpulse(RigidBody& other, const Geometry::CollisionManifold& M, int c);
         void AddLinearImpulse(const glm::vec3 &impulse);
         void SolveConstraints();
 
@@ -39,8 +45,9 @@ namespace Elys {
         virtual void AddRotationalImpulse(const glm::vec3& point,
                                           const glm::vec3& impulse);
       public:
-        float mass = 0.1f, bounce = 1.0f, friction = 1.0f;
+        float mass = 0.1f, bounce = 1.0f, friction = 1.0f, cor = 0.5f;
         bool useGravity = false;
+        bool isKinematic = false;
       private:
         glm::vec3 mPosition{}, mOldPosition{};
 

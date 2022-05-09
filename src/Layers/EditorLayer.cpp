@@ -46,6 +46,7 @@ namespace Elys {
                          "textures/wood_wall/Wood_Wall_003_normal.jpg"))
                      .SetTiling({10, 10})});
         ground.AddComponent<RigidBody>(RigidBody(AssetLoader::MeshFromPath("Plane32x32")));
+        ground.GetComponent<RigidBody>().SetIsKinematic(true);
 
         auto player = mCurrentScene->CreateEntity("Player");
         player.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);
@@ -71,6 +72,7 @@ namespace Elys {
             obb.GetComponent<Node>().InheritedScale(),
             glm::mat3{1.0f}
         });
+        obb.GetComponent<RigidBody>().SetIsKinematic(true);
 
         /*auto center = mCurrentScene->CreateEntity("Center");
         auto light = mCurrentScene->CreateEntity("Light");
