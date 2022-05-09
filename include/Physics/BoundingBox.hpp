@@ -18,6 +18,6 @@ namespace Elys {
 
     void UpdateBuffers(Volume &volume);
     void DrawVolume(Volume &volume);
-    bool Intersect(Volume &left, Volume &right);
+    Geometry::CollisionManifold Intersect(Volume &left, Volume &right);
 } // namespace Elys
 #endif // ELYS_BOUNDING_BOX_HPP

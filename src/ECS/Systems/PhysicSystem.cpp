@@ -28,7 +28,11 @@ namespace Elys {
                 auto other = mCurrentScene->EntityFromID(otherID);
                 auto &otherVolume = other.GetComponent<RigidBody>().GetVolume();
 
-                if (Intersect(volume, otherVolume)) {
+                Geometry::CollisionManifold result;
+                ResetCollisionManifold(&result);
+
+                result = Intersect(volume, otherVolume);
+                if (result.colliding) {
                     ELYS_CORE_INFO("Collision");
                 }
             }
