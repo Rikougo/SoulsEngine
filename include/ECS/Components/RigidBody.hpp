@@ -32,6 +32,10 @@ namespace Elys {
         void ApplyForces();
         void AddLinearImpulse(const glm::vec3 impulse);
         void SolveConstraints();
+
+        glm::mat4 InvTensor();
+        virtual void AddRotationalImpulse(const glm::vec3& point,
+                                          const glm::vec3& impulse);
       public:
         float mass = 0.1f, bounce = 1.0f, friction = 1.0f;
         bool useGravity = false;
@@ -43,6 +47,10 @@ namespace Elys {
         std::vector<AABB*> mConstraints{};
         glm::vec3 mForces{};
         bool mCollided{false};
+
+        glm::vec3 orientation;
+        glm::vec3 angVel;
+        glm::vec3 torques; // Sum torques
     };
 }
 

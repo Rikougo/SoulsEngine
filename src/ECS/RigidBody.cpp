@@ -76,3 +76,43 @@ void Elys::RigidBody::SetPosition(vec3 position) {
 }
 void Elys::RigidBody::ResetVelocity() {mVelocity = vec3(0.0f);}
 
+glm::mat4 Elys::RigidBody::InvTensor() {
+    float ix = 0.0f;
+    float iy = 0.0f;
+    float iz = 0.0f;
+    float iw = 0.0f;
+
+    if (mass != 0) {
+        vec3 size = box.size * 2.0f;
+        float fraction = (1.0f / 12.0f);
+        float x2 = size.x * size.x;
+        float y2 = size.y * size.y;
+        float z2 = size.z * size.z;
+        ix = (y2 + z2) * mass * fraction;
+        iy = (x2 + z2) * mass * fraction;
+        iz = (x2 + y2) * mass * fraction;
+        iw = 1.0f;
+    }
+
+    return Geometry::Matrix::Inverse(glm::mat4(
+        ix, 0, 0, 0,
+        0, iy, 0, 0,
+        0, 0, iz, 0,
+        0, 0, 0, iw));
+
+}
+void Elys::RigidBody::AddRotationalImpulse(const vec3 &point, const vec3 &impulse) {
+    vec3 centerOfMass = mPosition;
+    vec3 torque = glm::cross(point - centerOfMass, impulse);
+    glm::mat4 tensor = InvTensor();
+
+    vec3 angAccel{0,0,0};
+    angAccel.x = torque.x * tensor[0][0] + torque.y * tensor[1][0] +
+                 torque.z * tensor[2][0] + 0.0f * tensor[3][0];
+    angAccel.y = torque.x * tensor[0][1] + torque.y * tensor[1][1] +
+                 torque.z * tensor[2][1] + 0.0f * tensor[3][1];
+    angAccel.z = torque.x * tensor[0][2] + torque.y * tensor[1][2] +
+                 torque.z * tensor[2][2] + 0.0f * tensor[3][2];
+
+    angVel = angVel + angAccel;
+}

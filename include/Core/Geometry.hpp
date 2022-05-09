@@ -77,6 +77,90 @@ namespace Elys::Geometry {
     /// Convert spherical coordinates to cartesian coordinates
     /// https://en.wikipedia.org/wiki/Spherical_coordinate_system
     glm::vec3 ToCartesian(SphericalCoordinates coords);
+
+    struct Matrix {
+
+        #define CMP(x, y) (fabsf((x) - (y)) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
+
+        static void Transpose(const float *srcMat, float *dstMat,
+                       int srcRows, int srcCols) {
+            for (int i = 0; i < srcRows * srcCols; i++) {
+                int row = i / srcRows;
+                int col = i % srcRows;
+                dstMat[i] = srcMat[srcCols * col + row];
+            }
+        }
+
+        static glm::mat4 Transpose(const glm::mat4& matrix) {
+            glm::mat4 result;
+            Transpose(matrix.asArray, result.asArray, 4, 4);
+            return result;
+        }
+
+        static glm::mat4 Adjugate(const glm::mat4& mat) {
+            return Transpose(Cofactor(mat));
+        }
+
+        static glm::mat3 Cut(const glm::mat4 &mat, int row, int col) {
+            glm::mat3 result;
+            int index = 0;
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 4; ++j) {
+                    if (i == row || j == col) {
+                        continue;
+                    }
+                    int target = index++;
+                    int source = 4 * i + j;
+                    result.asArray[target] = mat.asArray[source];
+                }
+            }
+            return result;
+        }
+
+        static glm::mat3 Minor(const glm::mat3 &mat) {
+            glm::mat3 result;
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    result[i][j] = Determinant(Cut(mat, i, j));
+                }
+            }
+            return result;
+        }
+
+        void Cofactor(float *out, const float *minor, int rows, int cols) {
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < cols; ++j) {
+                    int t = cols * j + i;            // Target index
+                    int s = cols * j + i;            // Source index
+                    float sign = powf(-1.0f, i + j); // + or –
+                    out[t] = minor[s] * sign;
+                }
+            }
+        }
+
+        static glm::mat3 Cofactor(const glm::mat3 &mat) {
+            glm::mat3 result;
+            Cofactor(result.asArray, Minor(mat).asArray, 3, 3);
+            return result;
+        }
+
+        static float Determinant(const glm::mat4 &mat) {
+            float result = 0.0f;
+            glm::mat4 cofactor = Cofactor(mat);
+            for (int j = 0; j < 4; ++j) {
+                result += glm::mat.asArray[4 * 0 + j] * cofactor[0][j];
+            }
+            return result;
+        }
+
+        static glm::mat4 Inverse(const glm::mat4 &mat) {
+            float det = Determinant(mat);
+            if (CMP(det, 0.0f)) {
+                return glm::mat4();
+            }
+            return Adjugate(mat) * (1.0f / det);
+        }
+    }
 } // namespace Elys::Geometry
 
 #endif // ELYS_GEOMETRY_HPP
