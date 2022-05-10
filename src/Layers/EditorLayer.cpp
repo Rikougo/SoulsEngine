@@ -55,10 +55,11 @@ namespace Elys {
             for(size_t j = 0; j < 5; j++) {
                 auto entity = mCurrentScene->CreateEntity("Showcase"+std::to_string(j));
                 entity.GetComponent<Node>().SetPosition(i * 2.10f, j * 2.10f, 0.0f);
+                entity.GetComponent<Node>().SetRotation(3.14f, 0.0f, 0.0f);
                 entity.AddComponent<MeshRenderer>({
                     .mesh = AssetLoader::MeshFromPath("Sphere"),
-                    .material = Material{}
-                        .SetAlbedo(glm::vec4{1.0f, 0.0f, 0.0f, 1.0f})
+                    .material = Material::FromTexture(AssetLoader::TextureFromPath("textures/lava/lava_COLOR.jpg"))
+                        .SetNormalMap(AssetLoader::TextureFromPath("textures/lava//lava_NORM.png"))
                         .SetMetallic(0.25f * i)
                         .SetRoughness(0.25f * j)
                 });

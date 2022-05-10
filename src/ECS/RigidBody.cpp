@@ -77,7 +77,7 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     // find jt: the magnitude of the friction we are applying to this collision
     numerator = -glm::dot(relativeVel, t);
     float jt = numerator / invMassSum;
-    if (M.contacts.size() > 0) {
+    if (!M.contacts.empty()) {
         jt /= (float)M.contacts.size();
     }
     if (CMP(jt, 0.0f)) {
@@ -85,12 +85,12 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     }
 
     // Property of friction called Coulomb's Law
-    float friction = sqrtf(this->friction * other.friction);
-    if (jt> j * friction) {
-        jt = j * friction;
+    float f = sqrtf(friction * other.friction);
+    if (jt> j * f) {
+        jt = j * f;
     }
-    else if (jt< -j * friction) {
-        jt = -j * friction;
+    else if (jt< -j * f) {
+        jt = -j * f;
     }
 
     // Apply the tangential impulse (friction) to the velocity of each rigidbody

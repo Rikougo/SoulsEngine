@@ -71,7 +71,6 @@ namespace Elys {
                 float depth = fmaxf(results[i].depth - PenetrationSlack, 0.0f);
                 float scalar = depth / totalMass;
                 glm::vec3 correction = results[i].normal * scalar * LinearProjectionPercent;
-                // ELYS_CORE_INFO("{0}, {1}, {2}", correction.x, correction.y, correction.z);
                 if(!m1->isKinematic)
                     m1->ForcePosition(m1->Position() - correction * m1->InvMass());
                 if(!m2->isKinematic)
