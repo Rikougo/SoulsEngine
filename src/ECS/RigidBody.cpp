@@ -23,10 +23,16 @@ void Elys::RigidBody::Update(float deltaTime) {
         vec3 acceleration = mForces * (1.0f / mass);
         mVelocity = (mVelocity + acceleration * deltaTime) * damping;
 
+        vec3 angAccel = Geometry::MultiplyVector(torques, InvTensor());
+        angVel = angVel + angAccel * deltaTime;
+        angVel = angVel * damping;
+
         mPosition = mPosition + mVelocity * deltaTime;
-
-
         mOrientation = mOrientation + angVel * deltaTime;
+
+        if(mOrientation.x + mOrientation.y + mOrientation.z <= 0.001f) mOrientation = vec3{0};
+        ELYS_CORE_INFO("Velocity : {0} {1} {2}", mVelocity.x, mVelocity.y, mVelocity.z);
+        ELYS_CORE_INFO("Angular Velocity : {0} {1} {2}", angVel.x, angVel.y, angVel.z);
         ELYS_CORE_INFO("Orientation : {0} {1} {2}", mOrientation.x, mOrientation.y, mOrientation.z);
     }
 }
@@ -39,89 +45,92 @@ void Elys::RigidBody::ApplyForces() {
 
 void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
                                    const Elys::Geometry::CollisionManifold &M, int c) {
-    // Linear Velocity
-    float invMass1 = InvMass();
-    float invMass2 = other.InvMass();
-    float invMassSum = invMass1 + invMass2;
-    if (invMassSum == 0.0f) { return; }
+    if(!isKinematic) {
+        // Linear Velocity
+        float invMass1 = InvMass();
+        float invMass2 = other.InvMass();
+        float invMassSum = invMass1 + invMass2;
+        if (invMassSum == 0.0f) {
+            return;
+        }
 
-    // Store the inverse inertia tensor for both the colliding objects
-    vec3 r1 = M.contacts[c] - mPosition;
-    vec3 r2 = M.contacts[c] - other.mPosition;
-    glm::mat4 i1 = InvTensor();
-    glm::mat4 i2 = other.InvTensor();
+        // Store the inverse inertia tensor for both the colliding objects
+        vec3 r1 = M.contacts[c] - mPosition;
+        vec3 r2 = M.contacts[c] - other.mPosition;
+        glm::mat4 i1 = InvTensor();
+        glm::mat4 i2 = other.InvTensor();
 
-    // Relative velocity
-    vec3 relativeVel = (other.mVelocity + glm::cross(other.angVel, r2)) - (mVelocity + glm::cross(angVel, r1));
-    // Relative collision normal
-    vec3 relativeNorm = M.normal;
-    relativeNorm = glm::normalize(relativeNorm);
-    // Moving away from each other? Do nothing!
-    if (glm::dot(relativeVel, relativeNorm) > 0.0f) {
-        return;
+        // Relative velocity
+        vec3 relativeVel =
+            (other.mVelocity + glm::cross(other.angVel, r2)) - (mVelocity + glm::cross(angVel, r1));
+        // Relative collision normal
+        vec3 relativeNorm = M.normal;
+        relativeNorm = glm::normalize(relativeNorm);
+        // Moving away from each other? Do nothing!
+        if (glm::dot(relativeVel, relativeNorm) > 0.0f) {
+            return;
+        }
+
+        // find  j: the magnitude of the impulse needed to resolve the collision.
+        float e = fminf(cor, other.cor);
+        float numerator = (-(1.0f + e) * glm::dot(relativeVel, relativeNorm));
+        float d1 = invMassSum;
+        vec3 d2 = glm::cross(Geometry::MultiplyVector(glm::cross(r1, relativeNorm), i1), r1);
+        vec3 d3 = glm::cross(Geometry::MultiplyVector(glm::cross(r2, relativeNorm), i2), r2);
+        float denominator = d1 + glm::dot(relativeNorm, d2 + d3);
+        float j = (denominator == 0.0f) ? 0.0f : numerator / denominator;
+        if (M.contacts.size() > 0.0f && j != 0.0f) {
+            j /= (float)M.contacts.size();
+        }
+
+        // Apply Linear Impulse to the rigidbodies
+        vec3 impulse = relativeNorm * j;
+        mVelocity = mVelocity - impulse * invMass1;
+        other.mVelocity = other.mVelocity + impulse * invMass2;
+        angVel = angVel - Geometry::MultiplyVector(glm::cross(r1, impulse), i1);
+        other.angVel = other.angVel + Geometry::MultiplyVector(glm::cross(r2, impulse), i2);
+
+        // Friction
+        vec3 t = relativeVel - (relativeNorm * glm::dot(relativeVel, relativeNorm));
+        if (CMP(glm::dot(t, t), 0.0f)) {
+            return;
+        }
+        t = glm::normalize(t);
+
+        // find jt: the magnitude of the friction we are applying to this collision
+        numerator = -glm::dot(relativeVel, t);
+        d1 = invMassSum;
+        d2 = glm::cross(Geometry::MultiplyVector(glm::cross(r1, t), i1), r1);
+        d3 = glm::cross(Geometry::MultiplyVector(glm::cross(r2, t), i2), r2);
+        denominator = d1 + glm::dot(t, d2 + d3);
+        if (denominator == 0.0f) {
+            return;
+        }
+
+        float jt = numerator / denominator;
+        if (M.contacts.size() > 0 && jt != 0.0f) {
+            jt /= (float)M.contacts.size();
+        }
+        if (CMP(jt, 0.0f)) {
+            return;
+        }
+
+        // Property of friction called Coulomb's Law
+        float Friction = sqrtf(friction * other.friction);
+        if (jt > j * Friction) {
+            jt = j * Friction;
+        } else if (jt < -j * Friction) {
+            jt = -j * Friction;
+        }
+
+        // Apply the tangential impulse (friction) to the velocity of each rigidbody
+        vec3 tangentImpulse = t * jt;
+
+        mVelocity = mVelocity - tangentImpulse * invMass1;
+        other.mVelocity = other.mVelocity + tangentImpulse * invMass2;
+        angVel = angVel - Geometry::MultiplyVector(glm::cross(r1, tangentImpulse), i1);
+        other.angVel = other.angVel + Geometry::MultiplyVector(glm::cross(r2, tangentImpulse), i2);
     }
-
-
-    // find  j: the magnitude of the impulse needed to resolve the collision.
-    float e = fminf(cor, other.cor);
-    float numerator = (-(1.0f + e) * glm::dot(relativeVel, relativeNorm));
-    float d1 = invMassSum;
-    vec3 d2 = glm::cross(Geometry::MultiplyVector(glm::cross(r1, relativeNorm), i1), r1);
-    vec3 d3 = glm::cross(Geometry::MultiplyVector(glm::cross(r2, relativeNorm), i2), r2);
-    float denominator = d1 + glm::dot(relativeNorm, d2 + d3);
-    float j = (denominator == 0.0f) ? 0.0f : numerator / denominator;
-    if (M.contacts.size() > 0.0f && j != 0.0f) {
-        j /= (float)M.contacts.size();
-    }
-
-    // Apply Linear Impulse to the rigidbodies
-    vec3 impulse = relativeNorm * j;
-    mVelocity = mVelocity - impulse * invMass1;
-    other.mVelocity = other.mVelocity + impulse * invMass2;
-    angVel = angVel - Geometry::MultiplyVector(glm::cross(r1, impulse), i1);
-    other.angVel = other.angVel + Geometry::MultiplyVector(glm::cross(r2, impulse), i2);
-
-    // Friction
-    vec3 t = relativeVel - (relativeNorm * glm::dot(relativeVel, relativeNorm));
-    if (CMP(glm::dot(t,t), 0.0f)) {
-        return;
-    }
-    t = glm::normalize(t);
-
-    // find jt: the magnitude of the friction we are applying to this collision
-    numerator = -glm::dot(relativeVel, t);
-    d1 = invMassSum;
-    d2 = glm::cross(Geometry::MultiplyVector(glm::cross(r1, t), i1), r1);
-    d3 = glm::cross(Geometry::MultiplyVector(glm::cross(r2, t), i2), r2);
-    denominator = d1 + glm::dot(t, d2 + d3);
-    if (denominator == 0.0f) {
-        return;
-    }
-
-    float jt = numerator / denominator;
-    if (M.contacts.size() > 0 && jt != 0.0f) {
-        jt /= (float)M.contacts.size();
-    }
-    if (CMP(jt, 0.0f)) {
-        return;
-    }
-
-    // Property of friction called Coulomb's Law
-    float friction = sqrtf(this->friction * other.friction);
-    if (jt> j * friction) {
-        jt = j * friction;
-    }
-    else if (jt< -j * friction) {
-        jt = -j * friction;
-    }
-
-    // Apply the tangential impulse (friction) to the velocity of each rigidbody
-    vec3 tangentImpulse = t * jt;
-
-    mVelocity = mVelocity - tangentImpulse * invMass1;
-    other.mVelocity = other.mVelocity + tangentImpulse * invMass2;
-    angVel = angVel - Geometry::MultiplyVector(glm::cross(r1, tangentImpulse), i1);
-    other.angVel = other.angVel + Geometry::MultiplyVector(glm::cross(r2, tangentImpulse), i2);
 }
 
 void Elys::RigidBody::AddLinearImpulse(const vec3 &impulse) {

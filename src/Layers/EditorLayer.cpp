@@ -60,7 +60,7 @@ namespace Elys {
             obb.GetComponent<Node>().InheritedScale(),
             glm::mat3{1.0f}
         });
-        obb.GetComponent<RigidBody>().SetIsKinematic(false);
+        obb.GetComponent<RigidBody>().SetUseGravity(true);
 
         auto player = mCurrentScene->CreateEntity("Player");
         player.GetComponent<Node>().SetPosition(-1.0f, 7.0f, 0.0f);

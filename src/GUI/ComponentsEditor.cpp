@@ -146,7 +146,7 @@ namespace Elys::GUI {
             node.SetScale(scale);
 
         node.SetPosition(pos);
-        node.SetRotation(glm::quat(rot * (static_cast<float>(M_PI) / 180.0f)));
+        //node.SetRotation(glm::quat(rot * (static_cast<float>(M_PI) / 180.0f)));
     }
     void ComponentsEditor::MeshRenderEditor(const std::string &label, MeshRenderer &meshRenderer)  {
         auto tableFlags = ImGuiTableFlags_NoPadInnerX;

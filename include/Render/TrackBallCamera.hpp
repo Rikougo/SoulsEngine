@@ -48,8 +48,8 @@ namespace Elys {
         void UpdateCameraData() const;
 
       public:
-        float speed = 1.0f;
-        float sensitivity = 1.0f;
+        float speed = 10.0f;
+        float sensitivity = 0.1f;
       private:
         // cache data
         mutable Frustum mFrustum;

@@ -92,11 +92,19 @@ namespace Elys {
                 auto &rBody = entity.GetComponent<RigidBody>();
                 auto &volume = rBody.GetVolume();
                 auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
-
-                rBody.Update(deltaTime);
-                rBody.SyncCollisionVolumes(node, mesh);
-                node.SetPosition(rBody.Position());
-                node.SetRotation(rBody.Orientation());
+                if(!rBody.isKinematic) {
+                    glm::vec3 rot = glm::eulerAngles(node.InheritedRotation());
+                    ELYS_CORE_INFO(" -> Init Node rotation : {0} {1} {2}", rot.x, rot.y, rot.z);
+                    rBody.Update(deltaTime);
+                    node.SetPosition(rBody.Position());
+                    ELYS_CORE_INFO(node.name);
+                    ELYS_CORE_INFO(" -> Position : {0} {1} {2}", rBody.Position().x, rBody.Position().y, rBody.Position().z);
+                    ELYS_CORE_INFO(" -> Orientation : {0} {1} {2}", rBody.Orientation().x, rBody.Orientation().y, rBody.Orientation().z);
+                    node.SetRotation(rBody.Orientation().x, rBody.Orientation().y, rBody.Orientation().z);
+                    rBody.SyncCollisionVolumes(node, mesh);
+                    rot = glm::eulerAngles(node.InheritedRotation());
+                    ELYS_CORE_INFO(" -> Node rotation : {0} {1} {2}", rot.x, rot.y, rot.z);
+                }
             }
         }
     }

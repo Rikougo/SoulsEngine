@@ -60,9 +60,9 @@ namespace Elys {
         glm::vec3 mForces{};
         bool mCollided{false};
 
-        glm::vec3 mOrientation {0,0,0};
-        glm::vec3 angVel;
-        glm::vec3 torques; // Sum torques
+        glm::vec3 mOrientation {0};
+        glm::vec3 angVel{0};
+        glm::vec3 torques{0}; // Sum torques
     };
 }
 
