@@ -7,18 +7,12 @@
 namespace Elys {
     void PhysicSystem::Update(float deltaTime) {
         if (mPhysicUpdate) {
-
             results.clear();
             colliders1.clear();
             colliders2.clear();
 
-            std::vector<Entity> entities;
             for (auto id : mEntities) {
-                entities.push_back(mCurrentScene->EntityFromID(id));
-            }
-
-            for (int i = 0; i < entities.size(); i++) {
-                auto entity = entities[i];
+                auto entity = mCurrentScene->EntityFromID(id);
 
                 // PHYSICS
                 auto &node = entity.GetComponent<Node>();
@@ -28,10 +22,10 @@ namespace Elys {
 
                 // when position is reset using editor
                 if (node.InheritedPosition() != rBody.Position())
-                    rBody.SetPosition(node.InheritedPosition());
+                    rBody.ForcePosition(node.InheritedPosition());
 
-                for (int j = 0; j < entities.size(); j++) {
-                    auto other = entities[j];
+                for (auto otherID : mEntities) {
+                    auto other = mCurrentScene->EntityFromID(otherID);
                     if (other == entity)
                         continue;
 
@@ -48,10 +42,7 @@ namespace Elys {
                         results.push_back(result);
                     }
                 }
-            }
-            // Calculate forces acting on the object
-            for (auto entity : entities) {
-                auto &rBody = entity.GetComponent<RigidBody>();
+
                 rBody.ApplyForces();
             }
 
@@ -82,18 +73,34 @@ namespace Elys {
                 glm::vec3 correction = results[i].normal * scalar * LinearProjectionPercent;
                 // ELYS_CORE_INFO("{0}, {1}, {2}", correction.x, correction.y, correction.z);
                 if(!m1->isKinematic)
-                    m1->SetPosition(m1->Position() - correction * m1->InvMass());
+                    m1->ForcePosition(m1->Position() - correction * m1->InvMass());
                 if(!m2->isKinematic)
-                    m2->SetPosition(m2->Position() + correction * m2->InvMass());
+                    m2->ForcePosition(m2->Position() + correction * m2->InvMass());
             }
 
             // Integrate the forces and velocity of every rigidbody
-            for (auto entity : entities) {
+            for (auto id : mEntities) {
+                auto entity = mCurrentScene->EntityFromID(id);
                 auto &node = entity.GetComponent<Node>();
                 auto &rBody = entity.GetComponent<RigidBody>();
-                auto &volume = rBody.GetVolume();
                 auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
 
+                rBody.Update(deltaTime);
+                rBody.SyncCollisionVolumes(node, mesh);
+                node.SetPosition(rBody.Position());
+            }
+        } else {
+            for (auto id : mEntities) {
+                auto entity = mCurrentScene->EntityFromID(id);
+                auto &node = entity.GetComponent<Node>();
+                auto &rBody = entity.GetComponent<RigidBody>();
+                auto const &mesh = entity.GetComponent<MeshRenderer>().mesh;
+
+                if (node.InheritedPosition() != rBody.Position())
+                    rBody.ForcePosition(node.InheritedPosition());
+
+                rBody.ResetForces();
+                rBody.ResetVelocity();
                 rBody.Update(deltaTime);
                 rBody.SyncCollisionVolumes(node, mesh);
                 node.SetPosition(rBody.Position());

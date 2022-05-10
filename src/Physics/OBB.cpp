@@ -55,6 +55,8 @@ namespace Elys {
                 5, 3
             };
 
+            UpdateVertices();
+
             mVAO = std::make_shared<VertexArray>();
             auto vbo = std::make_shared<VertexBuffer>(
                 (void *)mVertices.data(), static_cast<uint32_t>(mVertices.size() * sizeof(glm::vec3)),

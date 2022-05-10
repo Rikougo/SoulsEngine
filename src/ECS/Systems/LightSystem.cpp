@@ -15,11 +15,8 @@ namespace Elys {
     }
 
     void LightSystem::Update(float deltaTime) {
-        mFramebuffer->Bind();
-
         if (!mShader || !mCamera) {
             ELYS_CORE_ERROR("LightSystem::Update : {0} not initialized (nullptr) !", mShader ? "Camera" : "Shader");
-            mFramebuffer->Unbind();
             return;
         }
 
@@ -59,7 +56,5 @@ namespace Elys {
         }
 
         mShader->SetInt("uLightsAmount", lightIndex);
-
-        mFramebuffer->Unbind();
     }
 } // namespace Elys

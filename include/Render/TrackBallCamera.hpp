@@ -39,6 +39,8 @@ namespace Elys {
         void Rotate(float deltaT, float deltaP);
         void Zoom(float delta);
         void Pan(glm::vec3 direction);
+        void SetPosition(glm::vec3 newPosition) { mPosition = newPosition; mDirty = true; }
+        void SetTarget(glm::vec3 newTarget) { mForward = glm::normalize(newTarget - mPosition); mDirty = true; }
         void MouseInput(float x, float y, MouseCode button) override;
 
         [[nodiscard]] glm::vec3 GetPosition() const override { return mPosition; }

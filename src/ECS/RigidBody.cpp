@@ -17,10 +17,11 @@ void Elys::RigidBody::Update(float deltaTime) {
     if(isKinematic) mVelocity = {0,0,0};
     else {
         mOldPosition = mPosition;
+        vec3 oldVelocity = mVelocity;
 
         // The dampening simulates air friction
         const float damping = 0.98f;
-        vec3 acceleration = mForces;
+        vec3 acceleration = mForces * (1.0f / mass);
         mVelocity = (mVelocity + acceleration * deltaTime) * damping;
 
         mPosition = mPosition + mVelocity * deltaTime;
@@ -29,6 +30,10 @@ void Elys::RigidBody::Update(float deltaTime) {
 
 void Elys::RigidBody::ApplyForces() {
     mForces = useGravity ? vec3{0.0f, -9.81f, 0.0f} * mass : vec3{0.0f};
+}
+
+void Elys::RigidBody::ResetForces() {
+    mForces = vec3{0.0f};
 }
 
 void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
@@ -53,7 +58,7 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     float e = fminf(cor, other.cor);
     float numerator = (-(1.0f + e) * glm::dot(relativeVel, relativeNorm));
     float j = numerator / invMassSum;
-    if (!M.contacts.empty()) {
+    if (M.contacts.size() > 0) {
         j /= (float)M.contacts.size();
     }
 
@@ -99,32 +104,6 @@ void Elys::RigidBody::AddLinearImpulse(const vec3 &impulse) {
     mVelocity = mVelocity + impulse;
 }
 
-void Elys::RigidBody::SolveConstraints() {
-    auto size = mConstraints.size();
-
-    if (mOldPosition == mPosition) return;
-
-    for(size_t i = 0; i < size; i++) {
-        Geometry::Line traveled(mOldPosition, mPosition);
-        if (AABB::Linetest(*mConstraints[i], traveled)) {
-            glm::vec3 direction = glm::normalize(mVelocity);
-            Geometry::Ray ray(mOldPosition, direction);
-
-            Geometry::RaycastResult result;
-            if (AABB::Raycast(*mConstraints[i], ray, result)) {
-                mPosition = result.point + result.normal * 0.002f;
-                glm::vec3 vn = result.normal * dot(result.normal, mVelocity);
-                glm::vec3 vt = mVelocity - vn;
-
-                mOldPosition = mPosition;
-                mVelocity = vt - vn * bounce;
-
-                break;
-            }
-        }
-    }
-}
-
 void Elys::RigidBody::PushConstraints(Elys::AABB* aabb) {
     mConstraints.push_back(aabb);
 }
@@ -139,7 +118,7 @@ void Elys::RigidBody::SyncCollisionVolumes(Node& node, const Mesh& mesh) {
         mVolume);
 }
 
-void Elys::RigidBody::SetPosition(vec3 position) {
+void Elys::RigidBody::ForcePosition(vec3 position) {
     mOldPosition = position;
     mPosition = position;
 }

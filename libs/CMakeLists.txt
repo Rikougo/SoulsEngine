@@ -14,6 +14,7 @@ target_sources( IMGUI
                     ${IMGUI_DIR}/imgui_tables.cpp
                     ${IMGUI_DIR}/imgui_widgets.cpp
                     ${IMGUI_DIR}/imgui.cpp
+                    ${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 
                 PRIVATE
                     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp

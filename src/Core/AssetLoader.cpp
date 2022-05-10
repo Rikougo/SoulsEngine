@@ -188,7 +188,22 @@ namespace Elys {
 
     template<>
     RigidBody ComponentSerializer::ParseComponent<RigidBody>(std::unordered_map<string, string> const &raw) {
-        return {};
+        RigidBody result{};
+
+        result.mass = std::stof(raw.at("Mass"));
+        result.cor = std::stof(raw.at("COR"));
+
+        result.useGravity = raw.contains("Gravity");
+        result.isKinematic = raw.contains("Kinematic");
+
+        if (raw.contains("OBB") && raw.contains("OBBSize") ) {
+            auto size = ParseVec3(raw.at("OBBSize"));
+            result.GetVolume() = OBB{{0, 0, 0}, size};
+        } else if (raw.contains("AABB")) {
+            result.GetVolume() = AABB{};
+        }
+
+        return result;
     }
 
     template<>
@@ -210,7 +225,24 @@ namespace Elys {
 
     template<>
     string ComponentSerializer::SerializeComponent<RigidBody>(RigidBody const &data) {
-        return "RigidBody";
+        std::stringstream ss;
+
+        ss << "RigidBody+Mass=" << std::to_string(data.mass) << "+COR=" << std::to_string(data.cor);
+
+        if (data.useGravity)
+            ss << "+Gravity";
+        if (data.isKinematic)
+            ss << "+Kinematic";
+
+        std::visit(overloaded{
+                       [&ss](AABB const &aabb) { ss << "+AABB"; },
+                       [&ss](OBB const &obb){
+                           auto const& size = obb.Size();
+                           ss << "+OBB+OBBSize=" << size.x << "," << size.y << "," << size.z;
+                       }
+                   }, data.GetVolume());
+
+        return ss.str();
     }
 
     template<>

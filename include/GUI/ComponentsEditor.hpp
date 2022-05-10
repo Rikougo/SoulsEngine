@@ -6,6 +6,7 @@
 #define ELYS_COMPONENTS_EDITOR_HPP
 
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <GUI/GUI.hpp>

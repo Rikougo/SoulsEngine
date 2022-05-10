@@ -47,7 +47,6 @@ namespace Elys {
         template<typename T, typename ... Args> std::shared_ptr<T> RegisterSystem(Args&& ... args) {
             return mSystemManager->RegisterSystem<T>(std::forward<Args>(args)...);
         }
-
         template<typename T, typename ... Components> void SetSystemSignature() {
             mSystemManager->SetSignature<T>(mComponentManager->GetSignature<Components...>());
 
@@ -56,14 +55,16 @@ namespace Elys {
             }
         }
 
+        void PushToDestroyQueue(EntityID id);
+        void ProcessDestroyQueue();
+
         std::set<EntityID>::iterator begin() { return mEntities.begin(); }
         std::set<EntityID>::iterator end() { return mEntities.end(); }
         [[nodiscard]] std::set<EntityID>::const_iterator begin() const {return mEntities.begin();}
         [[nodiscard]] std::set<EntityID>::const_iterator end() const { return mEntities.end(); }
       private:
-        void DestroyEntity(Entity const &entity);
-      private:
         std::set<EntityID> mEntities;
+        std::set<EntityID> mToDestroy;
 
         int mSelected {MAX_ENTITIES}, mHovered {MAX_ENTITIES};
 
@@ -72,9 +73,6 @@ namespace Elys {
         std::unique_ptr<SystemManager> mSystemManager;
 
         friend class Entity;
-      public:
-        static bool SaveInFile(std::filesystem::path& path);
-        static Scene FromFile(std::filesystem::path& path);
     };
 
     class Entity {

@@ -27,34 +27,28 @@ namespace Elys {
         ELYS_CORE_INFO("Created entity {0}", newID);
         return entity;
     }
-
-    void Scene::DestroyEntity(Entity const &entity) {
-        if (!entity.IsValid()) return;
-
-        EntityID id = entity.ID();
-
-        entity.GetComponent<Node>().OnDelete();
-        mEntities.erase(id);
-
-        mComponentManager->EntityDestroyed(id);
-        mSystemManager->EntityDestroyed(id);
-        mEntityManager->DestroyEntity(id);
-    }
-
     Entity Scene::EntityFromNode(const Node &component) {
         auto id = mComponentManager->GetEntity<Node>(component);
         return {this, id};
     }
-
     Entity Scene::EntityFromID(EntityID id) { return {this, id}; }
 
-    /*void Scene::OnUpdate(float deltaTime) { }
+    void Scene::PushToDestroyQueue(EntityID id) { mToDestroy.insert(id); }
+    void Scene::ProcessDestroyQueue() {
+        for (auto id : mToDestroy) {
+            if (id == mSelected)
+                mSelected = MAX_ENTITIES;
+            if (id == mHovered)
+                mHovered = MAX_ENTITIES;
 
-    void Scene::OnRuntimeUpdate(float deltaTime) { }*/
+            mEntities.erase(id);
+            mComponentManager->GetComponent<Node>(id).OnDelete();
 
-    bool Scene::SaveInFile(std::filesystem::path &path) { return false; }
+            mSystemManager->EntityDestroyed(id);
+            mComponentManager->EntityDestroyed(id);
+            mEntityManager->DestroyEntity(id);
+        }
 
-    Scene Scene::FromFile(std::filesystem::path &path) {
-        throw std::runtime_error("Scene::OnRuntimeUpdate : Not implemented yet.");
+        mToDestroy.clear();
     }
 }

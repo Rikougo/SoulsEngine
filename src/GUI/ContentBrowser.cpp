@@ -24,12 +24,48 @@ namespace Elys::GUI {
 
             ImGui::Columns(columnCount, nullptr, false);
 
+            std::vector<std::filesystem::directory_entry> directories{};
+            std::vector<std::filesystem::directory_entry> files{};
+
             for (auto const &directoryEntry : std::filesystem::directory_iterator(mCurrentPath)) {
+                if (directoryEntry.is_directory()) directories.push_back(directoryEntry);
+                else files.push_back(directoryEntry);
+            }
+
+            std::sort(files.begin(), files.end(), [](std::filesystem::directory_entry &left, std::filesystem::directory_entry &right) {
+               if (!left.path().has_extension()) return false;
+               if (!right.path().has_extension()) return false;
+
+               return left.path().extension().string() > right.path().extension().string();
+            });
+
+            for (auto &directoryEntry : directories) {
                 const auto &path = directoryEntry.path();
                 std::string filenameString = path.filename().string();
 
                 ImGui::PushID(filenameString.c_str());
-                Texture icon = directoryEntry.is_directory() ? mFolderIcon : mFileIcon;
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                ImGui::ImageButton((ImTextureID)(size_t)mFolderIcon.ID(), {thumbnailSize, thumbnailSize}, {0, 1}, {1, 0});
+
+
+                ImGui::PopStyleColor();
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                    mCurrentPath /= path.filename();
+                }
+                ImGui::TextWrapped("%s", filenameString.c_str());
+
+                ImGui::NextColumn();
+
+                ImGui::PopID();
+            }
+
+            for (auto &directoryEntry : files) {
+                const auto &path = directoryEntry.path();
+                std::string filenameString = path.filename().string();
+
+                ImGui::PushID(filenameString.c_str());
+                Texture icon = (path.has_extension() && path.extension() == ".fbx") ? m3DIcon : mFileIcon;
+
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
                 ImGui::ImageButton((ImTextureID)(size_t)icon.ID(), {thumbnailSize, thumbnailSize}, {0, 1}, {1, 0});
 
@@ -51,7 +87,8 @@ namespace Elys::GUI {
                         ImGui::Text("%ls", itemPath);
                         ImGui::EndDragDropSource();
                     }
-                } else if (path.has_extension() && path.extension() == ".fbx") {
+                }
+                else if (path.has_extension() && path.extension() == ".fbx") {
                     if (ImGui::BeginPopupContextItem()) {
                         if (ImGui::Selectable("Load mesh")) {
                             auto relativePath = std::filesystem::relative(path, AssetLoader::gAssetPath);
@@ -62,18 +99,13 @@ namespace Elys::GUI {
                 }
 
                 ImGui::PopStyleColor();
-                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                    if (directoryEntry.is_directory()) {
-                        mCurrentPath /= path.filename();
-                    }
-                }
+
                 ImGui::TextWrapped("%s", filenameString.c_str());
 
                 ImGui::NextColumn();
 
                 ImGui::PopID();
             }
-
             ImGui::Columns(1);
         }
         ImGui::End();

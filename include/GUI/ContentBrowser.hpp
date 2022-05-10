@@ -19,11 +19,12 @@ namespace Elys::GUI {
         ContentBrowser() : mCurrentPath(AssetLoader::gAssetPath) {
             mFileIcon = AssetLoader::TextureFromPath("icons/file-icon.png");
             mFolderIcon = AssetLoader::TextureFromPath("icons/folder-icon.png");
+            m3DIcon = AssetLoader::TextureFromPath("icons/3d-icon.png");
         }
 
         void OnImGUIRender(bool *open);
       private:
-        Texture mFileIcon, mFolderIcon;
+        Texture mFileIcon, mFolderIcon, m3DIcon;
         std::filesystem::path mCurrentPath;
     };
 } // namespace Elys::GUI

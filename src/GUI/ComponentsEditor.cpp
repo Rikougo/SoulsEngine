@@ -17,14 +17,11 @@ namespace Elys::GUI {
             ImGui::PushID(node.name.c_str());
             {
 
-                ImGui::BeginTable("Informations", 3);
+                ImGui::BeginTable("Information", 3);
 
-                ImGui::TableSetupColumn("enabled", ImGuiTableColumnFlags_WidthFixed,
-                                        15.0f); // Default to 100.0f
-                ImGui::TableSetupColumn("name",
-                                        ImGuiTableColumnFlags_WidthStretch); // Default to auto
-                ImGui::TableSetupColumn("add", ImGuiTableColumnFlags_WidthFixed,
-                                        15.0f); // Default to auto
+                ImGui::TableSetupColumn("enabled", ImGuiTableColumnFlags_WidthFixed, 15.0f);
+                ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("add", ImGuiTableColumnFlags_WidthFixed, 15.0f);
 
                 ImGui::TableNextColumn();
                 bool enabled = node.LocalEnabled();
@@ -33,11 +30,9 @@ namespace Elys::GUI {
                     node.SetEnabled(enabled);
 
                 ImGui::TableNextColumn();
-                std::vector<char> cTagName(node.name.c_str(), node.name.c_str() + node.name.size() + 1);
-                if (ImGui::InputText("##Tag", cTagName.data(), cTagName.size())) {
-                    node.name = std::string(cTagName.begin(), cTagName.end());
-                }
+                ImGui::InputText("##Name", &node.name);
 
+                // ADD COMPONENT STUFF
                 ImGui::TableNextColumn();
                 if (ImGui::Button("+")) {
                     ImGui::OpenPopup("AddComponentPopup");
@@ -50,15 +45,12 @@ namespace Elys::GUI {
                             .mesh = AssetLoader::MeshesMap()["Cube"]
                         });
                     }
-
                     if (ImGui::Selectable("Light", false, entity.HasComponent<Light>() ? ImGuiSelectableFlags_Disabled : 0)) {
                         entity.AddComponent<Light>({});
                     }
-
                     if (ImGui::Selectable("RigidBody", false, entity.HasComponent<RigidBody>() ? ImGuiSelectableFlags_Disabled : 0)) {
                         entity.AddComponent<RigidBody>({});
                     }
-
                     if (ImGui::Selectable("Player", false, entity.HasComponent<Player>() ? ImGuiSelectableFlags_Disabled : 0)) {
                         entity.AddComponent<Player>({});
                     }
@@ -78,25 +70,61 @@ namespace Elys::GUI {
                 // --- MESH RENDERER ---
                 if (entity.HasComponent<MeshRenderer>()) {
                     if (ImGui::CollapsingHeader("Mesh Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
-                        MeshRenderEditor("##MeshRenderer", entity.GetComponent<MeshRenderer>());
+                        bool removed = false;
+                        if (ImGui::BeginPopupContextItem()) {
+                            if (ImGui::Selectable("Remove")) {
+                                entity.RemoveComponent<MeshRenderer>();
+                                removed = true;
+                            }
+                            ImGui::EndPopup();
+                        }
+
+                        if (!removed) MeshRenderEditor("##MeshRenderer", entity.GetComponent<MeshRenderer>());
                     }
                 }
 
                 if (entity.HasComponent<Light>()) {
                     if (ImGui::CollapsingHeader("Light Renderer", ImGuiTreeNodeFlags_DefaultOpen)) {
-                        LightEditor("##Light", entity.GetComponent<Light>());
+                        bool removed = false;
+                        if (ImGui::BeginPopupContextItem()) {
+                            if (ImGui::Selectable("Remove")) {
+                                entity.RemoveComponent<Light>();
+                                removed = true;
+                            }
+                            ImGui::EndPopup();
+                        }
+
+                        if (!removed) LightEditor("##Light", entity.GetComponent<Light>());
                     }
                 }
 
                 if (entity.HasComponent<RigidBody>()) {
                     if (ImGui::CollapsingHeader("RigidBody", ImGuiTreeNodeFlags_DefaultOpen)) {
-                        RigidBodyEditor("##RigidBody", entity.GetComponent<RigidBody>());
+                        bool removed = false;
+                        if (ImGui::BeginPopupContextItem()) {
+                            if (ImGui::Selectable("Remove")) {
+                                entity.RemoveComponent<RigidBody>();
+                                removed = true;
+                            }
+                            ImGui::EndPopup();
+                        }
+
+                        if (!removed) RigidBodyEditor("##RigidBody", entity.GetComponent<RigidBody>());
                     }
                 }
 
                 if (entity.HasComponent<Player>()) {
                     if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen)) {
-                        PlayerEditor("##Player", entity.GetComponent<Player>());
+                        bool removed = false;
+                        if (ImGui::BeginPopupContextItem()) {
+                            if (ImGui::Selectable("Remove")) {
+                                entity.RemoveComponent<Player>();
+                                removed = true;
+                            }
+                            ImGui::EndPopup();
+                        }
+
+                        if (!removed) PlayerEditor("##Player", entity.GetComponent<Player>());
                     }
                 }
             }
@@ -112,25 +140,31 @@ namespace Elys::GUI {
         static bool uniformScale = true;
 
         auto tableFlags = ImGuiTableFlags_NoPadInnerX;
-        ImGui::BeginTable(label.c_str(), 2, tableFlags);
+        ImGui::BeginTable(label.c_str(), 3, tableFlags);
 
         ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed,
                                 100.0f); // Default to 100.0f
         ImGui::TableSetupColumn("widget",
                                 ImGuiTableColumnFlags_WidthStretch); // Default to auto
+        ImGui::TableSetupColumn("alt", ImGuiTableColumnFlags_WidthFixed, 50.0f); // Default to auto
 
         ImGui::TableNextColumn();
         ImGui::Text("Position");
         ImGui::TableNextColumn();
-        SliderVec3("##Scale", pos);
+        SliderVec3("##Position", pos);
+
+        ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::Text("Rotation");
         ImGui::TableNextColumn();
-        SliderVec3("##Scale", rot);
+        SliderVec3("##Rotation", rot);
+
+        ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::Text("Scale");
         ImGui::TableNextColumn();
         SliderVec3("##Scale", scale);
+        ImGui::TableNextColumn();
         ImGui::Checkbox("##UniformScale", &uniformScale);
 
         ImGui::EndTable();
@@ -178,7 +212,6 @@ namespace Elys::GUI {
             }
             ImGui::EndCombo();
         }
-        // ImGui::Combo
         ImGui::TableNextRow();
 
         ImGui::TableNextColumn();
@@ -303,9 +336,9 @@ namespace Elys::GUI {
         ImGui::Selectable(vOldPos.str().c_str());
 
         ImGui::TableNextColumn();
-        ImGui::Text("Bounce");
+        ImGui::Text("Restitution coefficient");
         ImGui::TableNextColumn();
-        ImGui::DragFloat("##bounce", &rBody.bounce, 0.1f);
+        ImGui::DragFloat("##COR", &rBody.cor, 0.1f);
 
         ImGui::TableNextColumn();
         ImGui::Text("Mass");
@@ -313,9 +346,14 @@ namespace Elys::GUI {
         ImGui::DragFloat("##mass", &rBody.mass, 0.1f);
 
         ImGui::TableNextColumn();
-        ImGui::Text("Friction");
+        ImGui::Text("Gravity");
         ImGui::TableNextColumn();
-        ImGui::DragFloat("##friction", &rBody.friction, 0.1f);
+        ImGui::Checkbox("##gravity", &rBody.useGravity);
+
+        ImGui::TableNextColumn();
+        ImGui::Text("Kinematic");
+        ImGui::TableNextColumn();
+        ImGui::Checkbox("##kinematic", &rBody.isKinematic);
 
         ImGui::TableNextColumn();
         ImGui::Text("Volume");

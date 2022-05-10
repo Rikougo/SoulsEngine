@@ -14,8 +14,8 @@ namespace Elys {
         : mCurrentScene(scene), mCamera(camera), mShader(shader), mFramebuffer(framebuffer) {
         mOutlineShader = std::make_shared<Shader>("./shaders/outline_vertex.glsl",
                                                   "./shaders/outline_fragment.glsl");
-        mLineShader = std::make_shared<Shader>("./shaders/simplevertex.glsl",
-                                               "./shaders/simplefragment.glsl");
+        mLineShader = std::make_shared<Shader>("./shaders/simple_vertex.glsl",
+                                               "./shaders/simple_fragment.glsl");
     }
 
     void RenderSystem::SetCamera(std::shared_ptr<TrackBallCamera>& camera) {

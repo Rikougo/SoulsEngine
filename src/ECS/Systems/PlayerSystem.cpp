@@ -10,6 +10,7 @@ namespace Elys {
 
         for(auto id : mEntities) {
             auto entity = mCurrentScene->EntityFromID(id);
+            auto const &node = entity.GetComponent<Node>();
             auto &rBody = entity.GetComponent<RigidBody>();
 
             glm::vec3 velocity{0.0f};
@@ -30,7 +31,10 @@ namespace Elys {
                 velocity.z += 1.0f;
             }
 
-            rBody.AddLinearImpulse(velocity);
+            rBody.AddLinearImpulse(velocity * entity.GetComponent<Player>().speed * deltaTime);
+
+            mPlayerCamera->SetPosition(node.InheritedPosition() + vec3{0.0f, 4.0f, -6.0f});
+            mPlayerCamera->SetTarget(node.InheritedPosition() + vec3{0.0f, node.InheritedScale().y / 2.0f, 0.0f});
         }
     }
 }

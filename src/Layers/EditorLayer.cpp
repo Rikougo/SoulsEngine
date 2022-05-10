@@ -36,54 +36,37 @@ namespace Elys {
 
         auto ground = mCurrentScene->CreateEntity("Ground");
         ground.GetComponent<Node>().SetPosition(0.0f, -2.0f, 0.0f);
-        ground.GetComponent<Node>().SetScale(50);
+        ground.GetComponent<Node>().SetScale(glm::vec3{50, 1, 50});
         ground.AddComponent<MeshRenderer>(
-            {.mesh = AssetLoader::MeshesMap()["Plane32x32"],
+            {.mesh = AssetLoader::MeshesMap()["Cube"],
              .material =
                  Material::FromTexture(
                      AssetLoader::TextureFromPath("textures/wood_wall/Wood_Wall_003_basecolor.jpg"))
                      .SetNormalMap(AssetLoader::TextureFromPath(
                          "textures/wood_wall/Wood_Wall_003_normal.jpg"))
                      .SetTiling({10, 10})});
-        ground.AddComponent<RigidBody>(RigidBody{ground.GetComponent<Node>().InheritedPosition(),
+        auto &groundRBody = ground.AddComponent<RigidBody>(RigidBody{ground.GetComponent<Node>().InheritedPosition(),
                                                  {50.0f, 1.0f, 50.0f},
                                                  glm::mat3{1.0f}});
-        ground.GetComponent<RigidBody>().SetIsKinematic(true);
+        groundRBody.isKinematic = true;
 
-        /*auto obb = mCurrentScene->CreateEntity("Obb");
-        obb.GetComponent<Node>().SetPosition(-1.0f, 0.0f, 0.0f);
-        obb.AddComponent<MeshRenderer>({
-            .mesh = AssetLoader::MeshFromPath("Sphere")
-        });
-        obb.AddComponent<RigidBody>(RigidBody{
-            obb.GetComponent<Node>().InheritedPosition(),
-            obb.GetComponent<Node>().InheritedScale(),
-            glm::mat3{1.0f}
-        });*/
+        for(size_t i = 0; i < 5; i++) {
+            auto line = mCurrentScene->CreateEntity("Line"+std::to_string(i));
+            for(size_t j = 0; j < 5; j++) {
+                auto entity = mCurrentScene->CreateEntity("Showcase"+std::to_string(j));
+                entity.GetComponent<Node>().SetPosition(i * 2.10f, j * 2.10f, 0.0f);
+                entity.AddComponent<MeshRenderer>({
+                    .mesh = AssetLoader::MeshFromPath("Sphere"),
+                    .material = Material{}
+                        .SetAlbedo(glm::vec4{1.0f, 0.0f, 0.0f, 1.0f})
+                        .SetMetallic(0.25f * i)
+                        .SetRoughness(0.25f * j)
+                });
+                entity.AddComponent<RigidBody>({});
 
-        auto player = mCurrentScene->CreateEntity("Player");
-        player.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);
-        player.AddComponent<MeshRenderer>({
-            .mesh = AssetLoader::MeshFromPath("Sphere")
-        });
-        player.AddComponent<RigidBody>(RigidBody{
-            player.GetComponent<Node>().InheritedPosition(),
-            player.GetComponent<Node>().InheritedScale(),
-            glm::mat3{1.0f}
-        });
-        player.AddComponent<Player>({});
-        player.GetComponent<RigidBody>().SetUseGravity(true);
-
-        /*auto center = mCurrentScene->CreateEntity("Center");
-        auto light = mCurrentScene->CreateEntity("Light");
-        light.SetParent(center);
-        light.GetComponent<Node>().SetPosition(0.0f, 5.0f, 0.0f);
-        light.GetComponent<Node>().SetScale(0.1f);
-        light.AddComponent<Light>({.color = {1.0f, 1.0f, 1.0f}, .intensity = 200.0f});
-        light.AddComponent<MeshRenderer>({
-            .mesh = AssetLoader::MeshesMap()["Sphere"],
-            .material = Material{.albedo = {1.0f, 1.0f, 1.0f, 1.0f}}.SetSelfLight(true)
-        });*/
+                line.AddChildren(entity);
+            }
+        }
     }
 
     void EditorLayer::OnDetach() {
@@ -254,8 +237,8 @@ namespace Elys {
             ImGui::End();
 
             mGraphScene.OnImGUIRender(mCurrentScene, nullptr);
-            mComponentsEditor.OnImGUIRender(
-                mCurrentScene->EntityFromID(mCurrentScene->GetSelected()), nullptr);
+            mCurrentScene->ProcessDestroyQueue();
+            mComponentsEditor.OnImGUIRender(mCurrentScene->EntityFromID(mCurrentScene->GetSelected()), nullptr);
             mContentBrowser.OnImGUIRender(nullptr);
 
             // Viewport: where the 3D scene is drawn
@@ -391,14 +374,14 @@ namespace Elys {
         mCurrentState =
             (mCurrentState == EditorState::EDITING) ? EditorState::PLAYING : EditorState::EDITING;
 
-        /*switch (mCurrentState) {
+        switch (mCurrentState) {
         case EditorState::EDITING:
             mRenderSystem->SetCamera(mEditorCamera);
             break;
         case EditorState::PLAYING:
             mRenderSystem->SetCamera(mPlayerCamera);
             break;
-        }*/
+        }
 
         mPhysicSystem->SetPhysicUpdate(mCurrentState == EditorState::PLAYING);
     }
