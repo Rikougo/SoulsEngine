@@ -175,8 +175,7 @@ namespace Elys {
             mOutlineShader->SetVec4("uOutlineColor", outlineColor);
 
             mesh.VAO()->Bind();
-            glDrawElements(GL_TRIANGLES, (GLsizei)mesh.VAO()->GetIndexBuffer()->Size(),
-                           GL_UNSIGNED_INT, nullptr);
+            glDrawElements(GL_TRIANGLES, (GLsizei)mesh.VAO()->GetIndexBuffer()->Size(), GL_UNSIGNED_INT, nullptr);
             mesh.VAO()->Unbind();
         }
 

@@ -50,7 +50,7 @@ namespace Elys {
                                                  glm::mat3{1.0f}});
         ground.GetComponent<RigidBody>().SetIsKinematic(true);
 
-        auto obb = mCurrentScene->CreateEntity("Obb");
+        /*auto obb = mCurrentScene->CreateEntity("Obb");
         obb.GetComponent<Node>().SetPosition(-1.0f, 0.0f, 0.0f);
         obb.AddComponent<MeshRenderer>({
             .mesh = AssetLoader::MeshFromPath("Sphere")
@@ -59,7 +59,7 @@ namespace Elys {
             obb.GetComponent<Node>().InheritedPosition(),
             obb.GetComponent<Node>().InheritedScale(),
             glm::mat3{1.0f}
-        });
+        });*/
 
         auto player = mCurrentScene->CreateEntity("Player");
         player.GetComponent<Node>().SetPosition(-1.0f, 5.0f, 0.0f);

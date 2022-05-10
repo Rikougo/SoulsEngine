@@ -47,7 +47,7 @@ namespace Elys {
         virtual void AddRotationalImpulse(const glm::vec3& point,
                                           const glm::vec3& impulse);
       public:
-        float mass = 0.1f, bounce = 1.0f, friction = 1.0f, cor = 0.5f;
+        float mass = 0.1f, bounce = 1.0f, friction = 1.0f, cor = 0.0f;
         bool useGravity = false;
         bool isKinematic = false;
       private:

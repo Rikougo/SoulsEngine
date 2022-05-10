@@ -35,7 +35,7 @@ namespace Elys {
                     if (other == entity)
                         continue;
 
-                    auto otherRBody = other.GetComponent<RigidBody>();
+                    auto &otherRBody = other.GetComponent<RigidBody>();
                     auto &otherVolume = otherRBody.GetVolume();
 
                     Geometry::CollisionManifold result;
@@ -54,8 +54,9 @@ namespace Elys {
                 auto &rBody = entity.GetComponent<RigidBody>();
                 rBody.ApplyForces();
             }
+
             // Then, we apply an impulse to objects that are colliding to correct these collisions
-            for (int k = 0; k <ImpulseIteration; ++k) {
+            for (int k = 0; k < ImpulseIteration; ++k) {
                 for (int i = 0; i < results.size(); ++i) {
                     size_t jSize = results[i].contacts.size();
                     for (int j = 0; j <jSize; ++j) {

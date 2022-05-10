@@ -17,11 +17,10 @@ void Elys::RigidBody::Update(float deltaTime) {
     if(isKinematic) mVelocity = {0,0,0};
     else {
         mOldPosition = mPosition;
-        vec3 oldVelocity = mVelocity;
 
         // The dampening simulates air friction
         const float damping = 0.98f;
-        vec3 acceleration = mForces * (1.0f / mass);
+        vec3 acceleration = mForces;
         mVelocity = (mVelocity + acceleration * deltaTime) * damping;
 
         mPosition = mPosition + mVelocity * deltaTime;
@@ -54,7 +53,7 @@ void Elys::RigidBody::ApplyImpulse(Elys::RigidBody &other,
     float e = fminf(cor, other.cor);
     float numerator = (-(1.0f + e) * glm::dot(relativeVel, relativeNorm));
     float j = numerator / invMassSum;
-    if (M.contacts.size() > 0) {
+    if (!M.contacts.empty()) {
         j /= (float)M.contacts.size();
     }
 
