@@ -13,7 +13,7 @@ moteurs de jeux veuillez vous référer aux [références utilisées](#référen
 
 ![Demo_GUI](./demo/V0_Release.png)
 
-![Demo_PBR](./demo/V0_demo_pbr.png)
+![Demo_PBR](./demo/V0_demo_PBR.png)
 
 ## Fonctionnalitées (complétées ou non)
 
