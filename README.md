@@ -9,29 +9,27 @@ sont utilisées et précisé [plus bas](#dependances) le tout en C++17. Le proje
 pour le moment, il n'est absolument pas une référence en l'état, si vous cherchez des ressources intéressantes concernant les 
 moteurs de jeux veuillez vous référer aux [références utilisées](#références-utilisées ).*
 
-## Exemple (PBR)
+## Galerie
 
-![Demo](./demo/V0_demo_PBR.png)
+![Demo](./demo/V0_Release.png)
+
+![Demo](./demo/V0_demo_pbr.png)
 
 ## Fonctionnalitées (complétées ou non)
 
 ### Globales
 - [X] Affichage 3D de maillage (chargement OFF pour l'instant)
 - [X] Gestion de textures
-- [ ] Gestion de lumières (En progression)
+- [X] Gestion de lumières (En progression)
 - [ ] Animation de maillage
-- [ ] Détection de collision
-- [ ] Moteur physique (gravité, réponse collisions)
+- [X] Détection de collision
+- [X] Moteur physique simple (gravité, réponse collisions) 
 - [X] Gestion interne d'évenements
 - Optimisation graphiques
   - [ ] Frustum culling (En progression)
   - [ ] Octree de scene
 - [X] Fonctionnement ECS 
-- [ ] Interface d'édition (En progression)
-### Soulslike
-- [ ] Controlleur troisième personne (déplacement, roulade, attaques (?))
-- [ ] Vérouillage de cible 
-- [ ] Intéraction environnement
+- [X] Interface d'édition (En progression)
 
 ## Build
 Le projet est géré avec CMake (version 3.14 minimum). Donc utilisable sous tout IDE pouvant exploiter CMake 
