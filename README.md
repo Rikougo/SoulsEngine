@@ -38,6 +38,9 @@ Après un clone il faut donc effectuer les deux commandes suivantes :
 ```
 git submodule init
 git submodule update
+
+cmake -S . -B build
+cmake --build build
 ```
 
 ## Dependances
